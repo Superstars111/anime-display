@@ -1,0 +1,10 @@
+#wrapper
+	{
+		margin-left: auto;
+		margin-right: auto;
+		width: 100%;
+		background-color: #FFFFFF;
+		min-width: 960px;
+		max-width: 2048px;
+		box-shadow: 3px 3px 3px #2E0000;
+	}
