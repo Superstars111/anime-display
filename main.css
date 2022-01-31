@@ -8,3 +8,76 @@
 		max-width: 2048px;
 		box-shadow: 3px 3px 3px #2E0000;
 	}
+
+#options
+    {
+        float: left;
+    }
+
+#seasonal
+    {
+        width: 39.25em;
+        margin: 1.25em;
+        padding: .25em;
+        border-style: solid;
+        display: inline-block;
+    }
+
+#synopsis
+    {
+        width: 39.25em;
+        margin: 1em;
+        padding: .25em;
+        border-style: solid;
+        display: inline-block;
+    }
+
+#scoring
+    {
+        width: 39.25em;
+        margin: 1.25em;
+        border-style: solid;
+        display: inline-block;
+    }
+
+#tags
+    {
+        width: 39.25em;
+        margin: 1.25em;
+        border-style: solid;
+        display: inline-block;
+    }
+
+nav ul
+    {
+        font-weight: bold;
+		list-style-type: none;
+		margin: 5px;
+  	    font-size: 1.25em;
+    }
+
+nav li
+	{
+		display: inline;
+		padding-right: 10px;
+	}
+
+h1
+	{
+		text-align: center;
+		font-size: 4.6875em;
+		font-family: Georgia, Times New Roman, serif;
+		height: auto;
+		padding-bottom: 5px;
+		margin: 0;
+	}
+
+h2
+	{
+		text-align: center;
+	}
+
+h3
+    {
+        text-align: center;
+    }
