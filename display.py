@@ -14,6 +14,14 @@ import decimal as dc
 import alphabetize
 import time
 import fabric
+from flask import Flask
+from flask import request
+
+app = Flask(__name__)
+
+with open("home.html", "r") as data:
+    webpage = data
+
 
 download_data = pd.read_json("anime_data.json", typ="series", orient="records")
 
@@ -82,7 +90,8 @@ class Root:
         # Build synopsis frame
         self.frm_description = tk.Frame(self.frm_anime_display, width=300, height=150, borderwidth=2, relief="solid")
         self.txt_description = tk.Text(self.frm_description, height=9, width=55, state="disabled",
-                                       wrap="word", font=default_font, bg="gray92")
+                                       wrap="word", bg="gray92")
+        # TODO: txt_description font=default_font if going back to TKinter
         self.sbar = tk.Scrollbar(self.frm_description, orient=tk.VERTICAL, command=self.txt_description.yview)
         lbl_streaming = tk.Label(self.frm_description, text="Streaming Locations:")
         self.frm_stream_locations = tk.Frame(self.frm_description)
@@ -589,7 +598,8 @@ class SelectionWindow(tk.Toplevel):
         self.grab_release()
         self.destroy()
         options_var = tk.StringVar(value=option_titles)
-        window.lbox_options["listvariable"] = options_var
+        # TODO: Reinstate if going back to TKinter
+        # window.lbox_options["listvariable"] = options_var
 
 
 class EditWindow(tk.Toplevel):
@@ -873,13 +883,14 @@ def sort_ratings(ratings):
 
 
 if __name__ == "__main__":
-    application = tk.Tk()
-    default_font = fnt.nametofont("TkDefaultFont")
-    default_font.configure(size=12)
-    window = Root(application)
+    pass
+    # application = tk.Tk()
+    # default_font = fnt.nametofont("TkDefaultFont")
+    # default_font.configure(size=12)
+    # window = Root(application)
 
-    application.mainloop()
+    # application.mainloop()
 
-    upload_data = [mild_warnings, extreme_warnings, library]
-    with open("anime_data.json", "w") as anime_data:
-        json.dump(upload_data, anime_data, indent=4)
+    # upload_data = [mild_warnings, extreme_warnings, library]
+    # with open("anime_data.json", "w") as anime_data:
+    #     json.dump(upload_data, anime_data, indent=4)
