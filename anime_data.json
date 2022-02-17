@@ -3396,7 +3396,7 @@
                 },
                 {
                     "name": "Otaku Culture",
-                    "rank": 75,
+                    "rank": 76,
                     "isMediaSpoiler": false
                 },
                 {
@@ -3486,15 +3486,33 @@
             "houseScores": [
                 [
                     "Jared",
-                    79,
+                    82,
                     -5,
-                    10
+                    15
                 ],
                 [
                     "Kenan",
                     90,
-                    -10,
+                    10,
+                    35
+                ],
+                [
+                    "Simon",
+                    85,
+                    10,
+                    45
+                ],
+                [
+                    "Mom",
+                    70,
+                    10,
                     10
+                ],
+                [
+                    "Hannah",
+                    50,
+                    0,
+                    20
                 ]
             ]
         },
