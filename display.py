@@ -19,7 +19,7 @@ from flask import request
 
 app = Flask(__name__)
 
-with open("home.html", "r") as data:
+with open("templates/home.html", "r") as data:
     webpage = data
 
 
