@@ -1,8 +1,9 @@
 from flask import Flask
 from flask import request
 from flask import render_template
-import json
 import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
 
 try:
     full_data = pd.read_json("anime_data.json", typ="series", orient="records")
@@ -28,7 +29,7 @@ def build_webpage():
         synopsis = collect_synopsis(show)
         public_score = collect_public_score(show)
         # private_score = collect_private_score(show)
-        # graph = collect_graph(show)
+        graph = collect_graph(show)
         # genres = collect_genres(show)
         # tags = collect_tags(show)
         # warnings = collect_warnings(show)
@@ -44,7 +45,7 @@ def build_webpage():
         synopsis = "Synopsis"
         public_score = "Public"
         # private_score = collect_private_score(show)
-        # graph = collect_graph(show)
+        graph = "Graph"
         # genres = collect_genres(show)
         # tags = collect_tags(show)
         # warnings = collect_warnings(show)
@@ -60,6 +61,7 @@ def build_webpage():
         "unaired": unaired,
         "synopsis": synopsis,
         "public": public_score,
+        "graph": graph,
     }
 
     return render_template("home.html", **variables)
@@ -108,7 +110,12 @@ def collect_private_score(show):
 
 
 def collect_graph(show):
-    pass
+    matplotlib.use("Agg")
+    fig = plt.Figure(figsize=(5, 4), dpi=100)
+    graph = fig.add_subplot(111)
+    # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
+    plot_graph(graph, [1, 2, 3], [1, 2, 3], ["red", "green", "blue"])
+    fig.savefig("graph.png")
 
 
 def collect_genres(show):
@@ -129,6 +136,20 @@ def collect_spoilers(show):
 
 def collect_streaming(show):
     pass
+
+
+def build_graph(graph):
+    graph.grid()  # Adds a grid to the graph- does not add the graph to the Tkinter grid
+    graph.scatter([50, -50], [50, -50], s=[0, 0])
+    graph.set_ylabel("< Drama \u2022 Comedy >")
+    graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
+
+
+def plot_graph(graph, pacing_scores, drama_scores, colors):
+    graph.cla()
+    build_graph(graph)
+    graph.scatter(pacing_scores, drama_scores, color=colors, picker=True)
+    graph.figure.canvas.draw_idle()
 
 
 if __name__ == "__main__":

@@ -410,6 +410,8 @@ class Root:
                 "text"] = f"\u25B6 Spoiler Tags: ({content_warnings[0]}, {content_warnings[1]}, {content_warnings[2]})"
 
     def color_stars(self, score1, score2):
+        # TODO: Rename to "get_rating_color" or similar. Only check one score at a time, and rather than setting the
+        #   color here, return the color to have it be set back there.
         if score1 >= 85:
             self.lbl_public_star.config(fg="purple")
         elif score1 >= 70:
