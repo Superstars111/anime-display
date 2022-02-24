@@ -76,6 +76,11 @@ nav li
 		padding-right: 10px;
 	}
 
+nav a
+    {
+        text-decoration: none;
+    }
+
 h1
 	{
 		text-align: center;

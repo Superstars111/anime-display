@@ -10,11 +10,11 @@
         <h1>Anime Data Program</h1>
         <nav>
             <ul>
-                <li>Display Page</li>
-                <li>Select Options</li>
-                <li>Display All</li>
-                <li>Edit Show Data</li>
-                <li>Edit Warnings</li>
+                <li><a href="/display">Display Page</a></li>
+                <li><a href="/options">Select Options</a></li>
+                <li><a href="/">Display All</a></li>
+                <li><a href="/edit">Edit Show Data</a></li>
+                <li><a href="/warnings">Edit Warnings</a></li>
             </ul>
         </nav>
         <main>
@@ -34,8 +34,7 @@
                 <h3>Movies: {{movies}}</h3> <br>
                 <h3>Unaired: {{unaired}}</h3></div>
             <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div><br>
-            <div id="scoring">Public score: {{public}}, Household score: <br><canvas style="background-color: orange">Yo. Get a browser that supports canvas.</canvas>
-                <img src="..\graph.png" alt="Sorry, still broken"></div>
+            <div id="scoring">Public score: {{public}}, Household score: {{private}}<br><img src="{{url_for('static', filename='graph.png')}}" alt="Sorry, still broken"></div>
             <div id="tags"><h3>Genres:</h3> <br><br> <h3>Tags:</h3> <br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</input></h3></div><br>
             <div id="streaming">Streaming info</div>
         </main>
