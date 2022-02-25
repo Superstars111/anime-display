@@ -18,15 +18,57 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return """This page is a work in progress. <a href="/display">Go back</a>"""
+    episodes = 0
+    seasons = 0
+    movies = 0
+    unaired = 0
+    all_public_scores = []
+    all_house_scores = []
+    avg_show_scores = []
+    avg_show_pacing = []
+    avg_show_drama = []
+    for show in library:
+        episodes += show["episodes"]
+        seasons += show["seasons"]
+        movies += show["movies"]
+        unaired += show["unairedSeasons"]
+        all_public_scores.append(show["score"])
+        house_scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
+        if sum(house_scores):
+            avg_show_scores.append(get_average(house_scores))
+            avg_show_pacing.append(get_average(pacing_scores))
+            avg_show_drama.append(get_average(drama_scores))
+        if house_scores:
+            for score in house_scores:
+                all_house_scores.append(score)
+
+    avg_public_score = get_average(all_public_scores)
+    avg_house_score = get_average(all_house_scores)
+    colors = collect_colors(avg_show_scores)
+    graph = collect_graph(avg_show_pacing, avg_show_drama, colors)
+    graph.savefig("static\\full_graph.png")
+
+    variables = {
+        "title": "Displaying All",
+        "episodes": episodes,
+        "seasons": seasons,
+        "movies": movies,
+        "unaired": unaired,
+        # "synopsis": synopsis,
+        "public": avg_public_score,
+        # "graph": graph,
+        "private": avg_house_score
+    }
+
+    return render_template("lib_display.html", **variables)
 
 
 @app.route("/display")
 def build_webpage():
-    id = request.args.get("options_list", "")
+    show_id = request.args.get("options_list", "")
 
-    if id:
-        show = find_show(id)
+    if show_id:
+        show = find_show(show_id)
     else:
         show = {
             "romajiTitle": "",
@@ -50,8 +92,11 @@ def build_webpage():
     unaired = f"{show['unairedSeasons']}"
     synopsis = show['description']
     public_score = f"{show['score']}"
-    private_score = collect_private_score(show)
-    graph = collect_graph(show)
+    private_score = collect_private_score(show["houseScores"])
+    scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
+    colors = collect_colors(scores)
+    graph = collect_graph(pacing_scores, drama_scores, colors)
+    graph.savefig("static\graph.png")
     # genres = collect_genres(show)
     # tags = collect_tags(show)
     # warnings = collect_warnings(show)
@@ -76,7 +121,13 @@ def build_webpage():
 
 @app.route("/options")
 def options():
-    return """This page is a work in progress. <a href="/display">Go back</a>"""
+    selected_shows = []
+    show_id = request.args.get("selection", "")
+    if show_id:
+        for show in library:
+            if show["id"] == show_id:
+                selected_shows.append(show)
+    return render_template("selection.html", library=library, chosen=selected_shows)
 
 
 @app.route("/edit")
@@ -107,8 +158,8 @@ def collect_title(show):
         if title:
             titles.append(title)
     return f" \u2022 ".join(titles)
-#
-#
+
+
 # def collect_image(show):
 #     return f"{show['coverMed']}"
 #
@@ -137,33 +188,24 @@ def collect_title(show):
 #     return f"{show['score']}"
 
 
-def collect_private_score(show):
-    total_house_score = 0
-    counter = 0
-    for rating in show['houseScores']:
+def collect_private_score(ratings):
+    all_house_scores = []
+    for rating in ratings:
         if rating[1]:
-            total_house_score += rating[1]
-            counter += 1
+            all_house_scores.append(rating[1])
 
-    if total_house_score > 0:
-        avg_house_score = total_house_score / counter
-        dc.getcontext().rounding = dc.ROUND_HALF_UP
-        avg_house_score = int(dc.Decimal(str(avg_house_score)).quantize(dc.Decimal("1")))
-    else:
-        avg_house_score = 0
+    avg_house_score = get_average(all_house_scores)
 
     return avg_house_score
 
 
-def collect_graph(show):
+def collect_graph(pacing_scores, drama_scores, colors):
     matplotlib.use("Agg")
     fig = plt.Figure(figsize=(5, 4), dpi=100)
     graph = fig.add_subplot(111)
     # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
-    scores, pacing_scores, drama_scores = sort_ratings(show)
-    colors = collect_colors(scores)
     plot_graph(graph, pacing_scores, drama_scores, colors)
-    fig.savefig("static\graph.png")
+    return fig
 
 
 def collect_genres(show):
@@ -203,34 +245,43 @@ def plot_graph(graph, pacing_scores, drama_scores, colors):
 def collect_colors(scores):
     colors = []
     for score in scores:
-        if score > 0:
-            if score >= 85:
-                colors.append("purple")
-            elif score >= 70:
-                colors.append("blue")
-            elif score >= 55:
-                colors.append("orange")
-            elif score >= 1:
-                colors.append("red")
-            else:
-                colors.append("black")
+        if score >= 85:
+            colors.append("purple")
+        elif score >= 70:
+            colors.append("blue")
+        elif score >= 55:
+            colors.append("orange")
+        elif score >= 1:
+            colors.append("red")
+        else:
+            colors.append("black")
     return colors
 
 
-def sort_ratings(show):
+def sort_ratings(ratings):
     # Names are not currently used, but hopefully will be in the future
     names = []
     scores = []
     pacing_scores = []
     drama_scores = []
 
-    for rating in show['houseScores']:
+    for rating in ratings:
         names.append(rating[0])
         scores.append(rating[1])
         pacing_scores.append(rating[2])
         drama_scores.append(rating[3])
 
     return scores, pacing_scores, drama_scores
+
+
+def get_average(numbers_list):
+    average = 0
+    if numbers_list:
+        dc.getcontext().rounding = dc.ROUND_HALF_UP
+        average = sum(numbers_list) / len(numbers_list)
+        average = int(dc.Decimal(str(average)).quantize(dc.Decimal("1")))
+
+    return average
 
 
 if __name__ == "__main__":
