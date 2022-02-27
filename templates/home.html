@@ -20,8 +20,9 @@
         <main>
             <aside id="options">
                 <form action=""><select name="options_list" onchange="this.form.submit()" size="38" style="width: 20em; margin: .75em">
-                    <option value="20755">Assassination Classroom</option>
-                    <option value="107663">ASTRA LOST IN SPACE</option>
+                    {% for show in chosen %}
+                    <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
+                {% endfor %}
                 </select></form>
             </aside>
             <h2>{{title}}</h2>

@@ -12,6 +12,7 @@ except ValueError:
     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
 
 library = full_data[2]
+selected_shows = []
 
 app = Flask(__name__)
 
@@ -113,7 +114,8 @@ def build_webpage():
         "synopsis": synopsis,
         "public": public_score,
         "graph": graph,
-        "private": private_score
+        "private": private_score,
+        "chosen": selected_shows
     }
 
     return render_template("home.html", **variables)
@@ -121,12 +123,17 @@ def build_webpage():
 
 @app.route("/options")
 def options():
-    selected_shows = []
     show_id = request.args.get("selection", "")
+    removal_id = request.args.get("chosen", "")
     if show_id:
         for show in library:
-            if show["id"] == show_id:
+            if show["id"] == show_id and show not in selected_shows:
                 selected_shows.append(show)
+    if removal_id:
+        for show in selected_shows:
+            if show["id"] == removal_id:
+                selected_shows.remove(show)
+
     return render_template("selection.html", library=library, chosen=selected_shows)
 
 
@@ -155,7 +162,7 @@ def find_show(id):
 def collect_title(show):
     titles = []
     for title in (show["nativeTitle"], show["englishTitle"], show["romajiTitle"]):
-        if title:
+        if title and title not in titles:
             titles.append(title)
     return f" \u2022 ".join(titles)
 
