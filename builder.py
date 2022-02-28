@@ -47,7 +47,11 @@ def index():
     avg_house_score = get_average(all_house_scores)
     colors = collect_colors(avg_show_scores)
     graph = collect_graph(avg_show_pacing, avg_show_drama, colors)
-    graph.savefig("static\\full_graph.png")
+    # TODO: Make this more universal and not as cobbled together
+    if __name__ == "__main__":
+        graph.savefig("static\\full_graph.png")
+    else:
+        graph.savefig("mysite/static/full_graph.png")
 
     variables = {
         "title": "Displaying All",
@@ -82,7 +86,8 @@ def build_webpage():
             "unairedSeasons": 0,
             "description": "Once upon a time there was mad anime. It was so cool.",
             "score": 0,
-            "houseScores": []
+            "houseScores": [],
+            "streaming": {}
         }
 
     title = collect_title(show)
@@ -97,12 +102,16 @@ def build_webpage():
     scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
     colors = collect_colors(scores)
     graph = collect_graph(pacing_scores, drama_scores, colors)
-    graph.savefig("static\graph.png")
+    # TODO: Make this better and more universal
+    if __name__ == "__main__":
+        graph.savefig("static\graph.png")
+    else:
+        graph.savefig("mysite/static/graph.png")
     # genres = collect_genres(show)
     # tags = collect_tags(show)
     # warnings = collect_warnings(show)
     # spoilers = collect_spoilers(show)
-    # streaming = collect_streaming(show)
+    streaming = collect_streaming(show)
 
     variables = {
         "title": title,
@@ -115,7 +124,8 @@ def build_webpage():
         "public": public_score,
         "graph": graph,
         "private": private_score,
-        "chosen": selected_shows
+        "chosen": selected_shows,
+        "stream_colors": streaming,
     }
 
     return render_template("home.html", **variables)
@@ -125,6 +135,7 @@ def build_webpage():
 def options():
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
+    clear = request.args.get("reset", "")
     if show_id:
         for show in library:
             if show["id"] == show_id and show not in selected_shows:
@@ -133,6 +144,8 @@ def options():
         for show in selected_shows:
             if show["id"] == removal_id:
                 selected_shows.remove(show)
+    if clear:
+        selected_shows.clear()
 
     return render_template("selection.html", library=library, chosen=selected_shows)
 
@@ -232,7 +245,42 @@ def collect_spoilers(show):
 
 
 def collect_streaming(show):
-    pass
+    collections = {
+        "crunchyroll": [],
+        "funimation": [],
+        "hidive": [],
+        "vrv": [],
+        "hulu": [],
+        "amazon": [],
+        "youtube": [],
+        "prison": [],
+        "hbo": [],
+        "tubi": [],
+    }
+    for service in show["streaming"].items():
+        # print(service)
+        if service[1]["seasons"] + service[1]["movies"] == 0:
+            collections[service[0]] = ["gray", "gray"]
+        elif service[1]["seasons"] == show["seasons"] and service[1]["movies"] == show["movies"]:
+            if service[0] == "crunchyroll":
+                color = "orange"
+            elif service[0] == ("funimation" or "hbo"):
+                color = "purple"
+            elif service[0] == ("hidive" or "amazon"):
+                color = "dodger blue"
+            elif service[0] == "vrv":
+                color = "gold"
+            elif service[0] == "hulu":
+                color = "lime green"
+            elif service[0] == ("youtube" or "prison" or "tubi"):
+                color = "red"
+            else:
+                color = "black"
+            collections[service[0]] = [color, "black"]
+        else:
+            collections[service[0]] = ["black", "black"]
+
+    return collections
 
 
 def build_graph(graph):

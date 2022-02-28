@@ -14,14 +14,18 @@
         float: left;
         height: 55em;
         border-style: solid;
-        /* Not sure why this works in the html but not here...
+    }
+
+# options select
+    {
         width: 20em;
-        margin: .75em*/
+        margin: .75em;
     }
 
 #seasonal
     {
         width: 39.25em;
+        height: 21.6em;
         margin: 1em;
         padding: .25em;
         border-style: solid;
@@ -32,7 +36,7 @@
 #synopsis
     {
         width: 39.25em;
-        height: 20.5em;
+        height: 21.6em;
         margin: 1em;
         padding: .25em;
         border-style: solid;
@@ -43,16 +47,21 @@
 #scoring
     {
         width: 39.25em;
+        height: 26.5em;
         margin: 1em;
+        padding: .25em;
         border-style: solid;
         display: inline-block;
         float: left;
+        text-align: center;
     }
 
 #tags
     {
         width: 39.25em;
-        margin: 1.25em;
+        height: 26.5em;
+        margin: 1em;
+        padding: .25em;
         border-style: solid;
         display: inline-block;
     }
@@ -60,9 +69,22 @@
 #streaming
     {
         border-style: solid;
-        float: left;
-        margin: 1.25em;
+        float: right;
+        margin: .75em;
+        padding: .25em;
         width: 81em;
+        text-align: center;
+    }
+
+.service
+    {
+        border-style: solid;
+        display: inline-block;
+        text-align: center;
+        width: 9.75em;
+        height: 6em;
+        padding: .5em;
+        margin: .2em;
     }
 
 nav ul
@@ -103,4 +125,9 @@ h2
 h3
     {
         text-align: center;
+    }
+
+h4
+    {
+        margin-top: .2em;
     }
