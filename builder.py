@@ -1,6 +1,6 @@
-from flask import Flask
-from flask import request
-from flask import render_template
+from flask import Flask, request, render_template, redirect
+from flask_login import login_required, current_user, login_user
+from models import db, login, UserModel
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -15,9 +15,57 @@ library = full_data[2]
 selected_shows = []
 
 app = Flask(__name__)
+app.secret_key = "testing"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///anime-display-users.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
+login.init_app(app)
+login.login_view = "login"
 
 
-@app.route("/")
+@app.before_first_request
+def create_table():
+    db.create_all()
+
+
+@app.route("/", methods=["POST", "GET"])
+def login():
+    if current_user.is_authenticated:
+        return redirect("/display_all")
+
+    if request.method == "POST":
+        email = request.form["email"]
+        user = UserModel.query.filter_by(email=email).first()
+        if user is not None and user.check_password(request.form["password"]):
+            login_user(user)
+            return redirect("/display_all")
+
+    return render_template("login.html")
+
+
+@app.route("/register", methods=["POST", "GET"])
+def register():
+    if current_user.is_authenticated:
+        return redirect("/display_all")
+
+    if request.method == "POST":
+        email = request.form["email"]
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if UserModel.query.filter_by(email=email):
+            return "Sorry, this email address is already in use."
+
+        user = UserModel(email=email, username=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        return redirect("/login")
+
+    return render_template("register.html")
+
+
+@app.route("/display_all")
 def index():
     episodes = 0
     seasons = 0
@@ -151,11 +199,13 @@ def options():
 
 
 @app.route("/edit")
+@login_required
 def edit():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
 
 
 @app.route("/warnings")
+@login_required
 def warnings():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
 

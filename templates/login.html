@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static',filename='styles/main.css') }}">
+    <title>Anime Displayinator 9001 Beta Login Page</title>
+</head>
+<body>
+    <div id="wrapper">
+        <h1>Anime Data Program</h1>
+        <nav>
+            <ul>
+                <li><a href="/display">Display Page</a></li>
+                <li><a href="/options">Select Options</a></li>
+                <li><a href="/">Display All</a></li>
+                <li><a href="/edit">Edit Show Data</a></li>
+                <li><a href="/warnings">Edit Warnings</a></li>
+            </ul>
+        </nav>
+        <main>
+            <form action="" method="POST">
+                <p>Email: <input type="email" name="email"/></p>
+                <p>Password: <input type="passowrd" name="password"/></p>
+                <input type="submit" value="Submit"/>
+            </form>
+        </main>
+    </div>
+</body>
+</html>
