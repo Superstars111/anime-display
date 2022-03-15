@@ -109,7 +109,7 @@
             "tags": [
                 {
                     "name": "Coming of Age",
-                    "rank": 95,
+                    "rank": 94,
                     "isMediaSpoiler": false
                 },
                 {
@@ -124,12 +124,12 @@
                 },
                 {
                     "name": "Hikikomori",
-                    "rank": 78,
+                    "rank": 76,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Love Triangle",
-                    "rank": 72,
+                    "rank": 75,
                     "isMediaSpoiler": true
                 },
                 {
@@ -138,13 +138,18 @@
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Kuudere",
-                    "rank": 50,
+                    "name": "Tsundere",
+                    "rank": 47,
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Tsundere",
-                    "rank": 48,
+                    "name": "Female Protagonist",
+                    "rank": 46,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Kuudere",
+                    "rank": 44,
                     "isMediaSpoiler": false
                 },
                 {
@@ -159,12 +164,7 @@
                 },
                 {
                     "name": "Bullying",
-                    "rank": 34,
-                    "isMediaSpoiler": false
-                },
-                {
-                    "name": "Female Protagonist",
-                    "rank": 20,
+                    "rank": 32,
                     "isMediaSpoiler": false
                 }
             ],
@@ -195,8 +195,8 @@
                     "movies": 0
                 },
                 "youtube": {
-                    "seasons": 1,
-                    "movies": 1
+                    "seasons": 0,
+                    "movies": 0
                 },
                 "tubi": {
                     "seasons": 0,
@@ -215,7 +215,31 @@
                 [
                     "Kenan",
                     90,
+                    10,
+                    -40
+                ],
+                [
+                    "Jared",
+                    77,
+                    -20,
+                    -40
+                ],
+                [
+                    "Hannah",
+                    90,
                     0,
+                    -40
+                ],
+                [
+                    "Mom",
+                    90,
+                    0,
+                    -35
+                ],
+                [
+                    "Simon",
+                    90,
+                    -15,
                     -40
                 ]
             ]
@@ -1879,7 +1903,7 @@
             "tags": [
                 {
                     "name": "Age Regression",
-                    "rank": 96,
+                    "rank": 95,
                     "isMediaSpoiler": false
                 },
                 {
@@ -1893,24 +1917,19 @@
                     "isMediaSpoiler": false
                 },
                 {
+                    "name": "Time Skip",
+                    "rank": 87,
+                    "isMediaSpoiler": false
+                },
+                {
                     "name": "Tragedy",
                     "rank": 87,
                     "isMediaSpoiler": true
                 },
                 {
-                    "name": "Time Skip",
-                    "rank": 86,
-                    "isMediaSpoiler": false
-                },
-                {
                     "name": "Primarily Child Cast",
-                    "rank": 82,
+                    "rank": 81,
                     "isMediaSpoiler": false
-                },
-                {
-                    "name": "Alternate Universe",
-                    "rank": 80,
-                    "isMediaSpoiler": true
                 },
                 {
                     "name": "Detective",
@@ -1923,13 +1942,18 @@
                     "isMediaSpoiler": false
                 },
                 {
+                    "name": "Alternate Universe",
+                    "rank": 77,
+                    "isMediaSpoiler": true
+                },
+                {
                     "name": "Seinen",
                     "rank": 72,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "School",
-                    "rank": 69,
+                    "rank": 70,
                     "isMediaSpoiler": false
                 },
                 {
@@ -1938,13 +1962,18 @@
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Amnesia",
+                    "name": "Fugitive",
                     "rank": 60,
                     "isMediaSpoiler": true
                 },
                 {
+                    "name": "Amnesia",
+                    "rank": 56,
+                    "isMediaSpoiler": true
+                },
+                {
                     "name": "Teacher",
-                    "rank": 58,
+                    "rank": 56,
                     "isMediaSpoiler": false
                 },
                 {
@@ -2035,6 +2064,12 @@
                     90,
                     35,
                     -45
+                ],
+                [
+                    "Hannah",
+                    90,
+                    30,
+                    -45
                 ]
             ]
         },
@@ -2062,7 +2097,7 @@
             "tags": [
                 {
                     "name": "Love Triangle",
-                    "rank": 88,
+                    "rank": 89,
                     "isMediaSpoiler": false
                 },
                 {
@@ -2087,7 +2122,7 @@
                 },
                 {
                     "name": "Otaku Culture",
-                    "rank": 68,
+                    "rank": 69,
                     "isMediaSpoiler": false
                 },
                 {
@@ -2101,18 +2136,23 @@
                     "isMediaSpoiler": false
                 },
                 {
+                    "name": "Heterosexual",
+                    "rank": 60,
+                    "isMediaSpoiler": false
+                },
+                {
                     "name": "Tsundere",
                     "rank": 55,
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Heterosexual",
-                    "rank": 50,
+                    "name": "Football",
+                    "rank": 35,
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Football",
-                    "rank": 46,
+                    "name": "Primarily Teen Cast",
+                    "rank": 20,
                     "isMediaSpoiler": false
                 }
             ],
@@ -2183,6 +2223,12 @@
                     65,
                     30,
                     35
+                ],
+                [
+                    "Hannah",
+                    60,
+                    40,
+                    40
                 ]
             ]
         },
@@ -2752,12 +2798,12 @@
                 },
                 {
                     "name": "Male Protagonist",
-                    "rank": 80,
+                    "rank": 81,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Philosophy",
-                    "rank": 78,
+                    "rank": 77,
                     "isMediaSpoiler": false
                 },
                 {
@@ -2772,12 +2818,12 @@
                 },
                 {
                     "name": "Classic Literature",
-                    "rank": 67,
+                    "rank": 69,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Female Protagonist",
-                    "rank": 66,
+                    "rank": 65,
                     "isMediaSpoiler": false
                 },
                 {
@@ -2788,6 +2834,11 @@
                 {
                     "name": "Primarily Teen Cast",
                     "rank": 50,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Heterosexual",
+                    "rank": 40,
                     "isMediaSpoiler": false
                 },
                 {
@@ -2804,17 +2855,12 @@
                     "name": "Bullying",
                     "rank": 20,
                     "isMediaSpoiler": false
-                },
-                {
-                    "name": "Heterosexual",
-                    "rank": 20,
-                    "isMediaSpoiler": false
                 }
             ],
             "score": 79,
             "streaming": {
                 "crunchyroll": {
-                    "seasons": 0,
+                    "seasons": 1,
                     "movies": 0
                 },
                 "funimation": {
@@ -2838,7 +2884,7 @@
                     "movies": 0
                 },
                 "youtube": {
-                    "seasons": 1,
+                    "seasons": 0,
                     "movies": 0
                 },
                 "tubi": {
@@ -2878,6 +2924,12 @@
                     50,
                     -20,
                     0
+                ],
+                [
+                    "Hannah",
+                    60,
+                    15,
+                    15
                 ]
             ]
         },
@@ -6465,7 +6517,7 @@
                 },
                 {
                     "name": "Coming of Age",
-                    "rank": 86,
+                    "rank": 87,
                     "isMediaSpoiler": false
                 },
                 {
@@ -6474,18 +6526,18 @@
                     "isMediaSpoiler": false
                 },
                 {
+                    "name": "Disability",
+                    "rank": 80,
+                    "isMediaSpoiler": true
+                },
+                {
                     "name": "Female Protagonist",
                     "rank": 79,
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Disability",
-                    "rank": 79,
-                    "isMediaSpoiler": true
-                },
-                {
                     "name": "Male Protagonist",
-                    "rank": 76,
+                    "rank": 77,
                     "isMediaSpoiler": false
                 },
                 {
@@ -6495,7 +6547,12 @@
                 },
                 {
                     "name": "Heterosexual",
-                    "rank": 64,
+                    "rank": 68,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Primarily Teen Cast",
+                    "rank": 66,
                     "isMediaSpoiler": false
                 },
                 {
@@ -6505,17 +6562,12 @@
                 },
                 {
                     "name": "Slapstick",
-                    "rank": 42,
+                    "rank": 44,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Shounen",
-                    "rank": 42,
-                    "isMediaSpoiler": false
-                },
-                {
-                    "name": "Primarily Teen Cast",
-                    "rank": 20,
+                    "rank": 44,
                     "isMediaSpoiler": false
                 }
             ],
@@ -6580,6 +6632,18 @@
                     80,
                     -40,
                     -10
+                ],
+                [
+                    "Hannah",
+                    85,
+                    -40,
+                    -40
+                ],
+                [
+                    "Kenan",
+                    85,
+                    10,
+                    -20
                 ]
             ]
         },
