@@ -1,5 +1,9 @@
 # Taken from https://www.askpython.com/python-modules/flask/flask-user-authentication
+# and from https://realpython.com/python-sqlite-sqlalchemy/
 
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager
