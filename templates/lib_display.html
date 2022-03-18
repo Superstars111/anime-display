@@ -1,40 +1,21 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static',filename='styles/main.css') }}">
-    <title>Anime Displayinator 9001 Beta</title>
-</head>
-<body>
-    <div id="wrapper">
-        <h1>Anime Data Program</h1>
-        <nav>
-            <ul>
-                <li><a href="/display">Display Page</a></li>
-                <li><a href="/options">Select Options</a></li>
-                <li><a href="/">Display All</a></li>
-                <li><a href="/edit">Edit Show Data</a></li>
-                <li><a href="/warnings">Edit Warnings</a></li>
-            </ul>
-        </nav>
-        <main>
-            <aside id="options">
-                <form action=""><select name="options_list" onchange="this.form.submit()" size="38" style="width: 20em; margin: .75em">
-                    <option value="">Currently Broken</option>
-                </select></form>
-            </aside>
-            <h2>{{title}}</h2>
-            <div id="seasonal">
-                <br>
-                <h3>Episodes: {{episodes}}</h3> <br>
-                <h3>Seasons: {{seasons}}</h3> <br>
-                <h3>Movies: {{movies}}</h3> <br>
-                <h3>Unaired: {{unaired}}</h3></div>
-            <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div><br>
-            <div id="scoring">Public score: {{public}}, Household score: {{private}}<br><img src="{{url_for('static', filename='full_graph.png')}}" alt="Sorry, still broken"></div>
-            <div id="tags"><h3>Genres:</h3> <br><br> <h3>Tags:</h3> <br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</input></h3></div><br>
-            <div id="streaming">Streaming info</div>
-        </main>
-    </div>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<main>
+    <aside id="options">
+        <form action=""><select name="options_list" onchange="this.form.submit()" size="38" style="width: 20em; margin: .75em">
+            <option value="">Currently Broken</option>
+        </select></form>
+    </aside>
+    <h2>{{title}}</h2>
+    <div id="seasonal">
+        <br>
+        <h3>Episodes: {{episodes}}</h3> <br>
+        <h3>Seasons: {{seasons}}</h3> <br>
+        <h3>Movies: {{movies}}</h3> <br>
+        <h3>Unaired: {{unaired}}</h3></div>
+    <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div><br>
+    <div id="scoring">Public score: {{public}}, Household score: {{private}}<br><img src="{{url_for('static', filename='full_graph.png')}}" alt="Sorry, still broken"></div>
+    <div id="tags"><h3>Genres:</h3> <br><br> <h3>Tags:</h3> <br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</input></h3></div><br>
+    <div id="streaming">Streaming info</div>
+</main>
+{% endblock %}

@@ -1,36 +1,17 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static',filename='styles/main.css') }}">
-    <title>Anime Displayinator 9001 Beta</title>
-</head>
-<body>
-    <div id="wrapper">
-        <h1>Anime Data Program</h1>
-        <nav>
-            <ul>
-                <li><a href="/display">Display Page</a></li>
-                <li><a href="/options">Select Options</a></li>
-                <li><a href="/">Display All</a></li>
-                <li><a href="/edit">Edit Show Data</a></li>
-                <li><a href="/warnings">Edit Warnings</a></li>
-            </ul>
-        </nav>
+{% extends "base.html" %}
+{% block content %}
+<main>
+    <div>
+        <form action="" style="display: inline"><select name="selection" ondblclick="this.form.submit()" size="38">
+            {% for show in library %}
+                <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
+            {% endfor %}
+        </select></form>
+        <form action="" style="display: inline"><select name="chosen" ondblclick="this.form.submit()" size="38">
+            {% for show in chosen %}
+                <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
+            {% endfor %}
+        </select><button name="reset" type="submit" value="true">Clear</button></form>
     </div>
-    <main>
-        <div>
-            <form action="" style="display: inline"><select name="selection" ondblclick="this.form.submit()" size="38">
-                {% for show in library %}
-                    <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
-                {% endfor %}
-            </select></form>
-            <form action="" style="display: inline"><select name="chosen" ondblclick="this.form.submit()" size="38">
-                {% for show in chosen %}
-                    <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
-                {% endfor %}
-            </select><button name="reset" type="submit" value="true">Clear</button></form>
-        </div>
-    </main>
-</body>
-</html>
+</main>
+{% endblock %}
