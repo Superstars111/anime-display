@@ -17,7 +17,7 @@ import fabric
 from flask import Flask
 from flask import request
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 with open("templates/home.html", "r") as data:
     webpage = data
@@ -885,14 +885,13 @@ def sort_ratings(ratings):
 
 
 if __name__ == "__main__":
-    pass
-    # application = tk.Tk()
-    # default_font = fnt.nametofont("TkDefaultFont")
-    # default_font.configure(size=12)
-    # window = Root(application)
+    application = tk.Tk()
+    default_font = fnt.nametofont("TkDefaultFont")
+    default_font.configure(size=12)
+    window = Root(application)
 
-    # application.mainloop()
+    application.mainloop()
 
-    # upload_data = [mild_warnings, extreme_warnings, library]
-    # with open("anime_data.json", "w") as anime_data:
-    #     json.dump(upload_data, anime_data, indent=4)
+    upload_data = [mild_warnings, extreme_warnings, library]
+    with open("anime_data.json", "w") as anime_data:
+        json.dump(upload_data, anime_data, indent=4)
