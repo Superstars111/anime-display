@@ -138,19 +138,10 @@ def build_webpage():
             "streaming": {}
         }
 
-    title = collect_title(show)
-    image = f"{show['coverMed']}"
-    episodes = f"{show['episodes']}"
-    seasons = f"{show['seasons']}"
-    movies = f"{show['movies']}"
-    unaired = f"{show['unairedSeasons']}"
-    synopsis = show['description']
-    public_score = f"{show['score']}"
-    private_score = collect_private_score(show["houseScores"])
     scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
     colors = collect_colors(scores)
     graph = collect_graph(pacing_scores, drama_scores, colors)
-    # TODO: Make this better and more universal
+    # TODO: Make this better and more universal. Maybe use url_for()?
     if __name__ == "__main__":
         graph.savefig("static\graph.png")
     else:
@@ -162,16 +153,16 @@ def build_webpage():
     streaming = collect_streaming(show)
 
     variables = {
-        "title": title,
-        "image": image,
-        "episodes": episodes,
-        "seasons": seasons,
-        "movies": movies,
-        "unaired": unaired,
-        "synopsis": synopsis,
-        "public": public_score,
+        "title": collect_title(show),
+        "image": f"{show['coverMed']}",
+        "episodes": f"{show['episodes']}",
+        "seasons": f"{show['seasons']}",
+        "movies": f"{show['movies']}",
+        "unaired": f"{show['unairedSeasons']}",
+        "synopsis": show['description'],
+        "public": f"{show['score']}",
         "graph": graph,
-        "private": private_score,
+        "private": collect_private_score(show["houseScores"]),
         "chosen": selected_shows,
         "stream_colors": streaming,
     }
