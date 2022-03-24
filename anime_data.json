@@ -6253,7 +6253,7 @@
                 },
                 {
                     "name": "Environmental",
-                    "rank": 86,
+                    "rank": 87,
                     "isMediaSpoiler": false
                 },
                 {
@@ -6262,43 +6262,33 @@
                     "isMediaSpoiler": true
                 },
                 {
-                    "name": "Female Protagonist",
-                    "rank": 80,
-                    "isMediaSpoiler": false
-                },
-                {
                     "name": "Male Protagonist",
-                    "rank": 77,
+                    "rank": 78,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Family Life",
-                    "rank": 77,
+                    "rank": 78,
                     "isMediaSpoiler": false
                 },
                 {
-                    "name": "Angels",
-                    "rank": 70,
-                    "isMediaSpoiler": true
-                },
-                {
-                    "name": "Work",
-                    "rank": 65,
+                    "name": "Female Protagonist",
+                    "rank": 76,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Heterosexual",
+                    "rank": 69,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Work",
                     "rank": 64,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Gods",
-                    "rank": 62,
-                    "isMediaSpoiler": false
-                },
-                {
-                    "name": "Philosophy",
-                    "rank": 60,
+                    "rank": 63,
                     "isMediaSpoiler": false
                 },
                 {
@@ -6308,12 +6298,12 @@
                 },
                 {
                     "name": "Guns",
-                    "rank": 55,
+                    "rank": 51,
                     "isMediaSpoiler": false
                 },
                 {
                     "name": "Time Skip",
-                    "rank": 39,
+                    "rank": 38,
                     "isMediaSpoiler": true
                 }
             ],
@@ -6362,10 +6352,34 @@
             },
             "houseScores": [
                 [
-                    "",
-                    0,
-                    0,
-                    0
+                    "Jared",
+                    83,
+                    15,
+                    -5
+                ],
+                [
+                    "Simon",
+                    93,
+                    15,
+                    -35
+                ],
+                [
+                    "Kenan",
+                    80,
+                    -20,
+                    -30
+                ],
+                [
+                    "Mom",
+                    90,
+                    10,
+                    -15
+                ],
+                [
+                    "Hannah",
+                    80,
+                    -20,
+                    -10
                 ]
             ]
         },
