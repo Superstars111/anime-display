@@ -1,72 +1,76 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, Blueprint, url_for
 from flask_login import login_required, current_user, login_user
-from models import db, login, UserModel
+# from models import db, login, UserModel
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import decimal as dc
+from . import db
+from .config import *
 
-try:
-    full_data = pd.read_json("anime_data.json", typ="series", orient="records")
-except ValueError:
-    full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
-
-library = full_data[2]
+# try:
+#     full_data = pd.read_json("anime_data.json", typ="series", orient="records")
+# except ValueError:
+#     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
+#
+# library = full_data[2]
 selected_shows = []
+settings = TestingConfig()
 
-app = Flask(__name__)
-app.secret_key = "testing"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///anime-display-users.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db.init_app(app)
-login.init_app(app)
-login.login_view = "login"
-
-
-@app.before_first_request
-def create_table():
-    db.create_all()
-
-
-@app.route("/", methods=["POST", "GET"])
-def login():
-    if current_user.is_authenticated:
-        return redirect("/display_all")
-
-    if request.method == "POST":
-        email = request.form["email"]
-        user = UserModel.query.filter_by(email=email).first()
-        if user is not None and user.check_password(request.form["password"]):
-            login_user(user)
-            return redirect("/display_all")
-
-    return render_template("login.html")
-
-
-@app.route("/register", methods=["POST", "GET"])
-def register():
-    if current_user.is_authenticated:
-        return redirect("/display_all")
-
-    if request.method == "POST":
-        email = request.form["email"]
-        username = request.form["username"]
-        password = request.form["password"]
-
-        if UserModel.query.filter_by(email=email):
-            return "Sorry, this email address is already in use."
-
-        user = UserModel(email=email, username=username)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        return redirect("/login")
-
-    return render_template("register.html")
+library = [
+{
+            "romajiTitle": "",
+            "englishTitle": "Displaying All",
+            "nativeTitle": "",
+            "coverMed": "",
+            "episodes": 0,
+            "seasons": 0,
+            "movies": 0,
+            "unairedSeasons": 0,
+            "description": "Once upon a time there was mad anime. It was so cool.",
+            "score": 0,
+            "houseScores": [],
+            "streaming": {}
+        },
+{
+            "romajiTitle": "",
+            "englishTitle": "Displaying All",
+            "nativeTitle": "",
+            "coverMed": "",
+            "episodes": 0,
+            "seasons": 0,
+            "movies": 0,
+            "unairedSeasons": 0,
+            "description": "Once upon a time there was mad anime. It was so cool.",
+            "score": 0,
+            "houseScores": [],
+            "streaming": {}
+        }
+]
 
 
-@app.route("/display_all")
+main = Blueprint("main", __name__)
+# app = Flask(__name__)
+# app.secret_key = "testing"
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///anime-display-users.db"
+# app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# db.init_app(app)
+# login.init_app(app)
+# login.login_view = "login"
+
+
+# @app.before_first_request
+# def create_table():
+#     db.create_all()
+
+
+@main.route("/")
 def index():
+    return "Homepage"
+
+
+@main.route("/display_all")
+def display_all():
     episodes = 0
     seasons = 0
     movies = 0
@@ -96,8 +100,8 @@ def index():
     colors = collect_colors(avg_show_scores)
     graph = collect_graph(avg_show_pacing, avg_show_drama, colors)
     # TODO: Make this more universal and not as cobbled together
-    if __name__ == "__main__":
-        graph.savefig("static\\full_graph.png")
+    if settings.TESTING:
+        graph.savefig("project\\static\\full_graph.png")
     else:
         graph.savefig("mysite/static/full_graph.png")
 
@@ -116,7 +120,7 @@ def index():
     return render_template("lib_display.html", **variables)
 
 
-@app.route("/display")
+@main.route("/display")
 def build_webpage():
     show_id = request.args.get("options_list", "")
 
@@ -142,8 +146,8 @@ def build_webpage():
     colors = collect_colors(scores)
     graph = collect_graph(pacing_scores, drama_scores, colors)
     # TODO: Make this better and more universal. Maybe use url_for()?
-    if __name__ == "__main__":
-        graph.savefig("static\graph.png")
+    if settings.TESTING:
+        graph.savefig("project\\static\\graph.png")
     else:
         graph.savefig("mysite/static/graph.png")
     # genres = collect_genres(show)
@@ -170,7 +174,7 @@ def build_webpage():
     return render_template("home.html", **variables)
 
 
-@app.route("/options")
+@main.route("/options")
 def options():
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
@@ -189,19 +193,19 @@ def options():
     return render_template("selection.html", library=library, chosen=selected_shows)
 
 
-@app.route("/edit")
+@main.route("/edit")
 @login_required
 def edit():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
 
 
-@app.route("/warnings")
+@main.route("/warnings")
 @login_required
 def warnings():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
 
 
-@app.errorhandler(404)
+@main.errorhandler(404)
 def error404(error):
     return """Sorry, but much like Asta's ability to control his volume, this page does not exist. 
     <a href="/display">Go back</a>"""
@@ -381,4 +385,5 @@ def get_average(numbers_list):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080, debug=True)
+    # app.run(host="127.0.0.1", port=8080, debug=True)
+    pass
