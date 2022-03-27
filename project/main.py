@@ -6,7 +6,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import decimal as dc
 from . import db
-from .config import *
+from .config import settings
 
 # try:
 #     full_data = pd.read_json("anime_data.json", typ="series", orient="records")
@@ -15,7 +15,6 @@ from .config import *
 #
 # library = full_data[2]
 selected_shows = []
-settings = TestingConfig()
 
 library = [
 {
@@ -203,6 +202,12 @@ def edit():
 @login_required
 def warnings():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
+
+
+@main.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html", name=current_user.username)
 
 
 @main.errorhandler(404)
