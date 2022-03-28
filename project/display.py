@@ -16,11 +16,11 @@ import time
 
 # app = Flask(__name__)
 
-with open("templates/home.html", "r") as data:
-    webpage = data
+# with open("templates/home.html", "r") as data:
+#     webpage = data
 
 
-download_data = pd.read_json("anime_data.json", typ="series", orient="records")
+download_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
 
 options = []
 option_titles = []
@@ -87,8 +87,7 @@ class Root:
         # Build synopsis frame
         self.frm_description = tk.Frame(self.frm_anime_display, width=300, height=150, borderwidth=2, relief="solid")
         self.txt_description = tk.Text(self.frm_description, height=9, width=55, state="disabled",
-                                       wrap="word", bg="gray92")
-        # TODO: txt_description font=default_font if going back to TKinter
+                                       wrap="word", font=default_font, bg="gray92")
         self.sbar = tk.Scrollbar(self.frm_description, orient=tk.VERTICAL, command=self.txt_description.yview)
         lbl_streaming = tk.Label(self.frm_description, text="Streaming Locations:")
         self.frm_stream_locations = tk.Frame(self.frm_description)
@@ -597,8 +596,7 @@ class SelectionWindow(tk.Toplevel):
         self.grab_release()
         self.destroy()
         options_var = tk.StringVar(value=option_titles)
-        # TODO: Reinstate if going back to TKinter
-        # window.lbox_options["listvariable"] = options_var
+        window.lbox_options["listvariable"] = options_var
 
 
 class EditWindow(tk.Toplevel):
@@ -890,5 +888,5 @@ if __name__ == "__main__":
     application.mainloop()
 
     upload_data = [mild_warnings, extreme_warnings, library]
-    with open("anime_data.json", "w") as anime_data:
+    with open("project/anime_data.json", "w") as anime_data:
         json.dump(upload_data, anime_data, indent=4)

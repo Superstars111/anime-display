@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, Blueprint, url_for
+from flask import Flask, request, render_template, redirect, Blueprint, url_for, session
 from flask_login import login_required, current_user, login_user
 # from models import db, login, UserModel
 import pandas as pd
@@ -8,44 +8,13 @@ import decimal as dc
 from . import db
 from .config import settings
 
-# try:
-#     full_data = pd.read_json("anime_data.json", typ="series", orient="records")
-# except ValueError:
-#     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
-#
-# library = full_data[2]
-selected_shows = []
+if settings.TESTING:
+    full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
+else:
+    full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
 
-library = [
-{
-            "romajiTitle": "",
-            "englishTitle": "Displaying All",
-            "nativeTitle": "",
-            "coverMed": "",
-            "episodes": 0,
-            "seasons": 0,
-            "movies": 0,
-            "unairedSeasons": 0,
-            "description": "Once upon a time there was mad anime. It was so cool.",
-            "score": 0,
-            "houseScores": [],
-            "streaming": {}
-        },
-{
-            "romajiTitle": "",
-            "englishTitle": "Displaying All",
-            "nativeTitle": "",
-            "coverMed": "",
-            "episodes": 0,
-            "seasons": 0,
-            "movies": 0,
-            "unairedSeasons": 0,
-            "description": "Once upon a time there was mad anime. It was so cool.",
-            "score": 0,
-            "houseScores": [],
-            "streaming": {}
-        }
-]
+library = full_data[2]
+selected_shows = []
 
 
 main = Blueprint("main", __name__)
