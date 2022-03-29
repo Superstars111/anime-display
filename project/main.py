@@ -14,8 +14,6 @@ else:
     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
 
 library = full_data[2]
-selected_shows = []
-testing = True
 
 
 main = Blueprint("main", __name__)
@@ -35,7 +33,10 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
-    return "Homepage"
+    if current_user.is_authenticated:
+        return redirect(url_for("main.profile"))
+    else:
+        return redirect(url_for("auth.register"))
 
 
 @main.route("/display_all")
@@ -92,6 +93,8 @@ def display_all():
 @main.route("/display")
 def build_webpage():
     show_id = request.args.get("options_list", "")
+    if "selected_shows" not in session:
+        session["selected_shows"] = []
 
     if show_id:
         show = find_show(show_id)
@@ -136,7 +139,7 @@ def build_webpage():
         "public": f"{show['score']}",
         "graph": graph,
         "private": collect_private_score(show["houseScores"]),
-        "chosen": selected_shows,
+        "chosen": session["selected_shows"],
         "stream_colors": streaming,
     }
 
@@ -148,18 +151,23 @@ def options():
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
     clear = request.args.get("reset", "")
+    if "selected_shows" not in session:
+        session["selected_shows"] = []
     if show_id:
         for show in library:
-            if show["id"] == show_id and show not in selected_shows:
-                selected_shows.append(show)
+            if show["id"] == show_id and show not in session["selected_shows"]:
+                session["selected_shows"].append(show)
+                session.modified = True
     if removal_id:
-        for show in selected_shows:
+        for show in session["selected_shows"]:
             if show["id"] == removal_id:
-                selected_shows.remove(show)
+                session["selected_shows"].remove(show)
+                session.modified = True
     if clear:
-        selected_shows.clear()
+        session["selected_shows"].clear()
+        session.modified = True
 
-    return render_template("selection.html", library=library, chosen=selected_shows)
+    return render_template("selection.html", library=library, chosen=session["selected_shows"])
 
 
 @main.route("/edit")
