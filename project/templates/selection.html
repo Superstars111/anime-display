@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<main>
+    <div>
+        <form action="" style="display: inline"><select name="selection" ondblclick="this.form.submit()" size="38">
+            {% for show in library %}
+                <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
+            {% endfor %}
+        </select></form>
+        <form action="" style="display: inline"><select name="chosen" ondblclick="this.form.submit()" size="38">
+            {% for show in chosen %}
+                <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
+            {% endfor %}
+        </select><button name="reset" type="submit" value="true">Clear</button></form>
+    </div>
+</main>
+{% endblock %}
