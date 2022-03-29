@@ -15,6 +15,7 @@ else:
 
 library = full_data[2]
 selected_shows = []
+testing = True
 
 
 main = Blueprint("main", __name__)
