@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, redirect, Blueprint, url_for, session
 from flask_login import login_required, current_user, login_user
-# from models import db, login, UserModel
+from .models import Show
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -36,7 +36,7 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for("main.profile"))
     else:
-        return redirect(url_for("auth.register"))
+        return redirect(url_for("auth.login"))
 
 
 @main.route("/display_all")
@@ -185,6 +185,19 @@ def warnings():
 @main.route("/profile")
 @login_required
 def profile():
+    update = request.args.get("update", "")
+    if update:
+        for num, show in enumerate(library):
+            new_show = Show(
+                en_name=show["englishTitle"],
+                jp_name=show["nativeTitle"],
+                rj_name=show["romajiTitle"],
+                anilist_id=show["id"]
+            )
+
+            db.session.add(new_show)
+
+        db.session.commit()
     return render_template("profile.html", name=current_user.username)
 
 

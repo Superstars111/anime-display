@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from flask_login import login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
@@ -84,5 +84,6 @@ def register_post():
 @auth.route("/logout")
 @login_required
 def logout():
+    session.pop("selected_shows", None)
     logout_user()
     return redirect(url_for("main.index"))

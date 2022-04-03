@@ -106,6 +106,16 @@ nav a
         text-decoration: none;
     }
 
+nav a:link, a:visited
+    {
+        color:blue;
+    }
+
+nav a:hover
+    {
+        color:dodgerblue;
+    }
+
 h1
 	{
 		text-align: center;
