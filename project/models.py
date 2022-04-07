@@ -12,12 +12,12 @@ from . import db
 
 login = LoginManager()
 
-# friends = Table(
-#     "friends",
-#     db.metadata,
-#     Column("friend1_id", Integer, ForeignKey("users.id")),
-#     Column("friend2_id", Integer, ForeignKey("users.id"))
-# )
+friends = Table(
+    "friends",
+    db.metadata,
+    Column("friend1_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("friend2_id", Integer, ForeignKey("users.id"), primary_key=True)
+)
 
 show_list = Table(
     "show_list",
@@ -56,7 +56,11 @@ class User(UserMixin, db.Model):
     password = Column(String(100))
     admin = Column(Boolean)
     lists = relationship("List", backref=backref("users"))
-    # friends = relationship("User", secondary=friends, back_populates="friends")
+    friends = relationship("User",
+                           secondary=friends,
+                           primaryjoin=id==friends.c.friend1_id,
+                           secondaryjoin=id==friends.c.friend2_id,
+                           back_populates="friends")
     # outgoing_recommendations = relationship("Recommendation", backref=backref("users"))
     # incoming_recommendations = relationship("Recommendation", backref=backref("users"))
     show_ratings = relationship("Show", secondary=ratings, back_populates="user_ratings")
@@ -72,7 +76,7 @@ class Show(db.Model):
     rj_name = Column(String)
     anilist_id = Column(Integer, unique=True)
     lists = relationship("List", secondary=show_list, back_populates="shows")
-    # recommendations = relationship("Recommendation", backref=backref("shows"))
+    recommendations = relationship("Recommendation", backref=backref("shows"))
     user_ratings = relationship("User", secondary=ratings, back_populates="show_ratings")
     alt_names = relationship("User", secondary=alt_names, back_populates="alt_show_names")
 
@@ -86,10 +90,13 @@ class List(db.Model):
     shows = relationship("Show", secondary=show_list, back_populates="lists")
 
 
-# class Recommendation(db.Model):
-#     __tablename__ = "recommendations"
-#
-#     id = Column(Integer, primary_key=True)
-#     sent_by = Column(Integer, ForeignKey("users.id"))
-#     sent_to = Column(Integer, ForeignKey("users.id"))
-#     show_id = Column(Integer, ForeignKey("shows.id"))
+class Recommendation(db.Model):
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True)
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    receiver_id = Column(Integer, ForeignKey("users.id"))
+    show_id = Column(Integer, ForeignKey("shows.id"))
+
+    sender = relationship("User", foreign_keys="Recommendation.sender_id")
+    receiver = relationship("User", foreign_keys="Recommendation.receiver_id")

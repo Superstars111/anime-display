@@ -1487,6 +1487,179 @@
             ]
         },
         {
+            "id": "103221",
+            "romajiTitle": "Kaijuu no Kodomo",
+            "englishTitle": "Children of the Sea",
+            "nativeTitle": "\u6d77\u7363\u306e\u5b50\u4f9b",
+            "defaultTitle": "Children of the Sea",
+            "format": "MOVIE",
+            "description": "One summer vacation, Ruka meets two boys, \"Umi\" and \"Sora,\" whose upbringing contains strange and wonderful secrets. Drawn to their beautiful swimming, almost more like flying, Ruka and the adults who know them are intertwined in a complex mesh...<br>\nMeanwhile, an unexplained anomaly is occurring all over the world: fish are disappearing. Thus begins a marine adventure of boys and girls to captivate all the senses!",
+            "episodes": 0,
+            "seasons": 0,
+            "unairedSeasons": 0,
+            "movies": 1,
+            "coverLarge": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx103221-Ol5OyQ8fbTqH.png",
+            "coverMed": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/medium/bx103221-Ol5OyQ8fbTqH.png",
+            "coverSmall": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/small/bx103221-Ol5OyQ8fbTqH.png",
+            "genres": [
+                "Drama",
+                "Mystery",
+                "Supernatural"
+            ],
+            "tags": [
+                {
+                    "name": "Philosophy",
+                    "rank": 87,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Animals",
+                    "rank": 80,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Primarily Child Cast",
+                    "rank": 79,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Environmental",
+                    "rank": 75,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Coming of Age",
+                    "rank": 72,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Female Protagonist",
+                    "rank": 67,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Mythology",
+                    "rank": 65,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Swimming",
+                    "rank": 62,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Seinen",
+                    "rank": 60,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Cosmic Horror",
+                    "rank": 52,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Ships",
+                    "rank": 43,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Kaiju",
+                    "rank": 40,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Space",
+                    "rank": 40,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "CGI",
+                    "rank": 30,
+                    "isMediaSpoiler": false
+                },
+                {
+                    "name": "Astronomy",
+                    "rank": 20,
+                    "isMediaSpoiler": false
+                }
+            ],
+            "score": 73,
+            "streaming": {
+                "crunchyroll": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "funimation": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "prison": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "amazon": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "vrv": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "hulu": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "youtube": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "tubi": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "hbo": {
+                    "seasons": 0,
+                    "movies": 0
+                },
+                "hidive": {
+                    "seasons": 0,
+                    "movies": 0
+                }
+            },
+            "houseScores": [
+                [
+                    "Jared",
+                    65,
+                    -43,
+                    -38
+                ],
+                [
+                    "Kenan",
+                    70,
+                    -20,
+                    -25
+                ],
+                [
+                    "Mom",
+                    65,
+                    -10,
+                    -30
+                ],
+                [
+                    "Simon",
+                    60,
+                    -40,
+                    -40
+                ],
+                [
+                    "Hannah",
+                    55,
+                    -42,
+                    -42
+                ]
+            ]
+        },
+        {
             "id": "2167",
             "romajiTitle": "CLANNAD",
             "englishTitle": "Clannad",

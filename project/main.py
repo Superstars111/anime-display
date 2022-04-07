@@ -148,6 +148,7 @@ def build_webpage():
 
 @main.route("/options")
 def options():
+    # TODO: URGENT! Don't append the entire show! Only append the id!
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
     clear = request.args.get("reset", "")

@@ -5,7 +5,7 @@
         <form action=""><select name="options_list" onchange="this.form.submit()" size="38" style="width: 20em; margin: .75em">
             {% for show in chosen %}
             <option value="{{show['id']}}">{{show['defaultTitle']}}</option>
-        {% endfor %}
+            {% endfor %}
         </select></form>
     </aside>
     <h2>{{title}}</h2>
