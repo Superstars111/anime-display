@@ -1,25 +1,16 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from flask_login import login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import User
-from . import db
+from project.models import User
+from project import db
 
 auth = Blueprint("auth", __name__)
 
 
 @auth.route("/login")
 def login():
-    # if current_user.is_authenticated:
-    #     return redirect("/display_all")
-    #
-    # if request.method == "POST":
-    #     email = request.form["email"]
-    #     user = UserModel.query.filter_by(email=email).first()
-    #     if user is not None and user.check_password(request.form["password"]):
-    #         login_user(user)
-    #         return redirect("/display_all")
 
-    return render_template("login.html")
+    return render_template("auth/templates/auth/login.html")
 
 
 @auth.route("/login", methods=["POST"])
@@ -35,29 +26,13 @@ def login_post():
         return redirect(url_for("auth.login"))
 
     login_user(user, remember=remember)
-    return redirect(url_for("main.profile"))
+    return redirect(url_for("community.profile"))
 
 
 @auth.route("/register")
 def register():
-    # if current_user.is_authenticated:
-    #     return redirect("/display_all")
-    #
-    # if request.method == "POST":
-    #     email = request.form["email"]
-    #     username = request.form["username"]
-    #     password = request.form["password"]
-    #
-    #     if UserModel.query.filter_by(email=email):
-    #         return "Sorry, this email address is already in use."
-    #
-    #     user = UserModel(email=email, username=username)
-    #     user.set_password(password)
-    #     db.session.add(user)
-    #     db.session.commit()
-    #     return redirect("/login")
 
-    return render_template("register.html")
+    return render_template("auth/templates/auth/register.html")
 
 
 @auth.route("/register", methods=["POST"])

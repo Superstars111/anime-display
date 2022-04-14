@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "general/templates/general/base.html" %}
 
 {% block content %}
 <h2>Welcome, {{name}}!</h2> <br>
@@ -13,6 +13,7 @@
   <li>Rate shows</li>
   <li>Set site preferences, like... Uh... TBD</li>
   <li>Edit personal tags for shows</li>
+  <li>Compare shows, set targets like length, etc.</li>
 </ul>
 </p>
 {% if current_user.admin %}

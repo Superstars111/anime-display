@@ -1,12 +1,9 @@
-from flask import Flask, request, render_template, redirect, Blueprint, url_for, session
-from flask_login import login_required, current_user, login_user
-from .models import Show
+from flask import Blueprint, request, session, render_template, url_for
 import pandas as pd
+import decimal as dc
 import matplotlib
 import matplotlib.pyplot as plt
-import decimal as dc
-from . import db
-from .config import settings
+from project.config import settings
 
 if settings.TESTING:
     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
@@ -15,31 +12,10 @@ else:
 
 library = full_data[2]
 
-
-main = Blueprint("main", __name__)
-# app = Flask(__name__)
-# app.secret_key = "testing"
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///anime-display-users.db"
-# app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# db.init_app(app)
-# login.init_app(app)
-# login.login_view = "login"
+content = Blueprint("content", __name__, template_folder="../../project")
 
 
-# @app.before_first_request
-# def create_table():
-#     db.create_all()
-
-
-@main.route("/")
-def index():
-    if current_user.is_authenticated:
-        return redirect(url_for("main.profile"))
-    else:
-        return redirect(url_for("auth.login"))
-
-
-@main.route("/display_all")
+@content.route("/display_all")
 def display_all():
     episodes = 0
     seasons = 0
@@ -87,10 +63,10 @@ def display_all():
         "private": avg_house_score
     }
 
-    return render_template("lib_display.html", **variables)
+    return render_template("content/templates/content/lib_display.html", **variables)
 
 
-@main.route("/display")
+@content.route("/display")
 def build_webpage():
     show_id = request.args.get("options_list", "")
     if "selected_shows" not in session:
@@ -143,12 +119,11 @@ def build_webpage():
         "stream_colors": streaming,
     }
 
-    return render_template("home.html", **variables)
+    return render_template("content/templates/content/display.html", **variables)
 
 
-@main.route("/options")
+@content.route("/options")
 def options():
-    # TODO: URGENT! Don't append the entire show! Only append the id!
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
     clear = request.args.get("reset", "")
@@ -157,7 +132,7 @@ def options():
     if show_id:
         for show in library:
             if show["id"] == show_id and show not in session["selected_shows"]:
-                session["selected_shows"].append(show)
+                session["selected_shows"].append({"id": show["id"], "defaultTitle": show["defaultTitle"]})
                 session.modified = True
     if removal_id:
         for show in session["selected_shows"]:
@@ -168,44 +143,12 @@ def options():
         session["selected_shows"].clear()
         session.modified = True
 
-    return render_template("selection.html", library=library, chosen=session["selected_shows"])
+    return render_template("content/templates/content/selection.html", library=library, chosen=session["selected_shows"])
 
 
-@main.route("/edit")
-@login_required
-def edit():
-    return """This page is a work in progress. <a href="/display">Go back</a>"""
-
-
-@main.route("/warnings")
-@login_required
-def warnings():
-    return """This page is a work in progress. <a href="/display">Go back</a>"""
-
-
-@main.route("/profile")
-@login_required
-def profile():
-    update = request.args.get("update", "")
-    if update:
-        for num, show in enumerate(library):
-            new_show = Show(
-                en_name=show["englishTitle"],
-                jp_name=show["nativeTitle"],
-                rj_name=show["romajiTitle"],
-                anilist_id=show["id"]
-            )
-
-            db.session.add(new_show)
-
-        db.session.commit()
-    return render_template("profile.html", name=current_user.username)
-
-
-@main.errorhandler(404)
-def error404(error):
-    return """Sorry, but much like Asta's ability to control his volume, this page does not exist. 
-    <a href="/display">Go back</a>"""
+@content.route("/shows/<show_id>")
+def show(show_id):
+    pass
 
 
 def find_show(id):
@@ -222,32 +165,20 @@ def collect_title(show):
     return f" \u2022 ".join(titles)
 
 
-# def collect_image(show):
-#     return f"{show['coverMed']}"
-#
-#
-# def collect_episodes(show):
-#     return f"{show['episodes']}"
-#
-#
-# def collect_seasons(show):
-#     return f"{show['seasons']}"
-#
-#
-# def collect_movies(show):
-#     return f"{show['movies']}"
-#
-#
-# def collect_unaired(show):
-#     return f"{show['unairedSeasons']}"
-#
-#
-# def collect_synopsis(show):
-#     return show['description']
-#
-#
-# def collect_public_score(show):
-#     return f"{show['score']}"
+def collect_colors(scores):
+    colors = []
+    for score in scores:
+        if score >= 85:
+            colors.append("purple")
+        elif score >= 70:
+            colors.append("blue")
+        elif score >= 55:
+            colors.append("orange")
+        elif score >= 1:
+            colors.append("red")
+        else:
+            colors.append("black")
+    return colors
 
 
 def collect_private_score(ratings):
@@ -259,31 +190,6 @@ def collect_private_score(ratings):
     avg_house_score = get_average(all_house_scores)
 
     return avg_house_score
-
-
-def collect_graph(pacing_scores, drama_scores, colors):
-    matplotlib.use("Agg")
-    fig = plt.Figure(figsize=(5, 4), dpi=100)
-    graph = fig.add_subplot(111)
-    # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
-    plot_graph(graph, pacing_scores, drama_scores, colors)
-    return fig
-
-
-def collect_genres(show):
-    pass
-
-
-def collect_tags(show):
-    pass
-
-
-def collect_warnings(show):
-    pass
-
-
-def collect_spoilers(show):
-    pass
 
 
 def collect_streaming(show):
@@ -325,36 +231,6 @@ def collect_streaming(show):
     return collections
 
 
-def build_graph(graph):
-    graph.grid()  # Adds a grid to the graph- does not add the graph to the Tkinter grid
-    graph.scatter([50, -50], [50, -50], s=[0, 0])
-    graph.set_ylabel("< Drama \u2022 Comedy >")
-    graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
-
-
-def plot_graph(graph, pacing_scores, drama_scores, colors):
-    graph.cla()
-    build_graph(graph)
-    graph.scatter(pacing_scores, drama_scores, color=colors, picker=True)
-    graph.figure.canvas.draw_idle()
-
-
-def collect_colors(scores):
-    colors = []
-    for score in scores:
-        if score >= 85:
-            colors.append("purple")
-        elif score >= 70:
-            colors.append("blue")
-        elif score >= 55:
-            colors.append("orange")
-        elif score >= 1:
-            colors.append("red")
-        else:
-            colors.append("black")
-    return colors
-
-
 def sort_ratings(ratings):
     # Names are not currently used, but hopefully will be in the future
     names = []
@@ -381,6 +257,24 @@ def get_average(numbers_list):
     return average
 
 
-if __name__ == "__main__":
-    # app.run(host="127.0.0.1", port=8080, debug=True)
-    pass
+def collect_graph(pacing_scores, drama_scores, colors):
+    matplotlib.use("Agg")
+    fig = plt.Figure(figsize=(5, 4), dpi=100)
+    graph = fig.add_subplot(111)
+    # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
+    plot_graph(graph, pacing_scores, drama_scores, colors)
+    return fig
+
+
+def plot_graph(graph, pacing_scores, drama_scores, colors):
+    graph.cla()
+    build_graph(graph)
+    graph.scatter(pacing_scores, drama_scores, color=colors, picker=True)
+    graph.figure.canvas.draw_idle()
+
+
+def build_graph(graph):
+    graph.grid()  # Adds a grid to the graph- does not add the graph to the Tkinter grid
+    graph.scatter([50, -50], [50, -50], s=[0, 0])
+    graph.set_ylabel("< Drama \u2022 Comedy >")
+    graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")

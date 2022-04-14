@@ -35,10 +35,19 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from .auth import auth as auth_blueprint
+    from project.auth.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    from project.general.general import general as general_blueprint
+    app.register_blueprint(general_blueprint)
+
+    from project.community.community import community as community_blueprint
+    app.register_blueprint(community_blueprint)
+
+    from project.content.content import content as content_blueprint
+    app.register_blueprint(content_blueprint)
+
+    from project.admin.admin import admin as admin_blueprint
+    app.register_blueprint(admin_blueprint)
 
     return app
