@@ -19,17 +19,17 @@
     <div id="scoring">Public score: {{public}}, Household score: {{private}}<br><img src="{{url_for('static', filename='graph.png')}}" alt="Sorry, still broken"></div>
     <div id="tags"><h3>Genres:</h3> <br><br> <h3>Tags:</h3> <br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</input></h3></div><br>
     <div id="streaming">
-        <div class="service"><h4 style="color: {{stream_colors['crunchyroll'][0]}}">Crunchyroll</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['funimation'][0]}}">Funimation</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['hidive'][0]}}">Hidive</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['vrv'][0]}}">VRV</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['hulu'][0]}}">Hulu</h4>Seasons: 0<br><br>Movies:0</div>
+        <div class="service" style="color: {{stream_colors['crunchyroll'][1]}}"><h4 style="color: {{stream_colors['crunchyroll'][0]}}">Crunchyroll</h4>Seasons: {{streaming['crunchyroll']['seasons']}}<br><br>Movies: {{streaming['crunchyroll']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['funimation'][1]}}"><h4 style="color: {{stream_colors['funimation'][0]}}">Funimation</h4>Seasons: {{streaming['funimation']['seasons']}}<br><br>Movies: {{streaming['funimation']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['hidive'][1]}}"><h4 style="color: {{stream_colors['hidive'][0]}}">Hidive</h4>Seasons: {{streaming['hidive']['seasons']}}<br><br>Movies: {{streaming['hidive']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['vrv'][1]}}"><h4 style="color: {{stream_colors['vrv'][0]}}">VRV</h4>Seasons: {{streaming['vrv']['seasons']}}<br><br>Movies: {{streaming['vrv']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['hulu'][1]}}"><h4 style="color: {{stream_colors['hulu'][0]}}">Hulu</h4>Seasons: {{streaming['hulu']['seasons']}}<br><br>Movies: {{streaming['hulu']['movies']}}</div>
         <br>
-        <div class="service"><h4 style="color: {{stream_colors['amazon'][0]}}">Amazon Prime</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['youtube'][0]}}">YouTube</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['prison'][0]}}">Netflix Prison</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['amazon'][0]}}">HBO Max</h4>Seasons: 0<br><br>Movies:0</div>
-        <div class="service"><h4 style="color: {{stream_colors['tubi'][0]}}">Tubi TV</h4>Seasons: 0<br><br>Movies:0</div>
+        <div class="service" style="color: {{stream_colors['amazon'][1]}}"><h4 style="color: {{stream_colors['amazon'][0]}}">Amazon Prime</h4>Seasons: {{streaming['amazon']['seasons']}}<br><br>Movies: {{streaming['amazon']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['youtube'][1]}}"><h4 style="color: {{stream_colors['youtube'][0]}}">YouTube</h4>Seasons: {{streaming['youtube']['seasons']}}<br><br>Movies: {{streaming['youtube']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['prison'][1]}}"><h4 style="color: {{stream_colors['prison'][0]}}">Netflix Prison</h4>Seasons: {{streaming['prison']['seasons']}}<br><br>Movies: {{streaming['prison']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['hbo'][1]}}"><h4 style="color: {{stream_colors['hbo'][0]}}">HBO Max</h4>Seasons: {{streaming['hbo']['seasons']}}<br><br>Movies: {{streaming['hbo']['movies']}}</div>
+        <div class="service" style="color: {{stream_colors['tubi'][1]}}"><h4 style="color: {{stream_colors['tubi'][0]}}">Tubi TV</h4>Seasons: {{streaming['tubi']['seasons']}}<br><br>Movies: {{streaming['tubi']['movies']}}</div>
     </div>
     <br style="clear: both;">
 </main>

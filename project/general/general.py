@@ -26,7 +26,7 @@ general = Blueprint("general", __name__, template_folder="../../project")
 @general.route("/")
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for("main.profile"))
+        return redirect(url_for("community.settings"))
     else:
         return redirect(url_for("auth.login"))
 
@@ -35,9 +35,6 @@ def index():
 def error404(error):
     return """Sorry, but much like Asta's ability to control his volume, this page does not exist. 
     <a href="/display">Go back</a>"""
-
-
-
 
 
 # def collect_image(show):
@@ -68,7 +65,6 @@ def error404(error):
 #     return f"{show['score']}"
 
 
-
 def collect_genres(show):
     pass
 
@@ -83,10 +79,6 @@ def collect_warnings(show):
 
 def collect_spoilers(show):
     pass
-
-
-
-
 
 
 if __name__ == "__main__":

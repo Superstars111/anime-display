@@ -1,9 +1,11 @@
-from flask import Blueprint, request, session, render_template, url_for
+from flask import Blueprint, request, session, render_template, url_for, redirect
 import pandas as pd
 import decimal as dc
 import matplotlib
 import matplotlib.pyplot as plt
 from project.config import settings
+from project.models import Show
+import requests as rq
 
 if settings.TESTING:
     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
@@ -11,6 +13,81 @@ else:
     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
 
 library = full_data[2]
+
+url = "https://graphql.anilist.co/"
+query = """query($id: Int){
+  Media(id: $id, type: ANIME){
+    title {
+      romaji
+      english
+      native
+    },
+    format,
+    description,
+    episodes,
+    relations{
+      edges{
+        relationType,
+        node{
+          id,
+          episodes,
+          format,
+          status,
+          externalLinks {
+            site
+          }
+        }
+      }
+    },
+    coverImage {
+      extraLarge
+      large
+      medium
+    },
+    genres,
+    tags {
+      name,
+      rank,
+      isMediaSpoiler
+    },
+    averageScore,
+    externalLinks {
+      site
+    }
+  }
+}"""
+stream_info = {
+            "crunchyroll": {"seasons": 0,
+                            "movies": 0
+                            },
+            "funimation":  {"seasons": 0,
+                            "movies": 0
+                            },
+            "prison":      {"seasons": 0,
+                            "movies": 0
+                            },
+            "amazon":      {"seasons": 0,
+                            "movies": 0
+                            },
+            "vrv":         {"seasons": 0,
+                            "movies": 0
+                            },
+            "hulu":        {"seasons": 0,
+                            "movies": 0
+                            },
+            "youtube":     {"seasons": 0,
+                            "movies": 0
+                            },
+            "tubi":        {"seasons": 0,
+                            "movies": 0
+                            },
+            "hbo":         {"seasons": 0,
+                            "movies": 0
+                            },
+            "hidive":      {"seasons": 0,
+                            "movies": 0
+                            }
+        }
 
 content = Blueprint("content", __name__, template_folder="../../project")
 
@@ -102,7 +179,7 @@ def build_webpage():
     # tags = collect_tags(show)
     # warnings = collect_warnings(show)
     # spoilers = collect_spoilers(show)
-    streaming = collect_streaming(show)
+    streaming = collect_streaming_colors(show)
 
     variables = {
         "title": collect_title(show),
@@ -146,9 +223,92 @@ def options():
     return render_template("content/templates/content/selection.html", library=library, chosen=session["selected_shows"])
 
 
-@content.route("/shows/<show_id>")
+@content.route("/shows/<int:show_id>")
 def show(show_id):
-    pass
+    show = Show.query.filter_by(id=show_id).first()
+    id_var = {"id": show.anilist_id}
+    request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+    series_data = {
+        "sequel": [],
+        "total_episodes": request["episodes"],
+        "seasons": 1 if request["format"] in ("TV", "TV_SHORT") else 0,
+        "movies": 1 if request["format"] == "MOVIE" else 0,
+        "unaired_seasons": 0,
+        "streaming": {
+            "crunchyroll": {"seasons": 0,
+                            "movies": 0
+                            },
+            "funimation":  {"seasons": 0,
+                            "movies": 0
+                            },
+            "prison":      {"seasons": 0,
+                            "movies": 0
+                            },
+            "amazon":      {"seasons": 0,
+                            "movies": 0
+                            },
+            "vrv":         {"seasons": 0,
+                            "movies": 0
+                            },
+            "hulu":        {"seasons": 0,
+                            "movies": 0
+                            },
+            "youtube":     {"seasons": 0,
+                            "movies": 0
+                            },
+            "tubi":        {"seasons": 0,
+                            "movies": 0
+                            },
+            "hbo":         {"seasons": 0,
+                            "movies": 0
+                            },
+            "hidive":      {"seasons": 0,
+                            "movies": 0
+                            }
+        }
+    }
+    seasonal_data = collect_seasonal_data(show.anilist_id, series_data)
+    scores, pacing_scores, drama_scores = sort_ratings(show.user_ratings)
+    colors = collect_colors(scores)
+    graph = collect_graph(pacing_scores, drama_scores, colors)
+
+    # variables = {
+    #     "id": media_id,
+    #     "romajiTitle": request["title"]["romaji"],
+    #     "englishTitle": request["title"]["english"],
+    #     "nativeTitle": request["title"]["native"],
+    #     "description": request["description"],
+    #     "episodes": total_episodes,
+    #     "seasons": seasons,
+    #     "unairedSeasons": unaired_seasons,
+    #     "movies": movies,
+    #     "coverLarge": request["coverImage"]["extraLarge"],
+    #     "coverMed": request["coverImage"]["large"],
+    #     "coverSmall": request["coverImage"]["medium"],
+    #     "genres": request["genres"],
+    #     "tags": request["tags"],
+    #     "score": request["averageScore"],
+    # }
+
+    variables = {
+        "title": collect_title(show),
+        "image": request["coverImage"]["large"],
+        "episodes": seasonal_data["total_episodes"],
+        "seasons": seasonal_data["seasons"],
+        "movies": seasonal_data["movies"],
+        "unaired": seasonal_data["unaired_seasons"],
+        "synopsis": request["description"],
+        "public": request["averageScore"],
+        "graph": graph,
+        "private": collect_private_score(show.user_ratings),
+        "chosen": session["selected_shows"],
+        "stream_colors": collect_streaming_colors(seasonal_data),
+        "streaming": seasonal_data["streaming"]
+    }
+
+    if not show:
+        return redirect(url_for("404"))
+    return render_template("content/templates/content/display.html", **variables)
 
 
 def find_show(id):
@@ -159,7 +319,7 @@ def find_show(id):
 
 def collect_title(show):
     titles = []
-    for title in (show["nativeTitle"], show["englishTitle"], show["romajiTitle"]):
+    for title in (show.jp_name, show.en_name, show.rj_name):
         if title and title not in titles:
             titles.append(title)
     return f" \u2022 ".join(titles)
@@ -192,7 +352,7 @@ def collect_private_score(ratings):
     return avg_house_score
 
 
-def collect_streaming(show):
+def collect_streaming_colors(show):
     collections = {
         "crunchyroll": [],
         "funimation": [],
@@ -206,21 +366,20 @@ def collect_streaming(show):
         "tubi": [],
     }
     for service in show["streaming"].items():
-        # print(service)
         if service[1]["seasons"] + service[1]["movies"] == 0:
             collections[service[0]] = ["gray", "gray"]
         elif service[1]["seasons"] == show["seasons"] and service[1]["movies"] == show["movies"]:
             if service[0] == "crunchyroll":
                 color = "orange"
-            elif service[0] == ("funimation" or "hbo"):
+            elif service[0] in ("funimation", "hbo"):
                 color = "purple"
-            elif service[0] == ("hidive" or "amazon"):
-                color = "dodger blue"
+            elif service[0] in ("hidive", "amazon"):
+                color = "dodgerBlue"
             elif service[0] == "vrv":
                 color = "gold"
             elif service[0] == "hulu":
-                color = "lime green"
-            elif service[0] == ("youtube" or "prison" or "tubi"):
+                color = "springGreen"
+            elif service[0] in ("youtube", "prison", "tubi"):
                 color = "red"
             else:
                 color = "black"
@@ -278,3 +437,116 @@ def build_graph(graph):
     graph.scatter([50, -50], [50, -50], s=[0, 0])
     graph.set_ylabel("< Drama \u2022 Comedy >")
     graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
+
+
+def collect_seasonal_data(show_id, seasonal_data):
+    id_var = {"id": show_id}
+    season_query = """query($id: Int){
+                 Media(id: $id, type:ANIME){
+                   format,
+                   relations{
+                     edges{
+                       relationType,
+                       node{
+                         id,
+                         episodes,
+                         format,
+                         status,
+                         },
+                       }
+                     }
+                   externalLinks {
+                     site
+                   },
+                 }
+               }"""
+    show_data = rq.post(url, json={"query": season_query, "variables": id_var}).json()["data"]["Media"]
+
+    seasonal_data = sort_seasonal_data(show_data, seasonal_data)
+
+    for id in seasonal_data["sequel"]:
+        seasonal_data = collect_seasonal_data(id, seasonal_data)
+    return seasonal_data
+
+
+def sort_seasonal_data(data_tree, seasonal_data):
+    check_stream_locations(data_tree, seasonal_data["streaming"])
+    seasonal_data["sequel"] = []
+    for series in data_tree["relations"]["edges"]:
+        if series["relationType"] == "SEQUEL":
+            if series["node"]["format"] in ("TV", "TV_SHORT"):
+                if series["node"]["status"] == "FINISHED":
+                    seasonal_data["total_episodes"] += series["node"]["episodes"]
+                    seasonal_data["seasons"] += 1
+                else:
+                    seasonal_data["unaired_seasons"] += 1
+            elif series["node"]["format"] == "MOVIE":
+                seasonal_data["movies"] += 1
+            seasonal_data["sequel"].append(series["node"]["id"])
+
+    return seasonal_data
+
+
+def check_stream_locations(data_tree, stream_list):
+    checked = []
+    for value in data_tree["externalLinks"]:
+        if value["site"] == "Crunchyroll" and "crunchyroll" not in checked:
+            checked.append("crunchyroll")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["crunchyroll"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["crunchyroll"]["movies"] += 1
+        elif value["site"] == "Funimation" and "funimation" not in checked:
+            checked.append("funimation")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["funimation"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["funimation"]["movies"] += 1
+        elif value["site"] == "Netflix" and "prison" not in checked:
+            checked.append("prison")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["prison"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["prison"]["movies"] += 1
+        elif value["site"] == "Amazon" and "amazon" not in checked:
+            checked.append("amazon")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["amazon"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["amazon"]["movies"] += 1
+        elif value["site"] == "VRV" and "vrv" not in checked:
+            checked.append("vrv")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["vrv"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["vrv"]["movies"] += 1
+        elif value["site"] == "Hulu" and "hulu" not in checked:
+            checked.append("hulu")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["hulu"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["hulu"]["movies"] += 1
+        elif value["site"] == "Youtube" and "youtube" not in checked:
+            checked.append("youtube")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["youtube"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["youtube"]["movies"] += 1
+        elif value["site"] == "Tubi TV" and "tubi" not in checked:
+            checked.append("tubi")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["tubi"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["tubi"]["movies"] += 1
+        elif value["site"] == "HBO Max" and "hbo" not in checked:
+            checked.append("hbo")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["hbo"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["hbo"]["movies"] += 1
+        elif value["site"] == "Hidive" and "hidive" not in checked:
+            checked.append("hidive")
+            if data_tree["format"] in ("TV", "TV_SHORT"):
+                stream_list["hidive"]["seasons"] += 1
+            elif data_tree["format"] == "MOVIE":
+                stream_list["hidive"]["movies"] += 1

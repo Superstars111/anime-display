@@ -1,33 +1,12 @@
 {% extends "general/templates/general/base.html" %}
 
 {% block content %}
-<h2>Welcome, {{name}}!</h2> <br>
-<h3>Or Bob Ross, if that's who you are. Like, you can never be sure.</h3> <br>
-<p>
-  Kay, so, like, you want to be able to do stuff. <br>
-  <ul>
-  <li>Add friends</li>
-  <li>Edit names for shows</li>
-  <li>Edit personal lists</li>
-  <li>Give and receive recommendations</li>
-  <li>Rate shows</li>
-  <li>Set site preferences, like... Uh... TBD</li>
-  <li>Edit personal tags for shows</li>
-  <li>Compare shows, set targets like length, etc.</li>
-</ul>
-</p>
-{% if current_user.admin %}
-<p>
-  Yo. You're, like, an admin. Cool. You want to be able to do more. <br>
-  <ul>
-  <li>Add or remove shows from the library</li>
-  <li>Update show information?</li>
-  <li>Set other users as admins</li>
-  <li>Ban users (temporarily or permanently)</li>
-  <li></li>
-</ul>
-</p>
-{% endif %}
-<form action="">
-<button type="submit" name="update" value="true">Update library</button></form>
+<main>
+  <h1>{{username}}</h1>
+  <p>
+    Put your intro and whatnot here, I guess. Also, are we going to have, like... A profile picture or cover image? I assume so...
+    <br>
+    We also definitely want a place where it displays a graph of that person's ratings across all shows marked as "seen", along with their ratings, most common tags, and maybe some other stuff.
+  </p>
+</main>
 {% endblock %}
