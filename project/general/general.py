@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import decimal as dc
 from project import db
 from project.config import settings
+import json
 
 general = Blueprint("general", __name__, template_folder="../../project")
 # app = Flask(__name__)
@@ -29,6 +30,32 @@ def index():
         return redirect(url_for("community.settings"))
     else:
         return redirect(url_for("auth.login"))
+
+
+@general.route("/graph_test")
+def graph_test():
+    data = [
+        {"x": 2, "y": 6},
+        {"x": 7, "y": -9},
+        {"x": -10, "y": -12},
+        {"x": 37, "y": 38},
+        {"x": -50, "y": -50},
+        {"x": 50, "y": 50}
+    ]
+    change = request.args.get("change", "")
+    if change:
+        data = [
+            {"x": 23, "y": 40},
+            {"x": 32, "y": -23},
+            {"x": -30, "y": -10},
+            {"x": 2, "y": 3},
+            {"x": 50, "y": -50},
+            {"x": -50, "y": 50}
+        ]
+    else:
+        pass
+    data = json.dumps(data)
+    return render_template("graph_test.html", data_test=data)
 
 
 @general.errorhandler(404)

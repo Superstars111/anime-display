@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static',filename='styles/main.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/d3.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/chart.min.js') }}"></script>
     <title>Anime Displayinator 9001 Beta</title>
 </head>
 <body>
@@ -13,6 +15,7 @@
                 <li><a href="/display">Display Page</a></li>
                 <li><a href="/options">Select Options</a></li>
                 <li><a href="/display_all">Display All</a></li>
+                <li><a href="/graph_test">Graph Testing</a></li>
                 {% if current_user.is_authenticated %}
                 <li><a href="/edit">Edit Show Data</a></li>
                 <li><a href="/warnings">Edit Warnings</a></li>
@@ -28,5 +31,6 @@
         </nav>
         {% block content %}{% endblock %}
     </div>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
 </body>
 </html>

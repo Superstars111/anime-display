@@ -34,7 +34,9 @@ ratings = Table(
     Column("score", Integer),
     Column("pacing", Integer),
     Column("drama", Integer),
-    Column("realism", Integer),
+    Column("fantasy", Integer),
+    Column("abstraction", Integer),
+    Column("timeline", Integer),
     Column("propriety", Integer)
 )
 

@@ -16,7 +16,7 @@
         border-style: solid;
     }
 
-# options select
+#options select
     {
         width: 20em;
         margin: .75em;
@@ -64,16 +64,19 @@
         padding: .25em;
         border-style: solid;
         display: inline-block;
+        float: left;
     }
 
 #streaming
     {
         border-style: solid;
-        float: right;
-        margin: .75em;
-        padding: .25em;
-        width: 81em;
+        /*float: right;*/
+        margin: 0em;
+        padding: .15em;
+        width: 23.5em;
         text-align: center;
+        display: inline-block;
+        float: top;
     }
 
 .service
@@ -141,3 +144,30 @@ h4
     {
         margin-top: .2em;
     }
+
+/* Starting graph test below */
+
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+.bar {
+    fill: blue;
+    stroke: black;
+    stroke-width: 2px;
+}
+
+.bar:hover {
+    fill: red;
+}
+
+#test_graph {
+    /*height: 300px;*/
+    /*width: 600px;*/
+}
+
+#chart_container {
+    height: 400px;
+    width: 400px;
+}

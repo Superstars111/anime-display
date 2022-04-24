@@ -272,24 +272,6 @@ def show(show_id):
     colors = collect_colors(scores)
     graph = collect_graph(pacing_scores, drama_scores, colors)
 
-    # variables = {
-    #     "id": media_id,
-    #     "romajiTitle": request["title"]["romaji"],
-    #     "englishTitle": request["title"]["english"],
-    #     "nativeTitle": request["title"]["native"],
-    #     "description": request["description"],
-    #     "episodes": total_episodes,
-    #     "seasons": seasons,
-    #     "unairedSeasons": unaired_seasons,
-    #     "movies": movies,
-    #     "coverLarge": request["coverImage"]["extraLarge"],
-    #     "coverMed": request["coverImage"]["large"],
-    #     "coverSmall": request["coverImage"]["medium"],
-    #     "genres": request["genres"],
-    #     "tags": request["tags"],
-    #     "score": request["averageScore"],
-    # }
-
     variables = {
         "title": collect_title(show),
         "image": request["coverImage"]["large"],
