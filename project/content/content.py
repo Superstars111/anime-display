@@ -1,11 +1,14 @@
 from flask import Blueprint, request, session, render_template, url_for, redirect
+from flask_login import current_user
 import pandas as pd
 import decimal as dc
 import matplotlib
 import matplotlib.pyplot as plt
 from project.config import settings
-from project.models import Show
+from project.models import Show, Rating
+from project import db
 import requests as rq
+import json
 
 if settings.TESTING:
     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
@@ -223,16 +226,43 @@ def options():
     return render_template("content/templates/content/selection.html", library=library, chosen=session["selected_shows"])
 
 
-@content.route("/shows/<int:show_id>")
+@content.route("/shows/<int:show_id>", methods=["GET", "POST"])
 def show(show_id):
+    data_test = [
+        {"x": 23, "y": 40},
+        {"x": 32, "y": -23},
+        {"x": -30, "y": -10},
+        {"x": 2, "y": 3},
+        {"x": 50, "y": -50},
+        {"x": -50, "y": 50}
+    ]
+    data_test = json.dumps(data_test)
     show = Show.query.filter_by(id=show_id).first()
+    rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
+    new_rating = request.form.get("rate", "")
+    if new_rating:
+        print("Updating now...")
+        if not rating:
+            rating = Rating(show_id=show_id, rater_id=current_user.id)
+            db.session.add(rating)
+
+        rating.score = request.form.get("score")
+        rating.pacing = request.form.get("pacing")
+        rating.drama = request.form.get("tone")
+        rating.fantasy = request.form.get("fantasy")
+        rating.abstraction = request.form.get("abstraction")
+        rating.timeline = request.form.get("timeline")
+        rating.propriety = request.form.get("propriety")
+
+        db.session.commit()
+
     id_var = {"id": show.anilist_id}
-    request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+    GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
     series_data = {
         "sequel": [],
-        "total_episodes": request["episodes"],
-        "seasons": 1 if request["format"] in ("TV", "TV_SHORT") else 0,
-        "movies": 1 if request["format"] == "MOVIE" else 0,
+        "total_episodes": GQL_request["episodes"],
+        "seasons": 1 if GQL_request["format"] in ("TV", "TV_SHORT") else 0,
+        "movies": 1 if GQL_request["format"] == "MOVIE" else 0,
         "unaired_seasons": 0,
         "streaming": {
             "crunchyroll": {"seasons": 0,
@@ -268,24 +298,32 @@ def show(show_id):
         }
     }
     seasonal_data = collect_seasonal_data(show.anilist_id, series_data)
-    scores, pacing_scores, drama_scores = sort_ratings(show.user_ratings)
+    scores, pacing_scores, drama_scores = sort_ratings(rating)
     colors = collect_colors(scores)
     graph = collect_graph(pacing_scores, drama_scores, colors)
 
     variables = {
         "title": collect_title(show),
-        "image": request["coverImage"]["large"],
+        "image": GQL_request["coverImage"]["large"],
         "episodes": seasonal_data["total_episodes"],
         "seasons": seasonal_data["seasons"],
         "movies": seasonal_data["movies"],
         "unaired": seasonal_data["unaired_seasons"],
-        "synopsis": request["description"],
-        "public": request["averageScore"],
-        "graph": graph,
-        "private": collect_private_score(show.user_ratings),
-        "chosen": session["selected_shows"],
+        "synopsis": GQL_request["description"],
+        "public": GQL_request["averageScore"],
+        # "graph": graph,
+        "private": collect_private_score(rating),
+        # "chosen": session["selected_shows"],
         "stream_colors": collect_streaming_colors(seasonal_data),
-        "streaming": seasonal_data["streaming"]
+        "streaming": seasonal_data["streaming"],
+        "data_test": data_test,
+        "score": rating.score if rating else 0,
+        "pacing": rating.pacing if rating else 0,
+        "tone": rating.drama if rating else 0,
+        "fantasy": rating.fantasy if rating else 0,
+        "abstraction": rating.abstraction if rating else 0,
+        "timeline": rating.timeline if rating else 0,
+        "propriety": rating.propriety if rating else 0,
     }
 
     if not show:
@@ -325,11 +363,14 @@ def collect_colors(scores):
 
 def collect_private_score(ratings):
     all_house_scores = []
-    for rating in ratings:
-        if rating[1]:
-            all_house_scores.append(rating[1])
+    # for rating in ratings:
+    #     if rating[1]:
+    #         all_house_scores.append(rating[1])
+    #
+    # avg_house_score = get_average(all_house_scores)
 
-    avg_house_score = get_average(all_house_scores)
+    #Temporary
+    avg_house_score = ratings.score
 
     return avg_house_score
 
@@ -378,12 +419,11 @@ def sort_ratings(ratings):
     scores = []
     pacing_scores = []
     drama_scores = []
-
-    for rating in ratings:
-        names.append(rating[0])
-        scores.append(rating[1])
-        pacing_scores.append(rating[2])
-        drama_scores.append(rating[3])
+    # for rating in ratings:
+    #     names.append(rating[0])
+    #     scores.append(rating[1])
+    #     pacing_scores.append(rating[2])
+    #     drama_scores.append(rating[3])
 
     return scores, pacing_scores, drama_scores
 

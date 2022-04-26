@@ -10,13 +10,13 @@ from .config import settings
 # from .main import main as main_blueprint
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 
 def create_app():
     app = Flask(__name__)
 
     app.config.from_object(settings)
-    migrate = Migrate(app, db)
 
     # app.config["SECRET_KEY"] = "secret-key"
     # # Not sure how this is different than app.secret_key =
@@ -24,6 +24,7 @@ def create_app():
     # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
+    migrate.init_app(app, db)
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"

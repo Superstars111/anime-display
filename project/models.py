@@ -26,20 +26,6 @@ show_list = Table(
     Column("show_id", Integer, ForeignKey("shows.id"))
 )
 
-ratings = Table(
-    "ratings",
-    db.metadata,
-    Column("user_id", Integer, ForeignKey("users.id")),
-    Column("show_id", Integer, ForeignKey("shows.id")),
-    Column("score", Integer),
-    Column("pacing", Integer),
-    Column("drama", Integer),
-    Column("fantasy", Integer),
-    Column("abstraction", Integer),
-    Column("timeline", Integer),
-    Column("propriety", Integer)
-)
-
 alt_names = Table(
     "names",
     db.metadata,
@@ -65,7 +51,7 @@ class User(UserMixin, db.Model):
                            back_populates="friends")
     # outgoing_recommendations = relationship("Recommendation", backref=backref("users"))
     # incoming_recommendations = relationship("Recommendation", backref=backref("users"))
-    show_ratings = relationship("Show", secondary=ratings, back_populates="user_ratings")
+    show_ratings = relationship("Rating", backref=backref("users"))
     alt_show_names = relationship("Show", secondary=alt_names, back_populates="alt_names")
 
 
@@ -79,7 +65,7 @@ class Show(db.Model):
     anilist_id = Column(Integer, unique=True)
     lists = relationship("List", secondary=show_list, back_populates="shows")
     recommendations = relationship("Recommendation", backref=backref("shows"))
-    user_ratings = relationship("User", secondary=ratings, back_populates="show_ratings")
+    user_ratings = relationship("Rating", backref=backref("shows"))
     alt_names = relationship("User", secondary=alt_names, back_populates="alt_show_names")
 
 
@@ -102,3 +88,18 @@ class Recommendation(db.Model):
 
     sender = relationship("User", foreign_keys="Recommendation.sender_id")
     receiver = relationship("User", foreign_keys="Recommendation.receiver_id")
+
+
+class Rating(db.Model):
+    __tablename__ = "ratings"
+
+    id = Column(Integer, primary_key=True)
+    rater_id = Column("user_id", Integer, ForeignKey("users.id"))
+    show_id = Column("show_id", Integer, ForeignKey("shows.id"))
+    score = Column(Integer)
+    pacing = Column(Integer)
+    drama = Column(Integer)
+    fantasy = Column(Integer)
+    abstraction = Column(Integer)
+    timeline = Column(Integer)
+    propriety = Column(Integer)
