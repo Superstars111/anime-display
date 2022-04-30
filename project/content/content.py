@@ -5,7 +5,7 @@ import decimal as dc
 import matplotlib
 import matplotlib.pyplot as plt
 from project.config import settings
-from project.models import Show, Rating
+from project.models import Show, Rating, List
 from project import db
 import requests as rq
 import json
@@ -240,8 +240,12 @@ def show(show_id):
     show = Show.query.filter_by(id=show_id).first()
     rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
     new_rating = request.form.get("rate", "")
+    list_addition = request.form.get("lists")
+    if list_addition:
+        selected_list = List.query.filter_by(id=list_addition).first()
+        selected_list.shows += [show]
+        db.session.commit()
     if new_rating:
-        print("Updating now...")
         if not rating:
             rating = Rating(show_id=show_id, rater_id=current_user.id)
             db.session.add(rating)
@@ -370,7 +374,10 @@ def collect_private_score(ratings):
     # avg_house_score = get_average(all_house_scores)
 
     #Temporary
-    avg_house_score = ratings.score
+    if ratings:
+        avg_house_score = ratings.score
+    else:
+        avg_house_score = 0
 
     return avg_house_score
 

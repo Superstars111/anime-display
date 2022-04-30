@@ -18,7 +18,7 @@
     <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
     <br> {# TODO: Things are off by a few pixels here... Make it neater. #}
     <div id="scoring">Public score: {{public}}, Household score: {{private}}<br><div id="chart_container">
-        <canvas id="test_graph" data-ratings="{{ data_test }}"></canvas>
+        <canvas id="display_graph" data-points="{{ data_test }}"></canvas>
     </div></div>
     <div id="tags"><h3>Genres:</h3> <br><br> <h3>Tags:</h3> <br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3></div>
     <div id="streaming">
@@ -76,9 +76,24 @@
                 <input type="range" name="propriety" min="-50" max="50" value="{{ propriety }}" class="slider" formmethod="POST">
                 <output class="bubble"></output>
             </div><br>
-            <button name="rate" value="true" type="submit">Submit</button>
+            <button name="rate" id="ratingButton" value="true" type="button">Submit</button>
+            </form>
+        </div>
+        <div>
+            <form action="" method="post">
+            <select name="lists" id="lists" onchange="this.form.submit()">
+                <option value="" selected>Add To List</option>
+                {% for list in current_user.lists %}
+                <option value="{{ list.id }}">{{ list.name }}</option>
+                {% endfor %}
+            </select>
             </form>
         </div>
     {% endif %}
 </main>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/slider.js') }}"></script>
+    <script type="text/javascript">
+
+    </script>
 {% endblock %}

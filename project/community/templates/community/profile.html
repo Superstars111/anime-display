@@ -7,6 +7,39 @@
     Put your intro and whatnot here, I guess. Also, are we going to have, like... A profile picture or cover image? I assume so...
     <br>
     We also definitely want a place where it displays a graph of that person's ratings across all shows marked as "seen", along with their ratings, most common tags, and maybe some other stuff.
+      <br>
+      {% for list in current_user.lists %}
+          {% for show in list.shows %}
+            {{ show.en_name }} <br>
+              {% endfor %}
+      {% endfor %}
   </p>
+    <div id="chart_container">
+        <canvas id="display_graph" data-points="{{ data_points }}"></canvas>
+    </div>
+        <br>
+        <div>
+        <label for="x-coord">X:</label>
+        <select name="x-coord" id="x-coord">
+            <option value="pacing" selected>Pacing</option>
+            <option value="drama">Drama</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="abstraction">Abstraction</option>
+            <option value="timeline">Timeline</option>
+            <option value="propriety">Propriety</option>
+        </select>
+        <label for="y-coord">Y:</label>
+        <select name="y-coord" id="y-coord">
+            <option value="pacing">Pacing</option>
+            <option value="drama" selected>Drama</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="abstraction">Abstraction</option>
+            <option value="timeline">Timeline</option>
+            <option value="propriety">Propriety</option>
+        </select>
+    </div>
+    <div><canvas></canvas></div>
+    <div></div>
 </main>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
 {% endblock %}

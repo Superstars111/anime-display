@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from flask_login import login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from project.models import User
+from project.models import User, List
 from project import db
 
 auth = Blueprint("auth", __name__)
@@ -26,7 +26,7 @@ def login_post():
         return redirect(url_for("auth.login"))
 
     login_user(user, remember=remember)
-    return redirect(url_for("community.profile"))
+    return redirect(f"/users/{user.username}")
 
 
 @auth.route("/register")
@@ -49,8 +49,14 @@ def register_post():
         return redirect(url_for("auth.register"))
 
     new_user = User(email=email, username=username, password=generate_password_hash(password, method="sha256"))
-
     db.session.add(new_user)
+    db.session.commit()
+
+    seen_list = List(owner_id=new_user.id, name="Seen")
+    to_watch_list = List(owner_id=new_user.id, name="To Watch")
+    partially_seen_list = List(owner_id=new_user.id, name="Partially Seen")
+
+    db.session.add_all([seen_list, to_watch_list, partially_seen_list])
     db.session.commit()
 
     return redirect(url_for("auth.login"))
@@ -61,4 +67,4 @@ def register_post():
 def logout():
     session.pop("selected_shows", None)
     logout_user()
-    return redirect(url_for("main.index"))
+    return redirect(url_for("general.index"))

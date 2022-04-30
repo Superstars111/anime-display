@@ -32,7 +32,7 @@ def index():
         return redirect(url_for("auth.login"))
 
 
-@general.route("/graph_test")
+@general.route("/graph_test", methods=["POST", "GET"])
 def graph_test():
     data = [
         {"x": 2, "y": 6},
@@ -52,6 +52,8 @@ def graph_test():
             {"x": 50, "y": -50},
             {"x": -50, "y": 50}
         ]
+        data = json.dumps(data)
+        return data
     else:
         pass
     data = json.dumps(data)
