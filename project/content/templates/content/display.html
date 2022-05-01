@@ -40,40 +40,47 @@
     <br>
     {% if current_user.is_authenticated %}
         <div id="sliders">
-            <form action="" method="POST">
+            <form action="" method="GET">
             <div class="range-wrap">
-                <label for="score">Score</label>
-                <input type="range" name="score" min="0" max="100" value="{{ score }}" class="slider" formmethod="POST">
+                <label for="score">Score
+                <input type="range" id="scoreRange" name="score" min="0" max="100" value="{{ score }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <div class="range-wrap">
-                <label for="pacing">Pacing</label>
-                <input type="range" name="pacing" min="-50" max="50" value="{{ pacing }}" class="slider" formmethod="POST">
+                <label for="pacing">Pacing
+                <input type="range" id="pacingRange" name="pacing" min="-50" max="50" value="{{ pacing }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <div class="range-wrap">
-                <label for="tone">Tone</label>
-                <input type="range" name="tone" min="-50" max="50" value="{{ tone }}" class="slider" formmethod="POST">
+                <label for="tone">Tone
+                <input type="range" id="toneRange" name="tone" min="-50" max="50" value="{{ tone }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <div class="range-wrap">
-                <label for="fantasy">Fantasy</label>
-                <input type="range" name="fantasy" min="-50" max="50" value="{{ fantasy }}" class="slider" formmethod="POST">
+                <label for="fantasy">Fantasy
+                <input type="range" id="fantasyRange" name="fantasy" min="-50" max="50" value="{{ fantasy }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <div class="range-wrap">
-                <label for="abstraction">Abstraction</label>
-                <input type="range" name="abstraction" min="-50" max="50" value="{{ abstraction }}" class="slider" formmethod="POST">
+                <label for="abstraction">Abstraction
+                <input type="range" id="abstractionRange" name="abstraction" min="-50" max="50" value="{{ abstraction }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <div class="range-wrap">
-                <label for="timeline">Timeline</label>
-                <input type="range" name="timeline" min="-50" max="50" value="{{ timeline }}" class="slider" formmethod="POST">
+                <label for="timeline">Timeline
+                <input type="range" id="timelineRange" name="timeline" min="-50" max="50" value="{{ timeline }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <div class="range-wrap">
-                <label for="propriety">Propriety</label>
-                <input type="range" name="propriety" min="-50" max="50" value="{{ propriety }}" class="slider" formmethod="POST">
+                <label for="propriety">Propriety
+                <input type="range" id="proprietyRange" name="propriety" min="-50" max="50" value="{{ propriety }}" class="slider">
+                </label>
                 <output class="bubble"></output>
             </div><br>
             <button name="rate" id="ratingButton" value="true" type="button">Submit</button>
@@ -91,9 +98,8 @@
         </div>
     {% endif %}
 </main>
+    <script type="text/javascript">let url = "{{ url }}";</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/slider.js') }}"></script>
-    <script type="text/javascript">
-
-    </script>
 {% endblock %}

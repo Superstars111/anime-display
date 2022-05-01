@@ -237,9 +237,10 @@ def show(show_id):
         {"x": -50, "y": 50}
     ]
     data_test = json.dumps(data_test)
+    current_url = f"/shows/{show_id}"
     show = Show.query.filter_by(id=show_id).first()
     rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
-    new_rating = request.form.get("rate", "")
+    new_rating = request.args.get("rate", "")
     list_addition = request.form.get("lists")
     if list_addition:
         selected_list = List.query.filter_by(id=list_addition).first()
@@ -250,13 +251,13 @@ def show(show_id):
             rating = Rating(show_id=show_id, rater_id=current_user.id)
             db.session.add(rating)
 
-        rating.score = request.form.get("score")
-        rating.pacing = request.form.get("pacing")
-        rating.drama = request.form.get("tone")
-        rating.fantasy = request.form.get("fantasy")
-        rating.abstraction = request.form.get("abstraction")
-        rating.timeline = request.form.get("timeline")
-        rating.propriety = request.form.get("propriety")
+        rating.score = request.args.get("score")
+        rating.pacing = request.args.get("pacing")
+        rating.drama = request.args.get("tone")
+        rating.fantasy = request.args.get("fantasy")
+        rating.abstraction = request.args.get("abstraction")
+        rating.timeline = request.args.get("timeline")
+        rating.propriety = request.args.get("propriety")
 
         db.session.commit()
 
@@ -328,6 +329,7 @@ def show(show_id):
         "abstraction": rating.abstraction if rating else 0,
         "timeline": rating.timeline if rating else 0,
         "propriety": rating.propriety if rating else 0,
+        "url": current_url
     }
 
     if not show:

@@ -1,5 +1,26 @@
 // from https://css-tricks.com/value-bubbles-for-range-inputs/
 
+const ratingButton = document.getElementById("ratingButton");
+
+let sliders = [
+  ratingButton,
+  document.getElementById("scoreRange"),
+  document.getElementById("pacingRange"),
+  document.getElementById("toneRange"),
+  document.getElementById("fantasyRange"),
+  document.getElementById("abstractionRange"),
+  document.getElementById("timelineRange"),
+  document.getElementById("proprietyRange")
+]
+
+const RBVAR = partial(setVariables, url, sliders, log);
+
+ratingButton.onclick = RBVAR;
+
+function log() {
+  console.log("Values updated")
+}
+
 const allRanges = document.querySelectorAll(".range-wrap");
 allRanges.forEach(wrap => {
   const range = wrap.querySelector(".slider");

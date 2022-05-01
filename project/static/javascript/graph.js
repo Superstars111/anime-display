@@ -1,58 +1,35 @@
-// Taken from https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX/Getting_Started
-
 // Update graph data
-let httpRequest;
-document.getElementById("ratingButton").onclick = function () {
-  let change = document.getElementById("ratingButton").value;
-  makeRequest("/graph_test", change);
-  // TODO: Make endpoint dynamic
-};
 
-function makeRequest(url, change) {
-  httpRequest = new XMLHttpRequest();
-
-  if (!httpRequest) {
-      console.log('Giving up :( Cannot create an XMLHTTP instance');
-      return false;
-    }
-
-  httpRequest.open("GET", url + `?change=${change}`);
-  httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); //Don't understand what this header means
-  httpRequest.onreadystatechange = sendUpdate;
-  httpRequest.send();
+function updateGraphData() {
+  removeData(scatter);
+  let new_data = JSON.parse(httpRequest.response);
+  addData(scatter, new_data);
 }
 
-function sendUpdate() {
-  if (httpRequest.readyState === 4) {
-    if (httpRequest.status === 200) {
-      removeData(scatter);
-      let new_data = JSON.parse(httpRequest.response)
-      addData(scatter, new_data);
-    }
-    else {
-      console.log("Status: " + httpRequest.status);
-    }
-  }
-}
+// const graphButton = document.getElementById("graphButton");
+//
+// const GBVAR = partial(setVariables, "/graph_test", [graphButton], updateGraphData);
+//
+// graphButton.onclick = GBVAR;
 
-// Taken from https://www.chartjs.org/docs/latest/samples/other-charts/scatter.html
-// And from http://www.java2s.com/example/javascript/chart.js/chartjs-to-create-scatter-chart.html
+// Based on https://www.chartjs.org/docs/latest/samples/other-charts/scatter.html
+// And on http://www.java2s.com/example/javascript/chart.js/chartjs-to-create-scatter-chart.html
 
-let graph = document.getElementById("display_graph")
-let ctx = graph.getContext("2d");
-let raw_data = graph.dataset.points;
-let data_test = JSON.parse(raw_data)
+const graph = document.getElementById("display_graph")
+const ctx = graph.getContext("2d");
+let rawData = graph.dataset.points;
+let parsedData = JSON.parse(rawData);
 
 let data = {
     labels: ["A", "B", "C", "D"],
     datasets: [{
       label: "Test Scatter Graph",
       borderColor: 'rgb(255, 99, 132)',
-      data: data_test,
+      data: parsedData,
       color: "#878BB6"
     }]};
 
-let options = {
+const options = {
     title: {
       display: true,
       text: "Testing Data"
@@ -102,7 +79,7 @@ let options = {
     }
 };
 
-let scatter = new Chart(ctx, {
+const scatter = new Chart(ctx, {
   type: "scatter",
   data: data,
   options: options
