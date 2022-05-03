@@ -6,6 +6,13 @@ function updateGraphData() {
   addData(scatter, new_data);
 }
 
+const xSelector = document.getElementById("x-coord");
+const ySelector = document.getElementById("y-coord");
+
+const SELVAR = partial(setVariables, url, [xSelector, ySelector], updateGraphData);
+
+xSelector.onchange = SELVAR;
+ySelector.onchange = SELVAR;
 // const graphButton = document.getElementById("graphButton");
 //
 // const GBVAR = partial(setVariables, "/graph_test", [graphButton], updateGraphData);

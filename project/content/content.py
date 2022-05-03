@@ -228,19 +228,66 @@ def options():
 
 @content.route("/shows/<int:show_id>", methods=["GET", "POST"])
 def show(show_id):
-    data_test = [
-        {"x": 23, "y": 40},
-        {"x": 32, "y": -23},
-        {"x": -30, "y": -10},
-        {"x": 2, "y": 3},
-        {"x": 50, "y": -50},
-        {"x": -50, "y": 50}
-    ]
-    data_test = json.dumps(data_test)
-
     current_url = f"/shows/{show_id}"
     show = Show.query.filter_by(id=show_id).first()
     rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
+    pacing_scores = []
+    tone_scores = []
+    energy_scores = []
+    fantasy_scores = []
+    abstraction_scores = []
+    propriety_scores = []
+    x = pacing_scores
+    y = tone_scores
+    data = []
+    for rating in show.user_ratings:
+        pacing_scores.append(rating.pacing)
+        tone_scores.append(rating.drama)
+        energy_scores.append(rating.energy)
+        fantasy_scores.append(rating.fantasy)
+        abstraction_scores.append(rating.abstraction)
+        propriety_scores.append(rating.propriety)
+
+    x_data = request.args.get("x-coord")
+    y_data = request.args.get("y-coord")
+    if x_data or y_data:
+        if x_data == "pacing":
+            x = pacing_scores
+        elif x_data == "tone":
+            x = tone_scores
+        elif x_data == "energy":
+            x = energy_scores
+        elif x_data == "fantasy":
+            x = fantasy_scores
+        elif x_data == "abstraction":
+            x = abstraction_scores
+        elif x_data == "propriety":
+            x = propriety_scores
+
+        if y_data == "pacing":
+            y = pacing_scores
+        elif y_data == "tone":
+            y = tone_scores
+        elif y_data == "energy":
+            y = energy_scores
+        elif y_data == "fantasy":
+            y = fantasy_scores
+        elif y_data == "abstraction":
+            y = abstraction_scores
+        elif y_data == "propriety":
+            y = propriety_scores
+
+    for idx, rank in enumerate(x):
+        point = {
+            "x": rank,
+            "y": y[idx]
+        }
+        if type(point["x"]) == int and type(point["y"]) == int:
+            data.append(point)
+
+    data = json.dumps(data)
+    if x_data or y_data:
+        return data
 
     new_rating = request.args.get("rate", "")
     list_addition = request.form.get("lists")
@@ -324,7 +371,7 @@ def show(show_id):
         # "chosen": session["selected_shows"],
         "stream_colors": collect_streaming_colors(seasonal_data),
         "streaming": seasonal_data["streaming"],
-        "data_test": data_test,
+        "data": data,
         "score": rating.score if rating else 0,
         "pacing": rating.pacing if rating else 0,
         "energy": rating.energy if rating else 0,
