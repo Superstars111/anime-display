@@ -237,11 +237,14 @@ def show(show_id):
         {"x": -50, "y": 50}
     ]
     data_test = json.dumps(data_test)
+
     current_url = f"/shows/{show_id}"
     show = Show.query.filter_by(id=show_id).first()
     rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
+
     new_rating = request.args.get("rate", "")
     list_addition = request.form.get("lists")
+
     if list_addition:
         selected_list = List.query.filter_by(id=list_addition).first()
         selected_list.shows += [show]
@@ -253,10 +256,10 @@ def show(show_id):
 
         rating.score = request.args.get("score")
         rating.pacing = request.args.get("pacing")
+        rating.energy = request.args.get("energy")
         rating.drama = request.args.get("tone")
         rating.fantasy = request.args.get("fantasy")
         rating.abstraction = request.args.get("abstraction")
-        rating.timeline = request.args.get("timeline")
         rating.propriety = request.args.get("propriety")
 
         db.session.commit()
@@ -324,10 +327,10 @@ def show(show_id):
         "data_test": data_test,
         "score": rating.score if rating else 0,
         "pacing": rating.pacing if rating else 0,
+        "energy": rating.energy if rating else 0,
         "tone": rating.drama if rating else 0,
         "fantasy": rating.fantasy if rating else 0,
         "abstraction": rating.abstraction if rating else 0,
-        "timeline": rating.timeline if rating else 0,
         "propriety": rating.propriety if rating else 0,
         "url": current_url
     }

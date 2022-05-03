@@ -6,10 +6,10 @@ let sliders = [
   ratingButton,
   document.getElementById("scoreRange"),
   document.getElementById("pacingRange"),
+  document.getElementById("energyRange"),
   document.getElementById("toneRange"),
   document.getElementById("fantasyRange"),
   document.getElementById("abstractionRange"),
-  document.getElementById("timelineRange"),
   document.getElementById("proprietyRange")
 ]
 

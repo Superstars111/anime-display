@@ -39,9 +39,9 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    email = Column(String(80), unique=True)
-    username = Column(String(100), unique=True)
-    password = Column(String(100))
+    email = Column(String(80), unique=True, nullable=False)
+    username = Column(String(100), unique=True, nullable=False)
+    password = Column(String(100), nullable=False)
     admin = Column(Boolean)
     lists = relationship("List", backref=backref("users"))
     friends = relationship("User",
@@ -98,8 +98,8 @@ class Rating(db.Model):
     show_id = Column("show_id", Integer, ForeignKey("shows.id"))
     score = Column(Integer)
     pacing = Column(Integer)
+    energy = Column(Integer)
     drama = Column(Integer)
     fantasy = Column(Integer)
     abstraction = Column(Integer)
-    timeline = Column(Integer)
     propriety = Column(Integer)

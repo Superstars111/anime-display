@@ -3,6 +3,7 @@ from flask_login import current_user, login_required
 from project.config import settings
 from project.models import User, List, Rating, Show
 import json
+from project.automation import migrate_ratings, update_library, add_lists
 
 community = Blueprint("community", __name__, template_folder="../../project")
 
@@ -11,10 +12,18 @@ community = Blueprint("community", __name__, template_folder="../../project")
 @login_required
 def settings():
 
+    # Automated tasks- eventually won't be needed
     ratings = request.args.get("ratings")
+    update = request.args.get("update")
+    add = request.args.get("list")
     if ratings:
-        for rating in current_user.show_ratings:
-            print(rating.score)
+        migrate_ratings()
+
+    if update:
+        update_library()
+
+    if add:
+        add_lists()
 
     if current_user.is_authenticated:
         return render_template("community/templates/community/settings.html", name=current_user.username)
