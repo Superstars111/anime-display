@@ -5,10 +5,11 @@ import decimal as dc
 import matplotlib
 import matplotlib.pyplot as plt
 from project.config import settings
-from project.models import Show, Rating, List
+from project.models import Show, Rating, List, User
 from project import db
 import requests as rq
 import json
+import decimal as dc
 
 if settings.TESTING:
     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
@@ -124,12 +125,12 @@ def display_all():
     avg_public_score = get_average(all_public_scores)
     avg_house_score = get_average(all_house_scores)
     colors = collect_colors(avg_show_scores)
-    graph = collect_graph(avg_show_pacing, avg_show_drama, colors)
+    # graph = collect_graph(avg_show_pacing, avg_show_drama, colors)
     # TODO: Make this more universal and not as cobbled together
-    if settings.TESTING:
-        graph.savefig("project\\static\\full_graph.png")
-    else:
-        graph.savefig("mysite/static/full_graph.png")
+    # if settings.TESTING:
+    #     graph.savefig("project\\static\\full_graph.png")
+    # else:
+    #     graph.savefig("mysite/static/full_graph.png")
 
     variables = {
         "title": "Displaying All",
@@ -146,60 +147,61 @@ def display_all():
     return render_template("content/templates/content/lib_display.html", **variables)
 
 
-@content.route("/display")
-def build_webpage():
-    show_id = request.args.get("options_list", "")
-    if "selected_shows" not in session:
-        session["selected_shows"] = []
-
-    if show_id:
-        show = find_show(show_id)
-    else:
-        show = {
-            "romajiTitle": "",
-            "englishTitle": "Displaying All",
-            "nativeTitle": "",
-            "coverMed": "",
-            "episodes": 0,
-            "seasons": 0,
-            "movies": 0,
-            "unairedSeasons": 0,
-            "description": "Once upon a time there was mad anime. It was so cool.",
-            "score": 0,
-            "houseScores": [],
-            "streaming": {}
-        }
-
-    scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
-    colors = collect_colors(scores)
-    graph = collect_graph(pacing_scores, drama_scores, colors)
-    # TODO: Make this better and more universal. Maybe use url_for()?
-    if settings.TESTING:
-        graph.savefig("project\\static\\graph.png")
-    else:
-        graph.savefig("mysite/static/graph.png")
-    # genres = collect_genres(show)
-    # tags = collect_tags(show)
-    # warnings = collect_warnings(show)
-    # spoilers = collect_spoilers(show)
-    streaming = collect_streaming_colors(show)
-
-    variables = {
-        "title": collect_title(show),
-        "image": f"{show['coverMed']}",
-        "episodes": f"{show['episodes']}",
-        "seasons": f"{show['seasons']}",
-        "movies": f"{show['movies']}",
-        "unaired": f"{show['unairedSeasons']}",
-        "synopsis": show['description'],
-        "public": f"{show['score']}",
-        "graph": graph,
-        "private": collect_private_score(show["houseScores"]),
-        "chosen": session["selected_shows"],
-        "stream_colors": streaming,
-    }
-
-    return render_template("content/templates/content/display.html", **variables)
+@content.route("/compare")
+def compare():
+    pass
+    # show_id = request.args.get("options_list", "")
+    # if "selected_shows" not in session:
+    #     session["selected_shows"] = []
+    #
+    # if show_id:
+    #     show = find_show(show_id)
+    # else:
+    #     show = {
+    #         "romajiTitle": "",
+    #         "englishTitle": "Displaying All",
+    #         "nativeTitle": "",
+    #         "coverMed": "",
+    #         "episodes": 0,
+    #         "seasons": 0,
+    #         "movies": 0,
+    #         "unairedSeasons": 0,
+    #         "description": "Once upon a time there was mad anime. It was so cool.",
+    #         "score": 0,
+    #         "houseScores": [],
+    #         "streaming": {}
+    #     }
+    #
+    # scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
+    # colors = collect_colors(scores)
+    # graph = collect_graph(pacing_scores, drama_scores, colors)
+    # # TODO: Make this better and more universal. Maybe use url_for()?
+    # if settings.TESTING:
+    #     graph.savefig("project\\static\\graph.png")
+    # else:
+    #     graph.savefig("mysite/static/graph.png")
+    # # genres = collect_genres(show)
+    # # tags = collect_tags(show)
+    # # warnings = collect_warnings(show)
+    # # spoilers = collect_spoilers(show)
+    # streaming = collect_streaming_colors(show)
+    #
+    # variables = {
+    #     "title": collect_title(show),
+    #     "image": f"{show['coverMed']}",
+    #     "episodes": f"{show['episodes']}",
+    #     "seasons": f"{show['seasons']}",
+    #     "movies": f"{show['movies']}",
+    #     "unaired": f"{show['unairedSeasons']}",
+    #     "synopsis": show['description'],
+    #     "public": f"{show['score']}",
+    #     "graph": graph,
+    #     "private": collect_private_score(show["houseScores"]),
+    #     "chosen": session["selected_shows"],
+    #     "stream_colors": streaming,
+    # }
+    #
+    # return render_template("content/templates/content/display.html", **variables)
 
 
 @content.route("/options")
@@ -230,7 +232,7 @@ def options():
 def show(show_id):
     current_url = f"/shows/{show_id}"
     show = Show.query.filter_by(id=show_id).first()
-    rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
+    user_rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
     pacing_scores = []
     tone_scores = []
     energy_scores = []
@@ -297,17 +299,17 @@ def show(show_id):
         selected_list.shows += [show]
         db.session.commit()
     if new_rating:
-        if not rating:
+        if not user_rating:
             rating = Rating(show_id=show_id, rater_id=current_user.id)
             db.session.add(rating)
 
-        rating.score = request.args.get("score")
-        rating.pacing = request.args.get("pacing")
-        rating.energy = request.args.get("energy")
-        rating.drama = request.args.get("tone")
-        rating.fantasy = request.args.get("fantasy")
-        rating.abstraction = request.args.get("abstraction")
-        rating.propriety = request.args.get("propriety")
+        user_rating.score = request.args.get("score")
+        user_rating.pacing = request.args.get("pacing")
+        user_rating.energy = request.args.get("energy")
+        user_rating.drama = request.args.get("tone")
+        user_rating.fantasy = request.args.get("fantasy")
+        user_rating.abstraction = request.args.get("abstraction")
+        user_rating.propriety = request.args.get("propriety")
 
         db.session.commit()
 
@@ -353,9 +355,10 @@ def show(show_id):
         }
     }
     seasonal_data = collect_seasonal_data(show.anilist_id, series_data)
-    scores, pacing_scores, drama_scores = sort_ratings(rating)
+    tags, spoilers = collect_tags(GQL_request["tags"])
+    scores, pacing_scores, drama_scores = sort_ratings(user_rating)
     colors = collect_colors(scores)
-    graph = collect_graph(pacing_scores, drama_scores, colors)
+    # graph = collect_graph(pacing_scores, drama_scores, colors)
 
     variables = {
         "title": collect_title(show),
@@ -365,20 +368,21 @@ def show(show_id):
         "movies": seasonal_data["movies"],
         "unaired": seasonal_data["unaired_seasons"],
         "synopsis": GQL_request["description"],
+        "genres": collect_genres(GQL_request["genres"]),
+        "tags": tags,
+        "spoilers": spoilers,
         "public": GQL_request["averageScore"],
-        # "graph": graph,
-        "private": collect_private_score(rating),
-        # "chosen": session["selected_shows"],
         "stream_colors": collect_streaming_colors(seasonal_data),
         "streaming": seasonal_data["streaming"],
         "data": data,
-        "score": rating.score if rating else 0,
-        "pacing": rating.pacing if rating else 0,
-        "energy": rating.energy if rating else 0,
-        "tone": rating.drama if rating else 0,
-        "fantasy": rating.fantasy if rating else 0,
-        "abstraction": rating.abstraction if rating else 0,
-        "propriety": rating.propriety if rating else 0,
+        "avgUserScore": collect_avg_user_score(show_id),
+        "score": user_rating.score if user_rating else 0,
+        "pacing": user_rating.pacing if user_rating else 0,
+        "energy": user_rating.energy if user_rating else 0,
+        "tone": user_rating.drama if user_rating else 0,
+        "fantasy": user_rating.fantasy if user_rating else 0,
+        "abstraction": user_rating.abstraction if user_rating else 0,
+        "propriety": user_rating.propriety if user_rating else 0,
         "url": current_url
     }
 
@@ -387,15 +391,16 @@ def show(show_id):
     return render_template("content/templates/content/display.html", **variables)
 
 
-def find_show(id):
-    for show in library:
-        if show["id"] == id:
-            return show
+# def find_show(id):
+#     for show in library:
+#         if show["id"] == id:
+#             return show
 
 
 def collect_title(show):
     titles = []
     for title in (show.jp_name, show.en_name, show.rj_name):
+        # Check if title is not "None" before appending
         if title and title not in titles:
             titles.append(title)
     return f" \u2022 ".join(titles)
@@ -417,21 +422,19 @@ def collect_colors(scores):
     return colors
 
 
-def collect_private_score(ratings):
-    all_house_scores = []
-    # for rating in ratings:
-    #     if rating[1]:
-    #         all_house_scores.append(rating[1])
-    #
-    # avg_house_score = get_average(all_house_scores)
+def collect_avg_user_score(show_id):
+    all_ratings = []
+    dc.getcontext().rounding = dc.ROUND_HALF_UP
+    for rating in Show.query.filter_by(id=show_id).first().user_ratings:
+        all_ratings.append(rating.score)
 
-    #Temporary
-    if ratings:
-        avg_house_score = ratings.score
+    if all_ratings:
+        avg_user_score = sum(all_ratings) / (len(all_ratings) if all_ratings else 1)
+        avg_user_score = int(dc.Decimal(str(avg_user_score)).quantize(dc.Decimal("1")))
     else:
-        avg_house_score = 0
+        avg_user_score = "N/A"
 
-    return avg_house_score
+    return avg_user_score
 
 
 def collect_streaming_colors(show):
@@ -497,27 +500,47 @@ def get_average(numbers_list):
     return average
 
 
-def collect_graph(pacing_scores, drama_scores, colors):
-    matplotlib.use("Agg")
-    fig = plt.Figure(figsize=(5, 4), dpi=100)
-    graph = fig.add_subplot(111)
-    # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
-    plot_graph(graph, pacing_scores, drama_scores, colors)
-    return fig
+def collect_genres(genres_list):
+    genres = ", ".join(genres_list)
+    return genres
 
 
-def plot_graph(graph, pacing_scores, drama_scores, colors):
-    graph.cla()
-    build_graph(graph)
-    graph.scatter(pacing_scores, drama_scores, color=colors, picker=True)
-    graph.figure.canvas.draw_idle()
+def collect_tags(tags_list):
+    tags = []
+    spoilers = []
+    for tag in tags_list:
+        s = f"{tag['name']} ({tag['rank']}%)"
+        if tag['isMediaSpoiler']:
+            spoilers.append(s)
+        else:
+            tags.append(s)
+
+    tags = ", ".join(tags)
+    spoilers = ", ".join(spoilers)
+    return tags, spoilers
 
 
-def build_graph(graph):
-    graph.grid()  # Adds a grid to the graph- does not add the graph to the Tkinter grid
-    graph.scatter([50, -50], [50, -50], s=[0, 0])
-    graph.set_ylabel("< Drama \u2022 Comedy >")
-    graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
+# def collect_graph(pacing_scores, drama_scores, colors):
+#     matplotlib.use("Agg")
+#     fig = plt.Figure(figsize=(5, 4), dpi=100)
+#     graph = fig.add_subplot(111)
+#     # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
+#     plot_graph(graph, pacing_scores, drama_scores, colors)
+#     return fig
+#
+#
+# def plot_graph(graph, pacing_scores, drama_scores, colors):
+#     graph.cla()
+#     build_graph(graph)
+#     graph.scatter(pacing_scores, drama_scores, color=colors, picker=True)
+#     graph.figure.canvas.draw_idle()
+#
+#
+# def build_graph(graph):
+#     graph.grid()  # Adds a grid to the graph- does not add the graph to the Tkinter grid
+#     graph.scatter([50, -50], [50, -50], s=[0, 0])
+#     graph.set_ylabel("< Drama \u2022 Comedy >")
+#     graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
 
 
 def collect_seasonal_data(show_id, seasonal_data):

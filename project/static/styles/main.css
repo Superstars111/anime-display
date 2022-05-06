@@ -24,9 +24,9 @@
 
 #seasonal
     {
-        width: 39.25em;
+        width: 27em;
         height: 21.6em;
-        margin: 1em;
+        margin: 0.5em;
         padding: .25em;
         border-style: solid;
         display: inline-block;
@@ -37,7 +37,7 @@
     {
         width: 39.25em;
         height: 21.6em;
-        margin: 1em;
+        margin: 0.5em;
         padding: .25em;
         border-style: solid;
         display: inline-block;
@@ -46,21 +46,22 @@
 
 #scoring
     {
-        width: 39.25em;
-        height: 26.5em;
-        margin: 1em;
+        width: 27em;
+        height: 30em;
+        margin: 0.5em;
         padding: .25em;
         border-style: solid;
         display: inline-block;
         float: left;
         text-align: center;
+    clear: left;
     }
 
 #tags
     {
         width: 39.25em;
-        height: 26.5em;
-        margin: 1em;
+        height: 30em;
+        margin: 0.5em;
         padding: .25em;
         border-style: solid;
         display: inline-block;
@@ -71,13 +72,27 @@
     {
         border-style: solid;
         /*float: right;*/
-        margin: 0em;
-        padding: .15em;
-        width: 23.5em;
+        margin: 0.5em;
+        /*padding: .15em;*/
+        width: 24em;
         text-align: center;
         display: inline-block;
         float: top;
     }
+
+#avgScores {
+    border-style: solid;
+    display: inline-block;
+    height: 2.75em;
+}
+
+#userScore {
+    border-style: solid;
+    display: inline-block;
+    height: 2.75em;
+    vertical-align: top;
+    text-align: center;
+}
 
 .service
     {
@@ -148,7 +163,8 @@ h4
 #sliders {
     display: inline-block;
     border-style: solid;
-    width: 23.5em;
+    width: 24em;
+    margin: 0.5em;
     /*text-align: center;*/
 }
 
@@ -226,6 +242,7 @@ html, body {
 }
 
 #chart_container {
-    height: 400px;
-    width: 400px;
+    height: 25em;
+    width: 25em;
+    display: inline-block;
 }

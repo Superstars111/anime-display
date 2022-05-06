@@ -16,8 +16,10 @@
         <h3>Movies: {{movies}}</h3> <br>
         <h3>Unaired: {{unaired}}</h3></div>
     <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
-    <br> {# TODO: Things are off by a few pixels here... Make it neater. #}
-    <div id="scoring">Public score: {{public}}, Household score: {{private}}<br><div id="chart_container">
+     {# TODO: Things are off by a few pixels here... Make it neater. #}
+    <div id="scoring"><div id="avgScores">Anilist avg score: {{ public }}, MAL avg score: N/A <br>
+        Our avg score: {{ avgUserScore }}, Friends' avg score: N/A </div>
+        <div id="userScore"><span style="vertical-align: middle">Your score:<br>{{ score }}</span></div><br><div id="chart_container">
         <canvas id="display_graph" data-points="{{ data }}"></canvas>
     </div>
     <div>
@@ -41,7 +43,7 @@
             <option value="propriety">Propriety</option>
         </select></form>
     </div></div>
-    <div id="tags"><h3>Genres:</h3> <br><br> <h3>Tags:</h3> <br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3></div>
+    <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
     <div id="streaming">
         <div class="service" style="color: {{stream_colors['crunchyroll'][1]}}"><h4 style="color: {{stream_colors['crunchyroll'][0]}}">Crunchyroll</h4>Seasons: {{streaming['crunchyroll']['seasons']}}<br><br>Movies: {{streaming['crunchyroll']['movies']}}</div>
         <div class="service" style="color: {{stream_colors['funimation'][1]}}"><h4 style="color: {{stream_colors['funimation'][0]}}">Funimation</h4>Seasons: {{streaming['funimation']['seasons']}}<br><br>Movies: {{streaming['funimation']['movies']}}</div>

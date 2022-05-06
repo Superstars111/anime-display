@@ -8,11 +8,11 @@
     <br>
     We also definitely want a place where it displays a graph of that person's ratings across all shows marked as "seen", along with their ratings, most common tags, and maybe some other stuff.
       <br>
-      {% for list in current_user.lists %}
-          {% for show in list.shows %}
-            {{ show.en_name }} <br>
-              {% endfor %}
-      {% endfor %}
+      <ul>
+        {% for list in lists %}
+        <li><a href="/users/{{ username }}/lists/{{ list.name }}">{{ list.name }}</a></li>
+        {% endfor %}
+      </ul>
   </p>
     <div id="chart_container">
         <canvas id="display_graph" data-points="{{ data_points }}"></canvas>

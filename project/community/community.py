@@ -44,7 +44,23 @@ def profile(username):
 
     variables = {
         "username": username,
-        "data_points": data_points
+        "data_points": data_points,
+        "lists": user.lists
     }
 
     return render_template("community/templates/community/profile.html", **variables)
+
+
+@community.route("/users/<username>/lists/<list_name>")
+def list_display(username, list_name):
+    user = User.query.filter_by(username=username).first()
+    current_list = List.query.filter_by(owner_id=user.id, name=list_name).first()
+    if not current_list:
+        return redirect(url_for("404"))
+
+    variables = {
+        "shows": current_list.shows
+    }
+
+    return render_template("community/templates/community/list_display.html", **variables)
+
