@@ -15,10 +15,12 @@
                 <li><a href="/display">Display Page</a></li>
                 <li><a href="/options">Select Options</a></li>
                 <li><a href="/display_all">Display All</a></li>
-                <li><a href="/graph_test">Graph Testing</a></li>
                 {% if current_user.is_authenticated %}
+                    {% if current_user.admin %}
                 <li><a href="/edit">Edit Show Data</a></li>
                 <li><a href="/warnings">Edit Warnings</a></li>
+                <li><a href="/administration">Admin</a></li>
+                    {% endif %}
                 <li><a href="/users/{{current_user.username}}">Profile</a></li>
                 <li><a href="/settings">Settings</a></li>
                 <li><a href="/logout">Log Out</a></li>

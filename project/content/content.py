@@ -11,12 +11,12 @@ import requests as rq
 import json
 import decimal as dc
 
-if settings.TESTING:
-    full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
-else:
-    full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
-
-library = full_data[2]
+# if settings.TESTING:
+#     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
+# else:
+#     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
+#
+# library = full_data[2]
 
 url = "https://graphql.anilist.co/"
 query = """query($id: Int){
@@ -107,20 +107,20 @@ def display_all():
     avg_show_scores = []
     avg_show_pacing = []
     avg_show_drama = []
-    for show in library:
-        episodes += show["episodes"]
-        seasons += show["seasons"]
-        movies += show["movies"]
-        unaired += show["unairedSeasons"]
-        all_public_scores.append(show["score"])
-        house_scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
-        if sum(house_scores):
-            avg_show_scores.append(get_average(house_scores))
-            avg_show_pacing.append(get_average(pacing_scores))
-            avg_show_drama.append(get_average(drama_scores))
-        if house_scores:
-            for score in house_scores:
-                all_house_scores.append(score)
+    # for show in library:
+    #     episodes += show["episodes"]
+    #     seasons += show["seasons"]
+    #     movies += show["movies"]
+    #     unaired += show["unairedSeasons"]
+    #     all_public_scores.append(show["score"])
+    #     house_scores, pacing_scores, drama_scores = sort_ratings(show["houseScores"])
+    #     if sum(house_scores):
+    #         avg_show_scores.append(get_average(house_scores))
+    #         avg_show_pacing.append(get_average(pacing_scores))
+    #         avg_show_drama.append(get_average(drama_scores))
+    #     if house_scores:
+    #         for score in house_scores:
+    #             all_house_scores.append(score)
 
     avg_public_score = get_average(all_public_scores)
     avg_house_score = get_average(all_house_scores)
@@ -211,11 +211,11 @@ def options():
     clear = request.args.get("reset", "")
     if "selected_shows" not in session:
         session["selected_shows"] = []
-    if show_id:
-        for show in library:
-            if show["id"] == show_id and show not in session["selected_shows"]:
-                session["selected_shows"].append({"id": show["id"], "defaultTitle": show["defaultTitle"]})
-                session.modified = True
+    # if show_id:
+    #     for show in library:
+    #         if show["id"] == show_id and show not in session["selected_shows"]:
+    #             session["selected_shows"].append({"id": show["id"], "defaultTitle": show["defaultTitle"]})
+    #             session.modified = True
     if removal_id:
         for show in session["selected_shows"]:
             if show["id"] == removal_id:
@@ -225,14 +225,16 @@ def options():
         session["selected_shows"].clear()
         session.modified = True
 
-    return render_template("content/templates/content/selection.html", library=library, chosen=session["selected_shows"])
+    return render_template("content/templates/content/selection.html", chosen=session["selected_shows"])
 
 
 @content.route("/shows/<int:show_id>", methods=["GET", "POST"])
 def show(show_id):
-    current_url = f"/shows/{show_id}"
     show = Show.query.filter_by(id=show_id).first()
-    user_rating = Rating.query.filter_by(show_id=show_id, rater_id=current_user.id).first()
+    if current_user.is_authenticated:
+        user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
+    else:
+        user_rating = None
     pacing_scores = []
     tone_scores = []
     energy_scores = []
@@ -300,7 +302,7 @@ def show(show_id):
         db.session.commit()
     if new_rating:
         if not user_rating:
-            rating = Rating(show_id=show_id, rater_id=current_user.id)
+            rating = Rating(show_id=show_id, user_id=current_user.id)
             db.session.add(rating)
 
         user_rating.score = request.args.get("score")
@@ -356,8 +358,8 @@ def show(show_id):
     }
     seasonal_data = collect_seasonal_data(show.anilist_id, series_data)
     tags, spoilers = collect_tags(GQL_request["tags"])
-    scores, pacing_scores, drama_scores = sort_ratings(user_rating)
-    colors = collect_colors(scores)
+    # scores, pacing_scores, drama_scores = sort_ratings(user_rating)
+    # colors = collect_colors(scores)
     # graph = collect_graph(pacing_scores, drama_scores, colors)
 
     variables = {
@@ -383,7 +385,7 @@ def show(show_id):
         "fantasy": user_rating.fantasy if user_rating else 0,
         "abstraction": user_rating.abstraction if user_rating else 0,
         "propriety": user_rating.propriety if user_rating else 0,
-        "url": current_url
+        "url": f"/shows/{show_id}"
     }
 
     if not show:

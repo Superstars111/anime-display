@@ -55,6 +55,15 @@ class User(UserMixin, db.Model):
     alt_show_names = relationship("Show", secondary=alt_names, back_populates="alt_names")
 
 
+class Series(db.Model):
+    __tablename__ = "series"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    entry_point = Column("entry_point", Integer, ForeignKey("shows.id"))
+    shows = relationship("Show", backref=backref("series"))
+
+
 class Show(db.Model):
     __tablename__ = "shows"
 
@@ -63,6 +72,8 @@ class Show(db.Model):
     jp_name = Column(String)
     rj_name = Column(String)
     anilist_id = Column(Integer, unique=True)
+    series = Column("series", Integer, ForeignKey("series.id"))
+    entry_to = relationship("Series", backref=backref("shows"))
     lists = relationship("List", secondary=show_list, back_populates="shows")
     recommendations = relationship("Recommendation", backref=backref("shows"))
     user_ratings = relationship("Rating", backref=backref("shows"))
@@ -94,7 +105,7 @@ class Rating(db.Model):
     __tablename__ = "ratings"
 
     id = Column(Integer, primary_key=True)
-    rater_id = Column("user_id", Integer, ForeignKey("users.id"))
+    user_id = Column("user_id", Integer, ForeignKey("users.id"))
     show_id = Column("show_id", Integer, ForeignKey("shows.id"))
     score = Column(Integer)
     pacing = Column(Integer)

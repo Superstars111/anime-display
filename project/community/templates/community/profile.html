@@ -15,14 +15,14 @@
       </ul>
   </p>
     <div id="chart_container">
-        <canvas id="display_graph" data-points="{{ data_points }}"></canvas>
+        <canvas id="display_graph" data-points="{{ data }}"></canvas>
     </div>
         <br>
         <div>
         <label for="x-coord">X:</label>
         <select name="x-coord" id="x-coord">
             <option value="pacing" selected>Pacing</option>
-            <option value="drama">Drama</option>
+            <option value="tone">Tone</option>
             <option value="fantasy">Fantasy</option>
             <option value="abstraction">Abstraction</option>
             <option value="timeline">Timeline</option>
@@ -31,7 +31,7 @@
         <label for="y-coord">Y:</label>
         <select name="y-coord" id="y-coord">
             <option value="pacing">Pacing</option>
-            <option value="drama" selected>Drama</option>
+            <option value="tone" selected>Tone</option>
             <option value="fantasy">Fantasy</option>
             <option value="abstraction">Abstraction</option>
             <option value="timeline">Timeline</option>
@@ -41,5 +41,7 @@
     <div><canvas></canvas></div>
     <div></div>
 </main>
+    <script type="text/javascript">let url = "{{ url }}";</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
 {% endblock %}
