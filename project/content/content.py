@@ -9,7 +9,7 @@ from project.models import Show, Rating, List, User
 from project import db
 import requests as rq
 import json
-import decimal as dc
+from project.functions import assign_data, collect_seasonal_data, sort_seasonal_data, check_stream_locations
 
 # if settings.TESTING:
 #     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
@@ -235,61 +235,10 @@ def show(show_id):
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
     else:
         user_rating = None
-    pacing_scores = []
-    tone_scores = []
-    energy_scores = []
-    fantasy_scores = []
-    abstraction_scores = []
-    propriety_scores = []
-    x = pacing_scores
-    y = tone_scores
-    data = []
-    for rating in show.user_ratings:
-        pacing_scores.append(rating.pacing)
-        tone_scores.append(rating.drama)
-        energy_scores.append(rating.energy)
-        fantasy_scores.append(rating.fantasy)
-        abstraction_scores.append(rating.abstraction)
-        propriety_scores.append(rating.propriety)
 
-    x_data = request.args.get("x-coord")
-    y_data = request.args.get("y-coord")
-    if x_data or y_data:
-        if x_data == "pacing":
-            x = pacing_scores
-        elif x_data == "tone":
-            x = tone_scores
-        elif x_data == "energy":
-            x = energy_scores
-        elif x_data == "fantasy":
-            x = fantasy_scores
-        elif x_data == "abstraction":
-            x = abstraction_scores
-        elif x_data == "propriety":
-            x = propriety_scores
-
-        if y_data == "pacing":
-            y = pacing_scores
-        elif y_data == "tone":
-            y = tone_scores
-        elif y_data == "energy":
-            y = energy_scores
-        elif y_data == "fantasy":
-            y = fantasy_scores
-        elif y_data == "abstraction":
-            y = abstraction_scores
-        elif y_data == "propriety":
-            y = propriety_scores
-
-    for idx, rank in enumerate(x):
-        point = {
-            "x": rank,
-            "y": y[idx]
-        }
-        if type(point["x"]) == int and type(point["y"]) == int:
-            data.append(point)
-
-    data = json.dumps(data)
+    x_data = request.args.get("x-coord", "")
+    y_data = request.args.get("y-coord", "")
+    data = assign_data(show.user_ratings, x_data, y_data)
     if x_data or y_data:
         return data
 
@@ -545,114 +494,4 @@ def collect_tags(tags_list):
 #     graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
 
 
-def collect_seasonal_data(show_id, seasonal_data):
-    id_var = {"id": show_id}
-    season_query = """query($id: Int){
-                 Media(id: $id, type:ANIME){
-                   format,
-                   relations{
-                     edges{
-                       relationType,
-                       node{
-                         id,
-                         episodes,
-                         format,
-                         status,
-                         },
-                       }
-                     }
-                   externalLinks {
-                     site
-                   },
-                 }
-               }"""
-    show_data = rq.post(url, json={"query": season_query, "variables": id_var}).json()["data"]["Media"]
 
-    seasonal_data = sort_seasonal_data(show_data, seasonal_data)
-
-    for id in seasonal_data["sequel"]:
-        seasonal_data = collect_seasonal_data(id, seasonal_data)
-    return seasonal_data
-
-
-def sort_seasonal_data(data_tree, seasonal_data):
-    check_stream_locations(data_tree, seasonal_data["streaming"])
-    seasonal_data["sequel"] = []
-    for series in data_tree["relations"]["edges"]:
-        if series["relationType"] == "SEQUEL":
-            if series["node"]["format"] in ("TV", "TV_SHORT"):
-                if series["node"]["status"] == "FINISHED":
-                    seasonal_data["total_episodes"] += series["node"]["episodes"]
-                    seasonal_data["seasons"] += 1
-                else:
-                    seasonal_data["unaired_seasons"] += 1
-            elif series["node"]["format"] == "MOVIE":
-                seasonal_data["movies"] += 1
-            seasonal_data["sequel"].append(series["node"]["id"])
-
-    return seasonal_data
-
-
-def check_stream_locations(data_tree, stream_list):
-    checked = []
-    for value in data_tree["externalLinks"]:
-        if value["site"] == "Crunchyroll" and "crunchyroll" not in checked:
-            checked.append("crunchyroll")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["crunchyroll"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["crunchyroll"]["movies"] += 1
-        elif value["site"] == "Funimation" and "funimation" not in checked:
-            checked.append("funimation")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["funimation"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["funimation"]["movies"] += 1
-        elif value["site"] == "Netflix" and "prison" not in checked:
-            checked.append("prison")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["prison"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["prison"]["movies"] += 1
-        elif value["site"] == "Amazon" and "amazon" not in checked:
-            checked.append("amazon")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["amazon"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["amazon"]["movies"] += 1
-        elif value["site"] == "VRV" and "vrv" not in checked:
-            checked.append("vrv")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["vrv"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["vrv"]["movies"] += 1
-        elif value["site"] == "Hulu" and "hulu" not in checked:
-            checked.append("hulu")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["hulu"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["hulu"]["movies"] += 1
-        elif value["site"] == "Youtube" and "youtube" not in checked:
-            checked.append("youtube")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["youtube"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["youtube"]["movies"] += 1
-        elif value["site"] == "Tubi TV" and "tubi" not in checked:
-            checked.append("tubi")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["tubi"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["tubi"]["movies"] += 1
-        elif value["site"] == "HBO Max" and "hbo" not in checked:
-            checked.append("hbo")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["hbo"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["hbo"]["movies"] += 1
-        elif value["site"] == "Hidive" and "hidive" not in checked:
-            checked.append("hidive")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["hidive"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["hidive"]["movies"] += 1

@@ -34,6 +34,13 @@ alt_names = Table(
     Column("show_id", Integer, ForeignKey("shows.id"))
 )
 
+series_relation = Table(
+    "series_relation",
+    db.metadata,
+    Column("series1_id", Integer, ForeignKey("series.id"), primary_key=True),
+    Column("series2_id", Integer, ForeignKey("series.id"), primary_key=True)
+)
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -59,9 +66,18 @@ class Series(db.Model):
     __tablename__ = "series"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    entry_point = Column("entry_point", Integer, ForeignKey("shows.id"))
-    shows = relationship("Show", backref=backref("series"))
+    en_name = Column(String)
+    jp_name = Column(String)
+    rj_name = Column(String)
+    entry_point_id = Column(Integer, ForeignKey("shows.id"))
+    # show_ids = Column(Integer, ForeignKey("shows.id"))
+    shows = relationship("Show", back_populates="series", foreign_keys="[Show.series_id]")
+    entry_point = relationship("Show", foreign_keys=[entry_point_id], post_update=True)
+    related_series = relationship("Series",
+                                  secondary=series_relation,
+                                  primaryjoin=id == series_relation.c.series1_id,
+                                  secondaryjoin=id == series_relation.c.series2_id,
+                                  back_populates="related_series")
 
 
 class Show(db.Model):
@@ -72,12 +88,22 @@ class Show(db.Model):
     jp_name = Column(String)
     rj_name = Column(String)
     anilist_id = Column(Integer, unique=True)
-    series = Column("series", Integer, ForeignKey("series.id"))
-    entry_to = relationship("Series", backref=backref("shows"))
+    position = Column(Integer)
+    priority = Column(Integer)  # 1 = main, 2 = side, 3 = minor
+    type = Column(String)
+    episodes = Column(Integer)
+    cover_image = Column(String)
+    description = Column(String)
+    series_entry_id = Column(Integer, ForeignKey("series.id"))
+    series_id = Column(Integer, ForeignKey("series.id"))
+
     lists = relationship("List", secondary=show_list, back_populates="shows")
     recommendations = relationship("Recommendation", backref=backref("shows"))
     user_ratings = relationship("Rating", backref=backref("shows"))
     alt_names = relationship("User", secondary=alt_names, back_populates="alt_show_names")
+
+    series_entry = relationship("Series", foreign_keys=[series_entry_id], uselist=False)
+    series = relationship("Series", foreign_keys=[series_id], post_update=True)
 
 
 class List(db.Model):
