@@ -2,6 +2,7 @@ import json
 import requests as rq
 from project.models import Show, Series
 from . import db
+import time
 
 url = "https://graphql.anilist.co/"
 
@@ -127,16 +128,19 @@ def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: 
         series = Series.query.filter_by(id=series_id).first()
     else:
         show = Show.query.filter_by(anilist_id=anilist_id).first()
+        series = Series.query.filter_by(entry_point_id=show.id).first()
+
+    if not series:
+        show = Show.query.filter_by(anilist_id=anilist_id).first()
+        print(f"+series for {show.rj_name}")
         series = Series(en_name=show.en_name, jp_name=show.jp_name, rj_name=show.rj_name, entry_point_id=show.id)
         db.session.add(series)
         db.session.commit()
-        print(f"Break 1: {series.id}")
         show.series_id = series.id
         show.series_entry_id = series.id
 
         db.session.commit()
-    if not relations:
-        print(f"Current series: {series.en_name}, current show_id: {anilist_id}")
+
     for relation in relations:
         if relation["node"]["type"] == "ANIME":
             if relation["relationType"] == "SEQUEL":
@@ -145,17 +149,22 @@ def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: 
                 side_stories.append(relation["node"]["id"])
             elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
                 related_series.append(relation["node"]["id"])
-            elif relation["relationType"] not in ("PREQUEL", "PARENT"):
+            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
                 minor_relations.append(relation["node"]["id"])
 
+    print(f"{series.id} - {series.rj_name}")
     for show_id in sequels:
-        checked_shows = add_to_series(show_id, position=position+1, series_id=series.id, checked_shows=checked_shows)
+        if show_id not in checked_shows:
+            checked_shows = add_to_series(show_id, position=position+1, main=main, series_id=series.id, checked_shows=checked_shows)
     for show_id in side_stories:
-        checked_shows = add_to_series(show_id, position=position, main=2, series_id=series.id, checked_shows=checked_shows)
+        if show_id not in checked_shows:
+            checked_shows = add_to_series(show_id, position=position, main=2, series_id=series.id, checked_shows=checked_shows)
     for show_id in minor_relations:
-        checked_shows = add_to_series(show_id, position=position, main=3, series_id=series.id, checked_shows=checked_shows)
+        if show_id not in checked_shows:
+            checked_shows = add_to_series(show_id, position=position, main=3, series_id=series.id, checked_shows=checked_shows)
     for show_id in related_series:
-        checked_shows = add_to_series(show_id, checked_shows=checked_shows)
+        if show_id not in checked_shows:
+            checked_shows = add_to_series(show_id, checked_shows=checked_shows)
 
     return checked_shows
 
@@ -163,11 +172,18 @@ def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: 
 def add_show(anilist_id: int, position: int, checked_shows: list, main: int = 1, series_id: int = None) -> list:
     if anilist_id not in checked_shows:
         id_var = {"id": anilist_id}
-        GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+        try:
+            GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+        except TypeError:
+            print("Timeout- sleeping")
+            time.sleep(65)
+            print("Waking up")
+            GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
 
         show = Show.query.filter_by(anilist_id=anilist_id).first()
 
         if not show:
+            print(f"+show {GQL_request['title']['romaji']}, Anilist ID: {anilist_id}")
             show = Show(
                 en_name=GQL_request["title"]["english"],
                 jp_name=GQL_request["title"]["native"],
@@ -182,7 +198,9 @@ def add_show(anilist_id: int, position: int, checked_shows: list, main: int = 1,
             )
 
             db.session.add(show)
+
         else:
+            print(f"Updating show {show.rj_name}, Anilist ID: {show.anilist_id}")
             show.en_name = GQL_request["title"]["english"]
             show.jp_name = GQL_request["title"]["native"]
             show.rj_name = GQL_request["title"]["romaji"]
@@ -195,12 +213,15 @@ def add_show(anilist_id: int, position: int, checked_shows: list, main: int = 1,
 
         if series_id:
             series = Series.query.filter_by(id=series_id).first()
-            print(f"Break 2: {series.id}")
             show.series_id = series.id
 
         db.session.commit()
 
         return GQL_request["relations"]["edges"]
+
+    else:
+        # Needed for when it iterates over the list later
+        return []
 
 
 def collect_seasonal_data(show_id, seasonal_data):

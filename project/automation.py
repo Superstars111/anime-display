@@ -3,6 +3,7 @@ from project import db
 import pandas as pd
 import json
 from project.functions import add_to_series
+import time
 
 # Temporary file used in development. Should eventually get phased out.
 
@@ -84,8 +85,9 @@ def sort_anilist_data():
 
 def transfer_shows_to_series():
     for show in db.session.query(Show).all():
-        print(f"Adding {show.en_name} now...")
+        print(f"---Transfering {show.rj_name} now---")
         add_to_series(show.anilist_id)
+        time.sleep(1.5)
 
 
 # if __name__ == "__main__":
