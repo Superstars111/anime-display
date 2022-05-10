@@ -129,10 +129,14 @@ def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: 
         show = Show.query.filter_by(anilist_id=anilist_id).first()
         series = Series(en_name=show.en_name, jp_name=show.jp_name, rj_name=show.rj_name, entry_point_id=show.id)
         db.session.add(series)
+        db.session.commit()
+        print(f"Break 1: {series.id}")
         show.series_id = series.id
+        show.series_entry_id = series.id
 
         db.session.commit()
-
+    if not relations:
+        print(f"Current series: {series.en_name}, current show_id: {anilist_id}")
     for relation in relations:
         if relation["node"]["type"] == "ANIME":
             if relation["relationType"] == "SEQUEL":
@@ -161,23 +165,37 @@ def add_show(anilist_id: int, position: int, checked_shows: list, main: int = 1,
         id_var = {"id": anilist_id}
         GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
 
-        show = Show(
-            en_name=GQL_request["title"]["english"],
-            jp_name=GQL_request["title"]["native"],
-            rj_name=GQL_request["title"]["romaji"],
-            anilist_id=anilist_id,
-            position=position,
-            priority=main,
-            type=GQL_request["format"],
-            episodes=GQL_request["episodes"],
-            cover_image=GQL_request["coverImage"]["medium"],
-            description=GQL_request["description"],
-        )
+        show = Show.query.filter_by(anilist_id=anilist_id).first()
 
-        db.session.add(show)
+        if not show:
+            show = Show(
+                en_name=GQL_request["title"]["english"],
+                jp_name=GQL_request["title"]["native"],
+                rj_name=GQL_request["title"]["romaji"],
+                anilist_id=anilist_id,
+                position=position,
+                priority=main,
+                type=GQL_request["format"],
+                episodes=GQL_request["episodes"],
+                cover_image=GQL_request["coverImage"]["large"],
+                description=GQL_request["description"],
+            )
+
+            db.session.add(show)
+        else:
+            show.en_name = GQL_request["title"]["english"]
+            show.jp_name = GQL_request["title"]["native"]
+            show.rj_name = GQL_request["title"]["romaji"]
+            show.position = position
+            show.priority = main
+            show.type = GQL_request["format"]
+            show.episodes = GQL_request["episodes"]
+            show.cover_image = GQL_request["coverImage"]["large"]
+            show.description = GQL_request["description"]
 
         if series_id:
             series = Series.query.filter_by(id=series_id).first()
+            print(f"Break 2: {series.id}")
             show.series_id = series.id
 
         db.session.commit()

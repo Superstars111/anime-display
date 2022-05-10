@@ -69,7 +69,7 @@ class Series(db.Model):
     en_name = Column(String)
     jp_name = Column(String)
     rj_name = Column(String)
-    entry_point_id = Column(Integer, ForeignKey("shows.id"))
+    entry_point_id = Column(Integer, ForeignKey("shows.id"), unique=True)
     # show_ids = Column(Integer, ForeignKey("shows.id"))
     shows = relationship("Show", back_populates="series", foreign_keys="[Show.series_id]")
     entry_point = relationship("Show", foreign_keys=[entry_point_id], post_update=True)
