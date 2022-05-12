@@ -272,66 +272,50 @@ def sort_seasonal_data(data_tree, seasonal_data):
     return seasonal_data
 
 
-def check_stream_locations(data_tree, stream_list):
+def check_stream_locations(streaming_links: list) -> dict:
     checked = []
-    for value in data_tree["externalLinks"]:
-        if value["site"] == "Crunchyroll" and "crunchyroll" not in checked:
+    availability = {
+        "crunchyroll": False,
+        "funimation": False,
+        "prison": False,
+        "amazon": False,
+        "vrv": False,
+        "hulu": False,
+        "youtube": False,
+        "tubi": False,
+        "hbo": False,
+        "hidive": False,
+    }
+    for link in streaming_links:
+        if link["site"] == "Crunchyroll" and "crunchyroll" not in checked:
             checked.append("crunchyroll")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["crunchyroll"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["crunchyroll"]["movies"] += 1
-        elif value["site"] == "Funimation" and "funimation" not in checked:
+            availability["crunchyroll"] = True
+        elif link["site"] == "Funimation" and "funimation" not in checked:
             checked.append("funimation")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["funimation"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["funimation"]["movies"] += 1
-        elif value["site"] == "Netflix" and "prison" not in checked:
+            availability["funimation"] = True
+        elif link["site"] == "Netflix" and "prison" not in checked:
             checked.append("prison")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["prison"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["prison"]["movies"] += 1
-        elif value["site"] == "Amazon" and "amazon" not in checked:
+            availability["prison"] = True
+        elif link["site"] == "Amazon" and "amazon" not in checked:
             checked.append("amazon")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["amazon"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["amazon"]["movies"] += 1
-        elif value["site"] == "VRV" and "vrv" not in checked:
+            availability["amazon"] = True
+        elif link["site"] == "VRV" and "vrv" not in checked:
             checked.append("vrv")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["vrv"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["vrv"]["movies"] += 1
-        elif value["site"] == "Hulu" and "hulu" not in checked:
+            availability["vrv"] = True
+        elif link["site"] == "Hulu" and "hulu" not in checked:
             checked.append("hulu")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["hulu"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["hulu"]["movies"] += 1
-        elif value["site"] == "Youtube" and "youtube" not in checked:
+            availability["hulu"] = True
+        elif link["site"] == "Youtube" and "youtube" not in checked:
             checked.append("youtube")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["youtube"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["youtube"]["movies"] += 1
-        elif value["site"] == "Tubi TV" and "tubi" not in checked:
+            availability["youtube"] = True
+        elif link["site"] == "Tubi TV" and "tubi" not in checked:
             checked.append("tubi")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["tubi"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["tubi"]["movies"] += 1
-        elif value["site"] == "HBO Max" and "hbo" not in checked:
+            availability["tubi"] = True
+        elif link["site"] == "HBO Max" and "hbo" not in checked:
             checked.append("hbo")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["hbo"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["hbo"]["movies"] += 1
-        elif value["site"] == "Hidive" and "hidive" not in checked:
+            availability["hbo"] = True
+        elif link["site"] == "Hidive" and "hidive" not in checked:
             checked.append("hidive")
-            if data_tree["format"] in ("TV", "TV_SHORT"):
-                stream_list["hidive"]["seasons"] += 1
-            elif data_tree["format"] == "MOVIE":
-                stream_list["hidive"]["movies"] += 1
+            availability["hidive"] = True
+
+    return availability

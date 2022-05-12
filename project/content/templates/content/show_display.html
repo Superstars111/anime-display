@@ -1,22 +1,14 @@
 {% extends "general/templates/general/base.html" %}
 {% block content %}
 <main>
-{#    <aside id="options">#}
-{#        <form action=""><select name="options_list" onchange="this.form.submit()" size="38" style="width: 20em; margin: .75em">#}
-{#            {% for show in chosen %}#}
-{#            <option value="{{show['id']}}">{{show['defaultTitle']}}</option>#}
-{#            {% endfor %}#}
-{#        </select></form>#}
-{#    </aside>#}
     <h2>{{title}}</h2>
     <div id="seasonal">
         <img src="{{image}}" alt="Cover image for current show" style="float: left"><br>
         <h3>Episodes: {{episodes}}</h3> <br>
-        <h3>Seasons: {{seasons}}</h3> <br>
-        <h3>Movies: {{movies}}</h3> <br>
-        <h3>Unaired: {{unaired}}</h3></div>
+        <h3>Type: {{ type }}</h3> <br>
+        <h3>Season: N/A of N/A</h3> <br>
+        <h3>Aired: N/A</h3></div>
     <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
-     {# TODO: Things are off by a few pixels here... Make it neater. #}
     <div id="scoring"><div id="avgScores">Anilist avg score: {{ public }}, MAL avg score: N/A <br>
         Our avg score: {{ avgUserScore }}, Friends' avg score: N/A </div>
         <div id="userScore"><span style="vertical-align: middle">Your score:<br>{{ score }}</span></div><br><div id="chart_container">
@@ -44,25 +36,7 @@
         </select></form>
     </div></div>
     <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
-    <div id="streaming">
-        <div class="service" style="color: {{stream_colors['crunchyroll'][1]}}"><h4 style="color: {{stream_colors['crunchyroll'][0]}}">Crunchyroll</h4>Seasons: {{streaming['crunchyroll']['seasons']}}<br><br>Movies: {{streaming['crunchyroll']['movies']}}</div>
-        <div class="service" style="color: {{stream_colors['funimation'][1]}}"><h4 style="color: {{stream_colors['funimation'][0]}}">Funimation</h4>Seasons: {{streaming['funimation']['seasons']}}<br><br>Movies: {{streaming['funimation']['movies']}}</div>
-        <br>
-        <div class="service" style="color: {{stream_colors['hidive'][1]}}"><h4 style="color: {{stream_colors['hidive'][0]}}">Hidive</h4>Seasons: {{streaming['hidive']['seasons']}}<br><br>Movies: {{streaming['hidive']['movies']}}</div>
-        <div class="service" style="color: {{stream_colors['vrv'][1]}}"><h4 style="color: {{stream_colors['vrv'][0]}}">VRV</h4>Seasons: {{streaming['vrv']['seasons']}}<br><br>Movies: {{streaming['vrv']['movies']}}</div>
-        <br>
-        <div class="service" style="color: {{stream_colors['hulu'][1]}}"><h4 style="color: {{stream_colors['hulu'][0]}}">Hulu</h4>Seasons: {{streaming['hulu']['seasons']}}<br><br>Movies: {{streaming['hulu']['movies']}}</div>
-        <div class="service" style="color: {{stream_colors['amazon'][1]}}"><h4 style="color: {{stream_colors['amazon'][0]}}">Amazon Prime</h4>Seasons: {{streaming['amazon']['seasons']}}<br><br>Movies: {{streaming['amazon']['movies']}}</div>
-        <br>
-        <div class="service" style="color: {{stream_colors['youtube'][1]}}"><h4 style="color: {{stream_colors['youtube'][0]}}">YouTube</h4>Seasons: {{streaming['youtube']['seasons']}}<br><br>Movies: {{streaming['youtube']['movies']}}</div>
-        <div class="service" style="color: {{stream_colors['prison'][1]}}"><h4 style="color: {{stream_colors['prison'][0]}}">Netflix Prison</h4>Seasons: {{streaming['prison']['seasons']}}<br><br>Movies: {{streaming['prison']['movies']}}</div>
-        <br>
-        <div class="service" style="color: {{stream_colors['hbo'][1]}}"><h4 style="color: {{stream_colors['hbo'][0]}}">HBO Max</h4>Seasons: {{streaming['hbo']['seasons']}}<br><br>Movies: {{streaming['hbo']['movies']}}</div>
-        <div class="service" style="color: {{stream_colors['tubi'][1]}}"><h4 style="color: {{stream_colors['tubi'][0]}}">Tubi TV</h4>Seasons: {{streaming['tubi']['seasons']}}<br><br>Movies: {{streaming['tubi']['movies']}}</div>
-    </div>
-    <br>
-    {% if current_user.is_authenticated %}
-        <div id="sliders">
+    <div id="sliders">
             <form action="" method="GET">
             <div class="range-wrap">
                 <label for="score" class="range-label">&#8672; Low score &bullet; High score &#8674;
@@ -108,7 +82,17 @@
             </div><br>
             <button name="rate" id="ratingButton" value="true" type="button">Submit</button>
             </form>
-        </div>
+    </div>
+    <br>
+    <div id="streaming">
+        {% for service in streaming.items() %}
+        {% if service[1] %}
+        <div class="service" style="color: {{ stream_colors[service[0]][0] }}"><p>{{ "Netflix Prison" if service[0] == "prison" else service[0].capitalize() }}</p></div>
+        <br>
+        {% endif %}
+        {% endfor %}
+    </div>
+        {% if current_user.is_authenticated %}
         <div>
             <form action="" method="post">
             <select name="lists" id="lists" onchange="this.form.submit()">
@@ -119,7 +103,8 @@
             </select>
             </form>
         </div>
-    {% endif %}
+        {% endif %}
+    <br style="clear: left">
 </main>
     <script type="text/javascript">let url = "{{ url }}";</script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>

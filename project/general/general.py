@@ -63,7 +63,7 @@ def graph_test():
 @general.errorhandler(404)
 def error404(error):
     return """Sorry, but much like Asta's ability to control his volume, this page does not exist. 
-    <a href="/display">Go back</a>"""
+    <a href="/display">Go back</a>""", 404
 
 
 # def collect_image(show):

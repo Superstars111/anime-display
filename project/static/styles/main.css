@@ -1,84 +1,79 @@
-#wrapper
-	{
-		margin-left: auto;
-		margin-right: auto;
-		width: 100%;
-		background-color: #FFFFFF;
-		min-width: 960px;
-		max-width: 2048px;
-		box-shadow: 3px 3px 3px #2E0000;
-	}
+div, nav, h1 {
+    background-color: #FFFFFF;
+}
 
-#options
-    {
-        float: left;
-        height: 55em;
-        border-style: solid;
-    }
+#wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    background-color: #ffdbba;
+    min-width: 960px;
+    max-width: 2048px;
+    box-shadow: 3px 3px 3px #2E0000;
+}
 
-#options select
-    {
-        width: 20em;
-        margin: .75em;
-    }
+#seasonal {
+    width: 27em;
+    height: 21.6em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#seasonal
-    {
-        width: 27em;
-        height: 21.6em;
-        margin: 0.5em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-    }
+#synopsis {
+    width: 39.25em;
+    height: 21.6em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#synopsis
-    {
-        width: 39.25em;
-        height: 21.6em;
-        margin: 0.5em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-    }
-
-#scoring
-    {
-        width: 27em;
-        height: 30em;
-        margin: 0.5em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-        text-align: center;
+#scoring {
+    width: 27em;
+    height: 30em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    text-align: center;
     clear: left;
-    }
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#tags
-    {
-        width: 39.25em;
-        height: 30em;
-        margin: 0.5em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-    }
+#tags {
+    width: 39.25em;
+    height: 30em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#streaming
-    {
-        border-style: solid;
-        /*float: right;*/
-        margin: 0.5em;
-        /*padding: .15em;*/
-        width: 24em;
-        text-align: center;
-        display: inline-block;
-        float: top;
-    }
+#streaming {
+    border-style: solid;
+    /*float: right;*/
+    margin: 0.5em;
+    /*padding: .15em;*/
+    width: 24em;
+    text-align: center;
+    display: inline-block;
+    float: top;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
 #avgScores {
     border-style: solid;
@@ -100,10 +95,15 @@
         display: inline-block;
         text-align: center;
         width: 9.75em;
-        height: 6em;
+        height: auto;
         padding: .5em;
         margin: .2em;
     }
+
+.service p {
+    font-weight: 900;
+    margin: 0;
+}
 
 nav ul
     {
@@ -166,6 +166,7 @@ h4
     width: 24em;
     margin: 0.5em;
     /*text-align: center;*/
+    border-radius: 15px;
 }
 
 .slider {

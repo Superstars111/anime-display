@@ -4,29 +4,24 @@
 <h2>Welcome, {{name}}!</h2> <br>
 <h3>Or Bob Ross, if that's who you are. Like, you can never be sure.</h3> <br>
 <p>
-  Kay, so, like, you want to be able to do stuff. <br>
-  <ul>
+  <ul>To add:
   <li>Add friends</li>
   <li>Edit names for shows</li>
   <li>Edit personal lists</li>
-  <li>Give and receive recommendations</li>
-  <li>Rate shows</li>
+  <li>Give and receive recommendations (?)</li>
   <li>Set site preferences, like... Uh... TBD</li>
   <li>Edit personal tags for shows</li>
-  <li>Compare shows, set targets like length, etc.</li>
+  <li>Compare shows/series</li>
+  <li>Search for series based on set parameters</li>
 </ul>
 </p>
 {% if current_user.admin %}
 <p>
-  Yo. You're, like, an admin. Cool. You want to be able to do more. <br>
-  <ul>
-  <li>Add or remove shows from the library</li>
-  <li>Update show information?</li>
-  <li>Set other users as admins</li>
-  <li>Ban users (temporarily or permanently)</li>
-  <li></li>
+  <ul>To add (admin edition):
+  <li>See the <a href="/administration">admin</a> page for more</li>
 </ul>
     Also, what's up with that "energy" column? What about "intensity-subtlety", and/or "attention required?" How about "emotional-intellectual?"
+    I think I can add back the timeline rating also, since you now rate a show rather than a series...
 </p>
 <form action="">
 <button type="submit" name="ratings" value="true">Migrate ratings</button></form>

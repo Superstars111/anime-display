@@ -1,0 +1,10 @@
+{% extends "general/templates/general/base.html" %}
+{% block content %}
+<main>
+    <ul>Site members:
+    {% for username in usernames %}
+        <li><a href="/users/{{ username }}">{{ username }}</a></li>
+    {% endfor %}
+    </ul>
+</main>
+{% endblock %}
