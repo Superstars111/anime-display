@@ -247,3 +247,32 @@ html, body {
     width: 25em;
     display: inline-block;
 }
+
+#update-logger {
+    list-style: none;
+}
+
+#update-logger .addition:before {
+    content: "\2295";
+    padding-right: 5px;
+}
+
+#update-logger .removal:before {
+    content: "\2296";
+    padding-right: 5px;
+}
+
+#update-logger .bug-fix:before {
+    content: "\229B";
+    padding-right: 5px;
+}
+
+#update-logger .redesign:before {
+    content: "\2299";
+    padding-right: 5px;
+}
+
+#update-logger .admin:before {
+    content: "\1F3A9";
+    padding-right: 5px;
+}
