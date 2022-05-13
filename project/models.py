@@ -91,6 +91,7 @@ class Show(db.Model):
     position = Column(Integer)
     priority = Column(Integer)  # 1 = main, 2 = side, 3 = minor
     type = Column(String)
+    status = Column(String)
     episodes = Column(Integer)
     cover_image = Column(String)
     description = Column(String)

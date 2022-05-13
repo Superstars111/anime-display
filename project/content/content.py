@@ -9,7 +9,8 @@ from project.models import Show, Rating, List, User, Series
 from project import db
 import requests as rq
 import json
-from project.functions import assign_data, collect_seasonal_data, sort_seasonal_data, check_stream_locations
+from project.functions import assign_data, collect_seasonal_data, check_stream_locations, request_show_data, \
+    update_show_entry, get_average
 
 # if settings.TESTING:
 #     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
@@ -18,53 +19,55 @@ from project.functions import assign_data, collect_seasonal_data, sort_seasonal_
 #
 # library = full_data[2]
 
-url = "https://graphql.anilist.co/"
-query = """query($id: Int){
-  Media(id: $id, type: ANIME){
-    genres,
-    tags {
-      name,
-      rank,
-      isMediaSpoiler
-    },
-    averageScore,
-    externalLinks {
-      site
-    }
-  }
-}"""
-stream_info = {
-            "crunchyroll": {"seasons": 0,
-                            "movies": 0
-                            },
-            "funimation":  {"seasons": 0,
-                            "movies": 0
-                            },
-            "prison":      {"seasons": 0,
-                            "movies": 0
-                            },
-            "amazon":      {"seasons": 0,
-                            "movies": 0
-                            },
-            "vrv":         {"seasons": 0,
-                            "movies": 0
-                            },
-            "hulu":        {"seasons": 0,
-                            "movies": 0
-                            },
-            "youtube":     {"seasons": 0,
-                            "movies": 0
-                            },
-            "tubi":        {"seasons": 0,
-                            "movies": 0
-                            },
-            "hbo":         {"seasons": 0,
-                            "movies": 0
-                            },
-            "hidive":      {"seasons": 0,
-                            "movies": 0
-                            }
-        }
+template_path = "content/templates/content"
+
+# url = "https://graphql.anilist.co/"
+# query = """query($id: Int){
+#   Media(id: $id, type: ANIME){
+#     genres,
+#     tags {
+#       name,
+#       rank,
+#       isMediaSpoiler
+#     },
+#     averageScore,
+#     externalLinks {
+#       site
+#     }
+#   }
+# }"""
+# stream_info = {
+#             "crunchyroll": {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "funimation":  {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "prison":      {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "amazon":      {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "vrv":         {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "hulu":        {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "youtube":     {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "tubi":        {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "hbo":         {"seasons": 0,
+#                             "movies": 0
+#                             },
+#             "hidive":      {"seasons": 0,
+#                             "movies": 0
+#                             }
+#         }
 
 
 content = Blueprint("content", __name__, template_folder="../../project")
@@ -208,69 +211,25 @@ def series(series_id):
     if not series:
         return redirect(url_for("404"))
     entry = Show.query.filter_by(id=series.entry_point_id).first()
-    # if current_user.is_authenticated:
-    #     user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
-    # else:
-    #     user_rating = None
 
-    id_var = {"id": entry.anilist_id}
-    GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
-    series_data = {
-        "sequel": [],
-        "total_episodes": GQL_request["episodes"],
-        "seasons": 1 if GQL_request["format"] in ("TV", "TV_SHORT") else 0,
-        "movies": 1 if GQL_request["format"] == "MOVIE" else 0,
-        "unaired_seasons": 0,
-        "streaming": {
-            "crunchyroll": {"seasons": 0,
-                            "movies": 0
-                            },
-            "funimation": {"seasons": 0,
-                           "movies": 0
-                           },
-            "prison": {"seasons": 0,
-                       "movies": 0
-                       },
-            "amazon": {"seasons": 0,
-                       "movies": 0
-                       },
-            "vrv": {"seasons": 0,
-                    "movies": 0
-                    },
-            "hulu": {"seasons": 0,
-                     "movies": 0
-                     },
-            "youtube": {"seasons": 0,
-                        "movies": 0
-                        },
-            "tubi": {"seasons": 0,
-                     "movies": 0
-                     },
-            "hbo": {"seasons": 0,
-                    "movies": 0
-                    },
-            "hidive": {"seasons": 0,
-                       "movies": 0
-                       }
-        }
-    }
-    seasonal_data = collect_seasonal_data(entry.anilist_id, series_data)
-    tags, spoilers = collect_tags(GQL_request["tags"])
+    seasonal_data = collect_seasonal_data(series_id)
+    tags, spoilers = collect_tags(seasonal_data["mainTags"])
 
     variables = {
         "title": collect_title(series),
         "image": entry.cover_image,
-        "episodes": sum([show.episodes for show in series.shows]),
-        "seasons": seasonal_data["seasons"],
-        "movies": seasonal_data["movies"],
-        "unaired": seasonal_data["unaired_seasons"],
+        "totalEpisodes": sum([show.episodes for show in series.shows]),
+        "seasons": len(seasonal_data["mainShows"]),
+        "movies": "N/A",
+        "unaired": "N/A",
         "synopsis": entry.description,
-        "genres": collect_genres(GQL_request["genres"]),
+        "genres": collect_genres(seasonal_data["mainGenres"]),
         "tags": tags,
         "spoilers": spoilers,
-        "public": GQL_request["averageScore"],
-        "stream_colors": collect_streaming_colors(seasonal_data),
-        "streaming": seasonal_data["streaming"],
+        "public": "N/A",
+        "stream_colors": collect_streaming_colors(seasonal_data["mainAvailability"], series=True),
+        "mainStreaming": seasonal_data["mainAvailability"],
+        "sideStreaming": seasonal_data["sideAvailability"],
         # "data": data,
         # "avgUserScore": collect_avg_user_score(show_id),
         # "score": user_rating.score if user_rating else 0,
@@ -283,7 +242,7 @@ def series(series_id):
         "url": f"/series/{series_id}"
     }
 
-    return render_template("content/templates/content/series_display.html", **variables)
+    return render_template(f"{template_path}/series_display.html", **variables)
 
 
 @content.route("/shows/<int:show_id>", methods=["GET", "POST"])
@@ -291,6 +250,12 @@ def show(show_id):
     show = Show.query.filter_by(id=show_id).first()
     if not show:
         return redirect(url_for("404"))
+
+    GQL_request = request_show_data(show.anilist_id)
+    if show.status not in ("FINISHED", "CANCELLED"):
+        update_show_entry(show.anilist_id, GQL_request)
+        show = Show.query.filter_by(id=show_id).first()
+
     if current_user.is_authenticated:
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
     else:
@@ -324,48 +289,8 @@ def show(show_id):
 
         db.session.commit()
 
-    id_var = {"id": show.anilist_id}
-    GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
-
-    streaming = {
-        "crunchyroll": {"seasons": 0,
-                        "movies": 0
-                        },
-        "funimation":  {"seasons": 0,
-                        "movies": 0
-                        },
-        "prison":      {"seasons": 0,
-                        "movies": 0
-                        },
-        "amazon":      {"seasons": 0,
-                        "movies": 0
-                        },
-        "vrv":         {"seasons": 0,
-                        "movies": 0
-                        },
-        "hulu":        {"seasons": 0,
-                        "movies": 0
-                        },
-        "youtube":     {"seasons": 0,
-                        "movies": 0
-                        },
-        "tubi":        {"seasons": 0,
-                        "movies": 0
-                        },
-        "hbo":         {"seasons": 0,
-                        "movies": 0
-                        },
-        "hidive":      {"seasons": 0,
-                        "movies": 0
-                        }
-        }
-
-    # seasonal_data = collect_seasonal_data(show.anilist_id, series_data)
     tags, spoilers = collect_tags(GQL_request["tags"])
     availability = check_stream_locations(GQL_request["externalLinks"])
-    # scores, pacing_scores, drama_scores = sort_ratings(user_rating)
-    # colors = collect_colors(scores)
-    # graph = collect_graph(pacing_scores, drama_scores, colors)
 
     variables = {
         "title": collect_title(show),
@@ -392,12 +317,6 @@ def show(show_id):
     }
 
     return render_template("content/templates/content/show_display.html", **variables)
-
-
-# def find_show(id):
-#     for show in library:
-#         if show["id"] == id:
-#             return show
 
 
 def collect_title(show):
@@ -455,7 +374,7 @@ def collect_streaming_colors(availability: dict, series=False) -> dict:
         "tubi": [],
     }
     for service in availability.items():
-        if service[1] is True:
+        if service[1]:
             if service[0] == "crunchyroll":
                 color = "orange"
             elif service[0] in ("funimation", "hbo"):
@@ -492,25 +411,16 @@ def sort_ratings(ratings):
     return scores, pacing_scores, drama_scores
 
 
-def get_average(numbers_list):
-    average = 0
-    if numbers_list:
-        dc.getcontext().rounding = dc.ROUND_HALF_UP
-        average = sum(numbers_list) / len(numbers_list)
-        average = int(dc.Decimal(str(average)).quantize(dc.Decimal("1")))
-
-    return average
-
-
 def collect_genres(genres_list):
     genres = ", ".join(genres_list)
     return genres
 
 
-def collect_tags(tags_list):
+def collect_tags(raw_tags: list):
+    raw_tags.sort(key=lambda x: x["rank"], reverse=True)
     tags = []
     spoilers = []
-    for tag in tags_list:
+    for tag in raw_tags:
         s = f"{tag['name']} ({tag['rank']}%)"
         if tag['isMediaSpoiler']:
             spoilers.append(s)
@@ -520,29 +430,3 @@ def collect_tags(tags_list):
     tags = ", ".join(tags)
     spoilers = ", ".join(spoilers)
     return tags, spoilers
-
-
-# def collect_graph(pacing_scores, drama_scores, colors):
-#     matplotlib.use("Agg")
-#     fig = plt.Figure(figsize=(5, 4), dpi=100)
-#     graph = fig.add_subplot(111)
-#     # scatter_chart = FigureCanvasTkAgg(graph_frame, frm_ratings)
-#     plot_graph(graph, pacing_scores, drama_scores, colors)
-#     return fig
-#
-#
-# def plot_graph(graph, pacing_scores, drama_scores, colors):
-#     graph.cla()
-#     build_graph(graph)
-#     graph.scatter(pacing_scores, drama_scores, color=colors, picker=True)
-#     graph.figure.canvas.draw_idle()
-#
-#
-# def build_graph(graph):
-#     graph.grid()  # Adds a grid to the graph- does not add the graph to the Tkinter grid
-#     graph.scatter([50, -50], [50, -50], s=[0, 0])
-#     graph.set_ylabel("< Drama \u2022 Comedy >")
-#     graph.set_xlabel("< Slow Pacing \u2022 Fast Pacing >")
-
-
-

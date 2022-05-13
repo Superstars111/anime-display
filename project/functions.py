@@ -1,5 +1,6 @@
 import json
 import requests as rq
+import decimal as dc
 from project.models import Show, Series
 from . import db
 import time
@@ -13,7 +14,18 @@ query = """query($id: Int){
       english
       native
     },
+    genres,
+    tags {
+      name,
+      rank,
+      isMediaSpoiler
+    },
+    averageScore,
+    externalLinks {
+      site
+    }
     format,
+    status,
     description,
     episodes,
     relations{
@@ -113,7 +125,7 @@ def assign_data(ratings, x_data, y_data):
     return data
 
 
-def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None):
+def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None) -> list:
     if not checked_shows:
         checked_shows = []
     sequels = []
@@ -121,17 +133,122 @@ def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: 
     minor_relations = []
     related_series = []
 
-    relations = add_show(anilist_id, position, checked_shows, main=main, series_id=series_id)
+    relations = add_show_to_series(anilist_id, position, checked_shows, main=main, series_id=series_id)
     checked_shows.append(anilist_id)
 
+    series_id = update_series_entry(anilist_id)
+
+    for relation in relations:
+        if relation["node"]["type"] == "ANIME":
+
+            if relation["relationType"] == "SEQUEL":
+                sequels.append(relation["node"]["id"])
+
+            elif relation["relationType"] == "SIDE_STORY":
+                side_stories.append(relation["node"]["id"])
+
+            elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
+                related_series.append(relation["node"]["id"])
+
+            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
+                minor_relations.append(relation["node"]["id"])
+
+    for show_id in sequels:
+        if show_id not in checked_shows:
+            checked_shows = update_full_series(show_id, position=position + 1, main=main, series_id=series_id, checked_shows=checked_shows)
+
+    for show_id in side_stories:
+        if show_id not in checked_shows:
+            checked_shows = update_full_series(show_id, position=position, main=2, series_id=series_id, checked_shows=checked_shows)
+
+    for show_id in minor_relations:
+        if show_id not in checked_shows:
+            checked_shows = update_full_series(show_id, position=position, main=3, series_id=series_id, checked_shows=checked_shows)
+
+    for show_id in related_series:
+        if show_id not in checked_shows:
+            checked_shows = update_full_series(show_id, checked_shows=checked_shows)
+
+    return checked_shows
+
+
+def add_show_to_series(anilist_id: int, position: int, checked_shows: list, main: int = 1, series_id: int = None) -> list:
+    if anilist_id not in checked_shows:
+        GQL_request = request_show_data(anilist_id)
+        update_show_entry(anilist_id, GQL_request)
+
+        show = Show.query.filter_by(anilist_id=anilist_id).first()
+
+        show.position = position
+        show.priority = main
+
+        if series_id:
+            series = Series.query.filter_by(id=series_id).first()
+            show.series_id = series.id
+
+        # Return list of related shows
+        return GQL_request["relations"]["edges"]
+
+    else:
+        # Needed for when it iterates over the list later
+        return []
+
+
+def request_show_data(anilist_id: int) -> dict:
+    id_var = {"id": anilist_id}
+    try:
+        GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+    except TypeError:
+        print("Timeout- sleeping")
+        time.sleep(65)
+        print("Waking up")
+        GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+
+    return GQL_request
+
+
+def update_show_entry(anilist_id: int, new_data: dict):
+    show = Show.query.filter_by(anilist_id=anilist_id).first()
+
+    if not show:
+        print(f"+show {new_data['title']['romaji']}, Anilist ID: {anilist_id}")
+        show = Show(
+            en_name=new_data["title"]["english"],
+            jp_name=new_data["title"]["native"],
+            rj_name=new_data["title"]["romaji"],
+            anilist_id=anilist_id,
+            type=new_data["format"],
+            status=new_data["status"],
+            episodes=new_data["episodes"],
+            cover_image=new_data["coverImage"]["large"],
+            description=new_data["description"],
+        )
+
+        db.session.add(show)
+
+    else:
+        print(f"Updating show {show.rj_name}, Anilist ID: {show.anilist_id}")
+        show.en_name = new_data["title"]["english"]
+        show.jp_name = new_data["title"]["native"]
+        show.rj_name = new_data["title"]["romaji"]
+        show.type = new_data["format"]
+        show.status = new_data["status"]
+        show.episodes = new_data["episodes"]
+        show.cover_image = new_data["coverImage"]["large"]
+        show.description = new_data["description"]
+
+    db.session.commit()
+
+
+def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
     if series_id:
         series = Series.query.filter_by(id=series_id).first()
     else:
-        show = Show.query.filter_by(anilist_id=anilist_id).first()
+        show = Show.query.filter_by(anilist_id=initial_anilist_id).first()
         series = Series.query.filter_by(entry_point_id=show.id).first()
 
     if not series:
-        show = Show.query.filter_by(anilist_id=anilist_id).first()
+        show = Show.query.filter_by(anilist_id=initial_anilist_id).first()
         print(f"+series for {show.rj_name}")
         series = Series(en_name=show.en_name, jp_name=show.jp_name, rj_name=show.rj_name, entry_point_id=show.id)
         db.session.add(series)
@@ -141,135 +258,128 @@ def add_to_series(anilist_id: int, position: int = 1, main: int = 1, series_id: 
 
         db.session.commit()
 
-    for relation in relations:
-        if relation["node"]["type"] == "ANIME":
-            if relation["relationType"] == "SEQUEL":
-                sequels.append(relation["node"]["id"])
-            elif relation["relationType"] == "SIDE_STORY":
-                side_stories.append(relation["node"]["id"])
-            elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
-                related_series.append(relation["node"]["id"])
-            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
-                minor_relations.append(relation["node"]["id"])
-
-    print(f"{series.id} - {series.rj_name}")
-    for show_id in sequels:
-        if show_id not in checked_shows:
-            checked_shows = add_to_series(show_id, position=position+1, main=main, series_id=series.id, checked_shows=checked_shows)
-    for show_id in side_stories:
-        if show_id not in checked_shows:
-            checked_shows = add_to_series(show_id, position=position, main=2, series_id=series.id, checked_shows=checked_shows)
-    for show_id in minor_relations:
-        if show_id not in checked_shows:
-            checked_shows = add_to_series(show_id, position=position, main=3, series_id=series.id, checked_shows=checked_shows)
-    for show_id in related_series:
-        if show_id not in checked_shows:
-            checked_shows = add_to_series(show_id, checked_shows=checked_shows)
-
-    return checked_shows
+    return series.id
 
 
-def add_show(anilist_id: int, position: int, checked_shows: list, main: int = 1, series_id: int = None) -> list:
-    if anilist_id not in checked_shows:
-        id_var = {"id": anilist_id}
-        try:
-            GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
-        except TypeError:
-            print("Timeout- sleeping")
-            time.sleep(65)
-            print("Waking up")
-            GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+def collect_seasonal_data(series_id: int) -> dict:
+    series = Series.query.filter_by(id=series_id).first()
+    seasonal_data = {
+        "totalEpisodes": 0,
+        "mainSeriesEpisodes": 0,
+        "mainShows": [],
+        "sideShows": [],
+        "minorRelations": [],
+        "mainTags": {},
+        "mainGenres": [],
+        "mainAvailability": {},
+        "sideAvailability": {
+            "crunchyroll": 0,
+            "funimation": 0,
+            "prison": 0,
+            "amazon": 0,
+            "vrv": 0,
+            "hulu": 0,
+            "youtube": 0,
+            "tubi": 0,
+            "hbo": 0,
+            "hidive": 0,
+        }
+    }
 
-        show = Show.query.filter_by(anilist_id=anilist_id).first()
+    for show in series.shows:
+        seasonal_data["totalEpisodes"] += show.episodes
+        if show.priority == 1:
+            seasonal_data["mainSeriesEpisodes"] += show.episodes
+            seasonal_data["mainShows"].append(show)
 
-        if not show:
-            print(f"+show {GQL_request['title']['romaji']}, Anilist ID: {anilist_id}")
-            show = Show(
-                en_name=GQL_request["title"]["english"],
-                jp_name=GQL_request["title"]["native"],
-                rj_name=GQL_request["title"]["romaji"],
-                anilist_id=anilist_id,
-                position=position,
-                priority=main,
-                type=GQL_request["format"],
-                episodes=GQL_request["episodes"],
-                cover_image=GQL_request["coverImage"]["large"],
-                description=GQL_request["description"],
-            )
-
-            db.session.add(show)
+        elif show.priority == 2:
+            seasonal_data["sideShows"].append(show)
 
         else:
-            print(f"Updating show {show.rj_name}, Anilist ID: {show.anilist_id}")
-            show.en_name = GQL_request["title"]["english"]
-            show.jp_name = GQL_request["title"]["native"]
-            show.rj_name = GQL_request["title"]["romaji"]
-            show.position = position
-            show.priority = main
-            show.type = GQL_request["format"]
-            show.episodes = GQL_request["episodes"]
-            show.cover_image = GQL_request["coverImage"]["large"]
-            show.description = GQL_request["description"]
+            seasonal_data["minorRelations"].append(show)
 
-        if series_id:
-            series = Series.query.filter_by(id=series_id).first()
-            show.series_id = series.id
-
-        db.session.commit()
-
-        return GQL_request["relations"]["edges"]
-
-    else:
-        # Needed for when it iterates over the list later
-        return []
-
-
-def collect_seasonal_data(show_id, seasonal_data):
-    id_var = {"id": show_id}
-    season_query = """query($id: Int){
-                 Media(id: $id, type:ANIME){
-                   format,
-                   relations{
-                     edges{
-                       relationType,
-                       node{
-                         id,
-                         episodes,
-                         format,
-                         status,
-                         },
-                       }
-                     }
-                   externalLinks {
-                     site
-                   },
-                 }
-               }"""
-    show_data = rq.post(url, json={"query": season_query, "variables": id_var}).json()["data"]["Media"]
-
-    seasonal_data = sort_seasonal_data(show_data, seasonal_data)
-
-    for id_no in seasonal_data["sequel"]:
-        seasonal_data = collect_seasonal_data(id_no, seasonal_data)
-    return seasonal_data
-
-
-def sort_seasonal_data(data_tree, seasonal_data):
-    check_stream_locations(data_tree, seasonal_data["streaming"])
-    seasonal_data["sequel"] = []
-    for series in data_tree["relations"]["edges"]:
-        if series["relationType"] == "SEQUEL":
-            if series["node"]["format"] in ("TV", "TV_SHORT"):
-                if series["node"]["status"] == "FINISHED":
-                    seasonal_data["total_episodes"] += series["node"]["episodes"]
-                    seasonal_data["seasons"] += 1
-                else:
-                    seasonal_data["unaired_seasons"] += 1
-            elif series["node"]["format"] == "MOVIE":
-                seasonal_data["movies"] += 1
-            seasonal_data["sequel"].append(series["node"]["id"])
+    processed_data = process_main_show_data(seasonal_data["mainShows"])
+    seasonal_data["mainAvailability"] = processed_data["availability"]
+    seasonal_data["mainGenres"] = processed_data["genres"]
+    seasonal_data["mainTags"] = processed_data["tags"]
+    seasonal_data["sideAvailability"] = process_side_show_data(seasonal_data["sideShows"])
 
     return seasonal_data
+
+
+def process_main_show_data(main_shows: list) -> dict:
+    sorted_data = {
+        "availability": {
+            "crunchyroll": 0,
+            "funimation": 0,
+            "hidive": 0,
+            "vrv": 0,
+            "hulu": 0,
+            "amazon": 0,
+            "youtube": 0,
+            "prison": 0,
+            "hbo": 0,
+            "tubi": 0,
+        },
+        "genres": [],
+        "tags": {},
+    }
+    tags_list = []
+    for show in main_shows:
+        GQL_request = request_show_data(show.anilist_id)
+        show_availability = check_stream_locations(GQL_request["externalLinks"])
+        for service in show_availability.items():
+            if service[1] is True:
+                sorted_data["availability"][service[0]] += 1
+
+        for genre in GQL_request["genres"]:
+            if genre not in sorted_data["genres"]:
+                sorted_data["genres"].append(genre)
+
+        for tag in GQL_request["tags"]:
+            try:
+                if sorted_data["tags"][tag["name"]]:
+                    pass
+            except KeyError:
+                sorted_data["tags"][tag["name"]] = {}
+                sorted_data["tags"][tag["name"]]["name"] = tag["name"]
+                sorted_data["tags"][tag["name"]]["ranksList"] = []
+                sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = False
+
+            sorted_data["tags"][tag["name"]]["ranksList"].append(tag["rank"])
+            if tag["isMediaSpoiler"]:
+                sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = True
+
+    for tag in sorted_data["tags"].items():
+        tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(main_shows))
+        tags_list.append(tag[1])
+
+    sorted_data["tags"] = tags_list
+
+    return sorted_data
+
+
+def process_side_show_data(side_shows: list) -> dict:
+    availability = {
+        "crunchyroll": 0,
+        "funimation": 0,
+        "hidive": 0,
+        "vrv": 0,
+        "hulu": 0,
+        "amazon": 0,
+        "youtube": 0,
+        "prison": 0,
+        "hbo": 0,
+        "tubi": 0,
+    }
+    for show in side_shows:
+        GQL_request = request_show_data(show.anilist_id)
+        show_availability = check_stream_locations(GQL_request["externalLinks"])
+        for service in show_availability.items():
+            if service[1] is True:
+                availability[service[0]] += 1
+
+    return availability
 
 
 def check_stream_locations(streaming_links: list) -> dict:
@@ -290,32 +400,53 @@ def check_stream_locations(streaming_links: list) -> dict:
         if link["site"] == "Crunchyroll" and "crunchyroll" not in checked:
             checked.append("crunchyroll")
             availability["crunchyroll"] = True
+
         elif link["site"] == "Funimation" and "funimation" not in checked:
             checked.append("funimation")
             availability["funimation"] = True
+
         elif link["site"] == "Netflix" and "prison" not in checked:
             checked.append("prison")
             availability["prison"] = True
+
         elif link["site"] == "Amazon" and "amazon" not in checked:
             checked.append("amazon")
             availability["amazon"] = True
+
         elif link["site"] == "VRV" and "vrv" not in checked:
             checked.append("vrv")
             availability["vrv"] = True
+
         elif link["site"] == "Hulu" and "hulu" not in checked:
             checked.append("hulu")
             availability["hulu"] = True
+
         elif link["site"] == "Youtube" and "youtube" not in checked:
             checked.append("youtube")
             availability["youtube"] = True
+
         elif link["site"] == "Tubi TV" and "tubi" not in checked:
             checked.append("tubi")
             availability["tubi"] = True
+
         elif link["site"] == "HBO Max" and "hbo" not in checked:
             checked.append("hbo")
             availability["hbo"] = True
+
         elif link["site"] == "Hidive" and "hidive" not in checked:
             checked.append("hidive")
             availability["hidive"] = True
 
     return availability
+
+
+def get_average(numbers: list, length: int = None) -> int:
+    average = 0
+    if not length:
+        length = len(numbers)
+    if numbers:
+        dc.getcontext().rounding = dc.ROUND_HALF_UP
+        average = sum(numbers) / length
+        average = int(dc.Decimal(str(average)).quantize(dc.Decimal("1")))
+
+    return average

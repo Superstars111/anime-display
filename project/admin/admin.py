@@ -2,7 +2,7 @@ from flask import Blueprint, session, render_template, redirect, url_for, reques
 from flask_login import login_required, current_user
 from project.config import settings
 from project.automation import migrate_ratings, update_library, add_lists, transfer_shows_to_series
-from project.functions import add_to_series
+from project.functions import update_full_series
 
 admin = Blueprint("admin", __name__, template_folder="../../project")
 
@@ -37,7 +37,7 @@ def administration():
         add_lists()
 
     if series_id:
-        add_to_series(int(series_id))
+        update_full_series(int(series_id))
 
     if transfer:
         transfer_shows_to_series()
