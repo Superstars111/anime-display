@@ -207,10 +207,20 @@ def options():
 
 @content.route("/series/<int:series_id>")
 def series(series_id):
-    series = Series.query.filter_by(id=series_id).first()
+    series = Series.query.get(series_id)
     if not series:
         return redirect(url_for("404"))
-    entry = Show.query.filter_by(id=series.entry_point_id).first()
+    entry = Show.query.get(series.entry_point_id)
+    main_shows = []
+    side_shows = []
+    minor_shows = []
+    for show in series.shows:
+        if show.priority == 1:
+            main_shows.append(show)
+        elif show.priority == 2:
+            side_shows.append(show)
+        elif show.priority == 3:
+            minor_shows.append(show)
 
     seasonal_data = collect_seasonal_data(series_id)
     tags, spoilers = collect_tags(seasonal_data["mainTags"])

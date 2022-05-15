@@ -378,6 +378,7 @@ def process_side_show_data(side_shows: list) -> dict:
         for service in show_availability.items():
             if service[1] is True:
                 availability[service[0]] += 1
+    # TODO: Can possibly merge by using "if show.priority == 1..."
 
     return availability
 

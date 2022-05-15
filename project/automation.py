@@ -85,9 +85,10 @@ def sort_anilist_data():
 
 def transfer_shows_to_series():
     for show in db.session.query(Show).all():
-        print(f"---Transfering {show.rj_name} now---")
-        update_full_series(show.anilist_id)
-        time.sleep(1.5)
+        if show.priority == 1:
+            print(f"---Transfering {show.rj_name} now---")
+            update_full_series(show.anilist_id)
+            time.sleep(1.75)
 
 
 # if __name__ == "__main__":
