@@ -36,7 +36,8 @@
         </select></form>
     </div></div>
     <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
-    <div id="streaming">Main series availability: <br>
+    <div id="changes">Put bar/line graph here.</div>
+    <div id="streaming">
     {# Want to use enumerate() here with modulo for a better break system, but jinja2 doesn't like enumerate(). #}
         {% for service in mainStreaming.items() %}
         <div class="service" style="color: {{ stream_colors[service[0]][0] }}"><h4>{{ "Netflix Prison" if service[0] == "prison" else service[0].capitalize() }}</h4>

@@ -65,6 +65,18 @@ nav {
     border-radius: 15px;
 }
 
+#changes {
+    width: 68.125em;
+    height: 14em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
+
 #streaming {
     border-style: solid;
     /*float: right;*/
