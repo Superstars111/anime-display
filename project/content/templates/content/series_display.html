@@ -4,10 +4,11 @@
     <h2>{{title}}</h2>
     <div id="seasonal">
         <img src="{{image}}" alt="Cover image for current show" style="float: left"><br>
-        <h3>Episodes: {{episodes}}</h3> <br>
-        <h3>Seasons: N/A</h3> <br>
-        <h3>Movies: N/A</h3> <br>
-        <h3>Unaired: N/A</h3></div>
+        <h3>Episodes (Total): {{totalEpisodes}}</h3>
+        <h3>Episodes (Main): {{mainEpisodes}}</h3> <br><br><br>
+        <h3>Main content: {{ main }}</h3>
+        <h3>Side content: {{ side }}</h3>
+        <h3>Minor content: {{ minor }}</h3></div>
     <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
     <div id="scoring"><div id="avgScores">Anilist avg score: {{ public }}, MAL avg score: N/A <br>
         Our avg score: {{ avgUserScore }}, Friends' avg score: N/A </div>

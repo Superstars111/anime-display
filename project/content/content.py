@@ -12,63 +12,7 @@ import json
 from project.functions import assign_data, collect_seasonal_data, check_stream_locations, request_show_data, \
     update_show_entry, get_average
 
-# if settings.TESTING:
-#     full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
-# else:
-#     full_data = pd.read_json("/home/Superstars111/mysite/anime_data.json", typ="series", orient="records")
-#
-# library = full_data[2]
-
 template_path = "content/templates/content"
-
-# url = "https://graphql.anilist.co/"
-# query = """query($id: Int){
-#   Media(id: $id, type: ANIME){
-#     genres,
-#     tags {
-#       name,
-#       rank,
-#       isMediaSpoiler
-#     },
-#     averageScore,
-#     externalLinks {
-#       site
-#     }
-#   }
-# }"""
-# stream_info = {
-#             "crunchyroll": {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "funimation":  {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "prison":      {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "amazon":      {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "vrv":         {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "hulu":        {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "youtube":     {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "tubi":        {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "hbo":         {"seasons": 0,
-#                             "movies": 0
-#                             },
-#             "hidive":      {"seasons": 0,
-#                             "movies": 0
-#                             }
-#         }
-
 
 content = Blueprint("content", __name__, template_folder="../../project")
 
@@ -211,16 +155,7 @@ def series(series_id):
     if not series:
         return redirect(url_for("404"))
     entry = Show.query.get(series.entry_point_id)
-    main_shows = []
-    side_shows = []
-    minor_shows = []
-    for show in series.shows:
-        if show.priority == 1:
-            main_shows.append(show)
-        elif show.priority == 2:
-            side_shows.append(show)
-        elif show.priority == 3:
-            minor_shows.append(show)
+    sorted_shows = series.sort_shows()
 
     seasonal_data = collect_seasonal_data(series_id)
     tags, spoilers = collect_tags(seasonal_data["mainTags"])
@@ -228,10 +163,14 @@ def series(series_id):
     variables = {
         "title": collect_title(series),
         "image": entry.cover_image,
-        "totalEpisodes": sum([show.episodes for show in series.shows]),
-        "seasons": len(seasonal_data["mainShows"]),
+        "totalEpisodes": seasonal_data["totalEpisodes"],
+        "mainEpisodes": seasonal_data["mainSeriesEpisodes"],
+        "seasons": len(sorted_shows["main_shows"]),
         "movies": "N/A",
         "unaired": "N/A",
+        "main": len(sorted_shows["main_shows"]),
+        "side": len(sorted_shows["side_shows"]),
+        "minor": len(sorted_shows["minor_shows"]),
         "synopsis": entry.description,
         "genres": collect_genres(seasonal_data["mainGenres"]),
         "tags": tags,
@@ -263,8 +202,7 @@ def show(show_id):
 
     GQL_request = request_show_data(show.anilist_id)
     if show.status not in ("FINISHED", "CANCELLED"):
-        update_show_entry(show.anilist_id, GQL_request)
-        show = Show.query.filter_by(id=show_id).first()
+        show.update_entry(GQL_request)
 
     if current_user.is_authenticated:
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
@@ -356,15 +294,12 @@ def collect_colors(scores):
 
 def collect_avg_user_score(show_id):
     all_ratings = []
-    dc.getcontext().rounding = dc.ROUND_HALF_UP
     for rating in Show.query.filter_by(id=show_id).first().user_ratings:
         all_ratings.append(rating.score)
 
-    # TODO: Modify get_average() for use here
-    if all_ratings:
-        avg_user_score = sum(all_ratings) / (len(all_ratings) if all_ratings else 1)
-        avg_user_score = int(dc.Decimal(str(avg_user_score)).quantize(dc.Decimal("1")))
-    else:
+    avg_user_score = get_average(all_ratings)
+
+    if avg_user_score == 0:
         avg_user_score = "N/A"
 
     return avg_user_score
@@ -385,23 +320,32 @@ def collect_streaming_colors(availability: dict, series=False) -> dict:
     }
     for service in availability.items():
         if service[1]:
+            # All colors must work in CSS.
             if service[0] == "crunchyroll":
-                color = "orange"
-            elif service[0] in ("funimation", "hbo"):
-                color = "purple"
-            elif service[0] in ("hidive", "amazon"):
-                color = "dodgerBlue"
+                color = "#FF8C00"  # CSS DarkOrange
+            elif service[0] == "funimation":
+                color = "#4B0082"  # CSS Indigo
+            elif service[0] == "hbo":
+                color = "#6495ED"  # CSS CornflowerBlue
+            elif service[0] == "hidive":
+                color = "#1E90FF"  # CSS DodgerBlue
+            elif service[0] == "amazon":
+                color = "#00BFFF"  # CSS DeepSkyBlue
             elif service[0] == "vrv":
-                color = "gold"
+                color = "#FFD700"  # CSS Gold
             elif service[0] == "hulu":
-                color = "springGreen"
-            elif service[0] in ("youtube", "prison", "tubi"):
-                color = "red"
+                color = "#9ACD32"  # CSS YellowGreen
+            elif service[0] == "youtube":
+                color = "#FF0000"  # CSS Red
+            elif service[0] == "prison":
+                color = "#B22222"  # CSS FireBrick
+            elif service[0] == "tubi":
+                color = "#FFA500"  # CSS Orange
             else:
-                color = "black"
-            colors[service[0]] += [color, "black"]
+                color = "#000000"  # CSS Black
+            colors[service[0]] += [color, "#000000"]
         else:
-            colors[service[0]] += ["gray", "gray"]
+            colors[service[0]] += ["#808080", "#808080"]  # CSS Gray
 
     return colors
 

@@ -175,9 +175,11 @@ def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series
 def add_show_to_series(anilist_id: int, position: int, checked_shows: list, main: int = 1, series_id: int = None) -> list:
     if anilist_id not in checked_shows:
         GQL_request = request_show_data(anilist_id)
-        update_show_entry(anilist_id, GQL_request)
-
         show = Show.query.filter_by(anilist_id=anilist_id).first()
+        if not show:
+            show = create_show_entry(anilist_id, GQL_request)
+        else:
+            show.update_entry(GQL_request)
 
         show.position = position
         show.priority = main
@@ -185,6 +187,8 @@ def add_show_to_series(anilist_id: int, position: int, checked_shows: list, main
         if series_id:
             series = Series.query.filter_by(id=series_id).first()
             show.series_id = series.id
+
+        # db.session.commit()
 
         # Return list of related shows
         return GQL_request["relations"]["edges"]
@@ -212,32 +216,32 @@ def update_show_entry(anilist_id: int, new_data: dict):
 
     if not show:
         print(f"+show {new_data['title']['romaji']}, Anilist ID: {anilist_id}")
-        show = Show(
-            en_name=new_data["title"]["english"],
-            jp_name=new_data["title"]["native"],
-            rj_name=new_data["title"]["romaji"],
-            anilist_id=anilist_id,
-            type=new_data["format"],
-            status=new_data["status"],
-            episodes=new_data["episodes"],
-            cover_image=new_data["coverImage"]["large"],
-            description=new_data["description"],
-        )
-
-        db.session.add(show)
+        create_show_entry(anilist_id, new_data)
 
     else:
         print(f"Updating show {show.rj_name}, Anilist ID: {show.anilist_id}")
-        show.en_name = new_data["title"]["english"]
-        show.jp_name = new_data["title"]["native"]
-        show.rj_name = new_data["title"]["romaji"]
-        show.type = new_data["format"]
-        show.status = new_data["status"]
-        show.episodes = new_data["episodes"]
-        show.cover_image = new_data["coverImage"]["large"]
-        show.description = new_data["description"]
+
 
     db.session.commit()
+
+
+def create_show_entry(anilist_id: int, new_data: dict):
+    show = Show(
+        en_name=new_data["title"]["english"],
+        jp_name=new_data["title"]["native"],
+        rj_name=new_data["title"]["romaji"],
+        anilist_id=anilist_id,
+        type=new_data["format"],
+        status=new_data["status"],
+        episodes=new_data["episodes"],
+        cover_image=new_data["coverImage"]["large"],
+        description=new_data["description"],
+    )
+
+    db.session.add(show)
+    db.session.commit()
+
+    return show
 
 
 def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
@@ -262,52 +266,33 @@ def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
 
 
 def collect_seasonal_data(series_id: int) -> dict:
-    series = Series.query.filter_by(id=series_id).first()
+    series = Series.query.get(series_id)
+    sorted_shows = series.sort_shows()
     seasonal_data = {
         "totalEpisodes": 0,
         "mainSeriesEpisodes": 0,
-        "mainShows": [],
-        "sideShows": [],
-        "minorRelations": [],
         "mainTags": {},
         "mainGenres": [],
         "mainAvailability": {},
-        "sideAvailability": {
-            "crunchyroll": 0,
-            "funimation": 0,
-            "prison": 0,
-            "amazon": 0,
-            "vrv": 0,
-            "hulu": 0,
-            "youtube": 0,
-            "tubi": 0,
-            "hbo": 0,
-            "hidive": 0,
-        }
+        "sideAvailability": {}
     }
 
     for show in series.shows:
-        seasonal_data["totalEpisodes"] += show.episodes
+        seasonal_data["totalEpisodes"] += show.episodes if show.episodes else 0
+
         if show.priority == 1:
-            seasonal_data["mainSeriesEpisodes"] += show.episodes
-            seasonal_data["mainShows"].append(show)
+            seasonal_data["mainSeriesEpisodes"] += show.episodes if show.episodes else 0
 
-        elif show.priority == 2:
-            seasonal_data["sideShows"].append(show)
-
-        else:
-            seasonal_data["minorRelations"].append(show)
-
-    processed_data = process_main_show_data(seasonal_data["mainShows"])
+    processed_data = process_show_data(sorted_shows["main_shows"])
     seasonal_data["mainAvailability"] = processed_data["availability"]
     seasonal_data["mainGenres"] = processed_data["genres"]
     seasonal_data["mainTags"] = processed_data["tags"]
-    seasonal_data["sideAvailability"] = process_side_show_data(seasonal_data["sideShows"])
+    seasonal_data["sideAvailability"] = process_show_data(sorted_shows["side_shows"])["availability"]
 
     return seasonal_data
 
 
-def process_main_show_data(main_shows: list) -> dict:
+def process_show_data(main_shows: list) -> dict:
     sorted_data = {
         "availability": {
             "crunchyroll": 0,
@@ -332,23 +317,24 @@ def process_main_show_data(main_shows: list) -> dict:
             if service[1] is True:
                 sorted_data["availability"][service[0]] += 1
 
-        for genre in GQL_request["genres"]:
-            if genre not in sorted_data["genres"]:
-                sorted_data["genres"].append(genre)
+        if show.priority == 1:
+            for genre in GQL_request["genres"]:
+                if genre not in sorted_data["genres"]:
+                    sorted_data["genres"].append(genre)
 
-        for tag in GQL_request["tags"]:
-            try:
-                if sorted_data["tags"][tag["name"]]:
-                    pass
-            except KeyError:
-                sorted_data["tags"][tag["name"]] = {}
-                sorted_data["tags"][tag["name"]]["name"] = tag["name"]
-                sorted_data["tags"][tag["name"]]["ranksList"] = []
-                sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = False
+            for tag in GQL_request["tags"]:
+                try:
+                    if sorted_data["tags"][tag["name"]]:
+                        pass
+                except KeyError:
+                    sorted_data["tags"][tag["name"]] = {}
+                    sorted_data["tags"][tag["name"]]["name"] = tag["name"]
+                    sorted_data["tags"][tag["name"]]["ranksList"] = []
+                    sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = False
 
-            sorted_data["tags"][tag["name"]]["ranksList"].append(tag["rank"])
-            if tag["isMediaSpoiler"]:
-                sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = True
+                sorted_data["tags"][tag["name"]]["ranksList"].append(tag["rank"])
+                if tag["isMediaSpoiler"]:
+                    sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = True
 
     for tag in sorted_data["tags"].items():
         tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(main_shows))
@@ -357,30 +343,6 @@ def process_main_show_data(main_shows: list) -> dict:
     sorted_data["tags"] = tags_list
 
     return sorted_data
-
-
-def process_side_show_data(side_shows: list) -> dict:
-    availability = {
-        "crunchyroll": 0,
-        "funimation": 0,
-        "hidive": 0,
-        "vrv": 0,
-        "hulu": 0,
-        "amazon": 0,
-        "youtube": 0,
-        "prison": 0,
-        "hbo": 0,
-        "tubi": 0,
-    }
-    for show in side_shows:
-        GQL_request = request_show_data(show.anilist_id)
-        show_availability = check_stream_locations(GQL_request["externalLinks"])
-        for service in show_availability.items():
-            if service[1] is True:
-                availability[service[0]] += 1
-    # TODO: Can possibly merge by using "if show.priority == 1..."
-
-    return availability
 
 
 def check_stream_locations(streaming_links: list) -> dict:
@@ -447,7 +409,14 @@ def get_average(numbers: list, length: int = None) -> int:
         length = len(numbers)
     if numbers:
         dc.getcontext().rounding = dc.ROUND_HALF_UP
-        average = sum(numbers) / length
+        average = sum(filter(int_filter, numbers)) / length
         average = int(dc.Decimal(str(average)).quantize(dc.Decimal("1")))
 
     return average
+
+
+def int_filter(x):
+    if type(x) == int:
+        return True
+    else:
+        return False

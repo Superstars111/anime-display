@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager
 from . import db
+from functions import get_average
 
 login = LoginManager()
 
@@ -79,6 +80,67 @@ class Series(db.Model):
                                   secondaryjoin=id == series_relation.c.series2_id,
                                   back_populates="related_series")
 
+    def sort_shows(self) -> dict:
+        sorted_shows = {
+            "main_shows": [],
+            "side_shows": [],
+            "minor_shows": []
+        }
+
+        for show in self.shows:
+            if show.priority == 1:
+                sorted_shows["main_shows"].append(show)
+            elif show.priority == 2:
+                sorted_shows["side_shows"].append(show)
+            elif show.priority == 3:
+                sorted_shows["minor_shows"].append(show)
+
+        return sorted_shows
+
+    def average_ratings(self) -> dict:
+        base_ratings = {
+            "pacing": [],
+            "energy": [],
+            "drama": [],
+            "fantasy": [],
+            "abstraction": [],
+            "propriety": []
+        }
+        for show in self.shows:
+            for rating in show.user_ratings:
+                    base_ratings["pacing"].append(rating.pacing)
+                    base_ratings["energy"].append(rating.energy)
+                    base_ratings["drama"].append(rating.drama)
+                    base_ratings["fantasy"].append(rating.fantasy)
+                    base_ratings["abstraction"].append(rating.abstraction)
+                    base_ratings["propriety"].append(rating.propriety)
+
+        average_ratings = {
+            "pacing": get_average(base_ratings["pacing"]),
+            "energy": get_average(base_ratings["energy"]),
+            "drama": get_average(base_ratings["drama"]),
+            "fantasy": get_average(base_ratings["fantasy"]),
+            "abstraction": get_average(base_ratings["abstraction"]),
+            "propriety": get_average(base_ratings["propriety"])
+        }
+
+        return average_ratings
+
+    def ratings_by_user(self):
+        # TODO: Make functional
+        users = []
+        for show in self.shows:
+            for rating in show.user_ratings:
+                if rating.user_id not in users:
+                    users.append(rating.user_id)
+
+    def ratings_by_show(self) -> list:
+        all_ratings = []
+        for show in self.shows:
+            all_ratings.append(show.average_ratings())
+
+        return all_ratings
+
 
 class Show(db.Model):
     __tablename__ = "shows"
@@ -105,6 +167,47 @@ class Show(db.Model):
 
     series_entry = relationship("Series", foreign_keys=[series_entry_id], uselist=False)
     series = relationship("Series", foreign_keys=[series_id], post_update=True)
+
+    def average_ratings(self) -> dict:
+        base_ratings = {
+            "pacing": [],
+            "energy": [],
+            "drama": [],
+            "fantasy": [],
+            "abstraction": [],
+            "propriety": []
+        }
+
+        for rating in self.user_ratings:
+                base_ratings["pacing"].append(rating.pacing)
+                base_ratings["energy"].append(rating.energy)
+                base_ratings["drama"].append(rating.drama)
+                base_ratings["fantasy"].append(rating.fantasy)
+                base_ratings["abstraction"].append(rating.abstraction)
+                base_ratings["propriety"].append(rating.propriety)
+
+        average_ratings = {
+            "pacing": get_average(base_ratings["pacing"]),
+            "energy": get_average(base_ratings["energy"]),
+            "drama": get_average(base_ratings["drama"]),
+            "fantasy": get_average(base_ratings["fantasy"]),
+            "abstraction": get_average(base_ratings["abstraction"]),
+            "propriety": get_average(base_ratings["propriety"])
+        }
+
+        return average_ratings
+
+    def update_entry(self, new_data: dict):
+        self.en_name = new_data["title"]["english"]
+        self.jp_name = new_data["title"]["native"]
+        self.rj_name = new_data["title"]["romaji"]
+        self.type = new_data["format"]
+        self.status = new_data["status"]
+        self.episodes = new_data["episodes"]
+        self.cover_image = new_data["coverImage"]["large"]
+        self.description = new_data["description"]
+
+        # db.session.commit()
 
 
 class List(db.Model):
