@@ -2,7 +2,7 @@ from project.models import Show, User, Rating, List, Series
 from project import db
 import pandas as pd
 import json
-from project.functions import update_full_series
+from project.integrated_functions import update_full_series
 import time
 
 # Temporary file used in development. Should eventually get phased out.

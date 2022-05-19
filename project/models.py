@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager
 from . import db
+from project.standalone_functions import get_average
 import decimal as dc
 
 login = LoginManager()
@@ -280,24 +281,3 @@ class Rating(db.Model):
     fantasy = Column(Integer)
     abstraction = Column(Integer)
     propriety = Column(Integer)
-
-
-def get_average(numbers: list, length: int = None, allow_null: bool = False) -> int:
-    average = 0
-    filtered_numbers = []
-    for item in numbers:
-        if type(item) == int:
-            filtered_numbers.append(item)
-
-    if not length:
-        length = len(filtered_numbers)
-
-    if len(filtered_numbers):
-        dc.getcontext().rounding = dc.ROUND_HALF_UP
-        average = sum(filtered_numbers) / length
-        average = int(dc.Decimal(str(average)).quantize(dc.Decimal("1")))
-    elif allow_null:
-        average = None
-
-    return average
-

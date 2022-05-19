@@ -9,8 +9,8 @@ from project.models import Show, Rating, List, User, Series
 from project import db
 import requests as rq
 import json
-from project.functions import assign_data, collect_seasonal_data, check_stream_locations, request_show_data, \
-    update_show_entry, get_average
+from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry
+from project.standalone_functions import assign_data, check_stream_locations, get_average, average_ratings
 
 template_path = "content/templates/content"
 
@@ -167,6 +167,16 @@ def series(series_id):
     if x_data or y_data:
         return data
 
+    if current_user.is_authenticated:
+        current_user_show_ratings = []
+        for show in series.shows:
+            current_user_rating = Rating.query.filter_by(show_id=show.id, user_id=current_user.id).first()
+            if current_user_rating:
+                current_user_show_ratings.append(current_user_rating)
+        current_user_average_ratings = average_ratings(current_user_show_ratings)
+    else:
+        current_user_average_ratings = None
+
     variables = {
         "title": collect_title(series),
         "image": entry.cover_image,
@@ -188,13 +198,13 @@ def series(series_id):
         "sideStreaming": seasonal_data["sideAvailability"],
         "data": data,
         # "avgUserScore": collect_avg_user_score(show_id),
-        # "score": user_rating.score if user_rating else 0,
-        # "pacing": user_rating.pacing if user_rating else 0,
-        # "energy": user_rating.energy if user_rating else 0,
-        # "tone": user_rating.drama if user_rating else 0,
-        # "fantasy": user_rating.fantasy if user_rating else 0,
-        # "abstraction": user_rating.abstraction if user_rating else 0,
-        # "propriety": user_rating.propriety if user_rating else 0,
+        "score": current_user_average_ratings["score"] if current_user_average_ratings else 0,
+        "pacing": current_user_average_ratings["pacing"] if current_user_average_ratings else 0,
+        "energy": current_user_average_ratings["energy"] if current_user_average_ratings else 0,
+        "tone": current_user_average_ratings["tone"] if current_user_average_ratings else 0,
+        "fantasy": current_user_average_ratings["fantasy"] if current_user_average_ratings else 0,
+        "abstraction": current_user_average_ratings["abstraction"] if current_user_average_ratings else 0,
+        "propriety": current_user_average_ratings["propriety"] if current_user_average_ratings else 0,
         "url": f"/series/{series_id}"
     }
 

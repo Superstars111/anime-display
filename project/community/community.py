@@ -4,7 +4,7 @@ from project.config import settings
 from project.models import User, List, Rating, Show
 import json
 from project.automation import migrate_ratings, update_library, add_lists
-from project.functions import assign_data
+from project.standalone_functions import assign_data
 from project import db
 
 community = Blueprint("community", __name__, template_folder="../../project")
