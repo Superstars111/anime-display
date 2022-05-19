@@ -77,14 +77,30 @@ stream_info = {
         }
 
 
-def assign_data(ratings, x_data, y_data):
-    pacing_scores = [rating.pacing for rating in ratings]
-    tone_scores = [rating.drama for rating in ratings]
-    energy_scores = [rating.energy for rating in ratings]
-    fantasy_scores = [rating.fantasy for rating in ratings]
-    abstraction_scores = [rating.abstraction for rating in ratings]
-    propriety_scores = [rating.propriety for rating in ratings]
+def assign_data(ratings: list, x_data: str, y_data: str):
+    pacing_scores = []
+    tone_scores = []
+    energy_scores = []
+    fantasy_scores = []
+    abstraction_scores = []
+    propriety_scores = []
     data = []
+    if type(ratings[0]) == dict:
+        for rating in ratings:
+            pacing_scores.append(rating["pacing"])
+            tone_scores.append(rating["tone"])
+            energy_scores.append(rating["energy"])
+            fantasy_scores.append(rating["fantasy"])
+            abstraction_scores.append(rating["abstraction"])
+            propriety_scores.append(rating["propriety"])
+    else:
+        for rating in ratings:
+            pacing_scores.append(rating.pacing)
+            tone_scores.append(rating.drama)
+            energy_scores.append(rating.energy)
+            fantasy_scores.append(rating.fantasy)
+            abstraction_scores.append(rating.abstraction)
+            propriety_scores.append(rating.propriety)
 
     if x_data == "tone":
         x = tone_scores

@@ -126,13 +126,49 @@ class Series(db.Model):
 
         return average_ratings
 
-    def ratings_by_user(self):
-        # TODO: Make functional
-        users = []
+    def ratings_by_user(self) -> list:
+        user_ids = []
+        show_ids = []
+        all_user_series_ratings = []
+
         for show in self.shows:
+            show_ids.append(show.id)
             for rating in show.user_ratings:
-                if rating.user_id not in users:
-                    users.append(rating.user_id)
+                if rating.user_id not in user_ids:
+                    user_ids.append(rating.user_id)
+
+        for user in user_ids:
+            base_ratings = {
+                "pacing": [],
+                "energy": [],
+                "tone": [],
+                "fantasy": [],
+                "abstraction": [],
+                "propriety": []
+            }
+
+            for show in show_ids:
+                rating = Rating.query.filter_by(user_id=user, show_id=show).first()
+                if rating:
+                    base_ratings["pacing"].append(rating.pacing)
+                    base_ratings["energy"].append(rating.energy)
+                    base_ratings["tone"].append(rating.drama)
+                    base_ratings["fantasy"].append(rating.fantasy)
+                    base_ratings["abstraction"].append(rating.abstraction)
+                    base_ratings["propriety"].append(rating.propriety)
+
+            average_ratings = {
+                "pacing": get_average(base_ratings["pacing"], allow_null=True),
+                "energy": get_average(base_ratings["energy"], allow_null=True),
+                "tone": get_average(base_ratings["tone"], allow_null=True),
+                "fantasy": get_average(base_ratings["fantasy"], allow_null=True),
+                "abstraction": get_average(base_ratings["abstraction"], allow_null=True),
+                "propriety": get_average(base_ratings["propriety"], allow_null=True)
+            }
+
+            all_user_series_ratings.append(average_ratings)
+
+        return all_user_series_ratings
 
     def ratings_by_show(self) -> list:
         all_ratings = []
@@ -246,20 +282,22 @@ class Rating(db.Model):
     propriety = Column(Integer)
 
 
-def get_average(numbers: list, length: int = None) -> int:
+def get_average(numbers: list, length: int = None, allow_null: bool = False) -> int:
     average = 0
+    filtered_numbers = []
+    for item in numbers:
+        if type(item) == int:
+            filtered_numbers.append(item)
+
     if not length:
-        length = len(numbers)
-    if numbers:
+        length = len(filtered_numbers)
+
+    if len(filtered_numbers):
         dc.getcontext().rounding = dc.ROUND_HALF_UP
-        average = sum(filter(int_filter, numbers)) / length
+        average = sum(filtered_numbers) / length
         average = int(dc.Decimal(str(average)).quantize(dc.Decimal("1")))
+    elif allow_null:
+        average = None
 
     return average
 
-
-def int_filter(x):
-    if type(x) == int:
-        return True
-    else:
-        return False

@@ -156,9 +156,16 @@ def series(series_id):
         return redirect(url_for("404"))
     entry = Show.query.get(series.entry_point_id)
     sorted_shows = series.sort_shows()
+    all_user_ratings = series.ratings_by_user()
 
     seasonal_data = collect_seasonal_data(series_id)
     tags, spoilers = collect_tags(seasonal_data["mainTags"])
+
+    x_data = request.args.get("x-coord", "")
+    y_data = request.args.get("y-coord", "")
+    data = assign_data(all_user_ratings, x_data, y_data)
+    if x_data or y_data:
+        return data
 
     variables = {
         "title": collect_title(series),
@@ -179,7 +186,7 @@ def series(series_id):
         "stream_colors": collect_streaming_colors(seasonal_data["mainAvailability"], series=True),
         "mainStreaming": seasonal_data["mainAvailability"],
         "sideStreaming": seasonal_data["sideAvailability"],
-        # "data": data,
+        "data": data,
         # "avgUserScore": collect_avg_user_score(show_id),
         # "score": user_rating.score if user_rating else 0,
         # "pacing": user_rating.pacing if user_rating else 0,
