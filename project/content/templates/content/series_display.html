@@ -38,6 +38,11 @@
     </div></div>
     <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
     <div id="changes">Put bar/line graph here.</div>
+    <div id="shows-list">
+        {% for show in main %}
+        <div>{{ show.rj_name }}</div>
+        {% endfor %}
+    </div>
     <div id="streaming">
     {# Want to use enumerate() here with modulo for a better break system, but jinja2 doesn't like enumerate(). #}
         {% for service in mainStreaming.items() %}

@@ -10,6 +10,9 @@ nav {
     min-width: 960px;
     max-width: 2048px;
     box-shadow: 3px 3px 3px #2E0000;
+    /*clear: both;*/
+    position: relative;
+    overflow: auto;
 }
 
 #seasonal {
@@ -75,6 +78,20 @@ nav {
     float: left;
     background-color: #FFFFFF;
     border-radius: 15px;
+}
+
+#shows-list {
+    width: 68.125em;
+    height: 14em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    clear: both;
+    overflow: scroll;
 }
 
 #streaming {
