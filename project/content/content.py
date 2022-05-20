@@ -167,6 +167,29 @@ def series(series_id):
     if x_data or y_data:
         return data
 
+    new_rating = request.args.get("rate", "")
+    if new_rating:
+        current_seen_list = List.query.filter_by(owner_id=current_user.id, name="Seen").first()
+        new_rating_data = {
+            "score": request.args.get("score"),
+            "pacing": request.args.get("pacing"),
+            "energy": request.args.get("energy"),
+            "tone": request.args.get("tone"),
+            "fantasy": request.args.get("fantasy"),
+            "abstraction": request.args.get("abstraction"),
+            "propriety": request.args.get("propriety"),
+        }
+        for show in series.shows:
+            if show in current_seen_list.shows:
+                user_rating = Rating.query.filter_by(user_id=current_user.id, show_id=show.id).first()
+                if not user_rating:
+                    user_rating = Rating(user_id=current_user.id, show_id=show.id)
+                    db.session.add(user_rating)
+
+                user_rating.update(new_rating_data)
+
+            db.session.commit()
+
     if current_user.is_authenticated:
         current_user_show_ratings = []
         for show in series.shows:
@@ -220,6 +243,7 @@ def show(show_id):
     GQL_request = request_show_data(show.anilist_id)
     if show.status not in ("FINISHED", "CANCELLED"):
         show.update_entry(GQL_request)
+        db.session.commit()
 
     if current_user.is_authenticated:
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
@@ -232,25 +256,30 @@ def show(show_id):
     if x_data or y_data:
         return data
 
-    new_rating = request.args.get("rate", "")
     list_addition = request.form.get("lists")
-
     if list_addition:
         selected_list = List.query.filter_by(id=list_addition).first()
         selected_list.shows += [show]
         db.session.commit()
+
+    new_rating = request.args.get("rate", "")
     if new_rating:
+        new_rating_data = {
+            "score": request.args.get("score"),
+            "pacing": request.args.get("pacing"),
+            "energy": request.args.get("energy"),
+            "tone": request.args.get("tone"),
+            "fantasy": request.args.get("fantasy"),
+            "abstraction": request.args.get("abstraction"),
+            "propriety": request.args.get("propriety"),
+        }
         if not user_rating:
             rating = Rating(show_id=show_id, user_id=current_user.id)
+            rating.update(new_rating_data)
             db.session.add(rating)
 
-        user_rating.score = request.args.get("score")
-        user_rating.pacing = request.args.get("pacing")
-        user_rating.energy = request.args.get("energy")
-        user_rating.drama = request.args.get("tone")
-        user_rating.fantasy = request.args.get("fantasy")
-        user_rating.abstraction = request.args.get("abstraction")
-        user_rating.propriety = request.args.get("propriety")
+        else:
+            user_rating.update(new_rating_data)
 
         db.session.commit()
 
@@ -281,7 +310,7 @@ def show(show_id):
         "url": f"/shows/{show_id}"
     }
 
-    return render_template("content/templates/content/show_display.html", **variables)
+    return render_template(f"{template_path}/show_display.html", **variables)
 
 
 def collect_title(show):

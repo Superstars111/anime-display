@@ -281,3 +281,12 @@ class Rating(db.Model):
     fantasy = Column(Integer)
     abstraction = Column(Integer)
     propriety = Column(Integer)
+
+    def update(self, new_data: dict):
+        self.score = new_data["score"]
+        self.pacing = new_data["pacing"]
+        self.energy = new_data["energy"]
+        self.drama = new_data["tone"]
+        self.fantasy = new_data["fantasy"]
+        self.abstraction = new_data["abstraction"]
+        self.propriety = new_data["propriety"]

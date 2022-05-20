@@ -70,7 +70,7 @@ def add_show_to_series(anilist_id: int, position: int, checked_shows: list, main
             series = Series.query.filter_by(id=series_id).first()
             show.series_id = series.id
 
-        # db.session.commit()
+        db.session.commit()
 
         # Return list of related shows
         return GQL_request["relations"]["edges"]

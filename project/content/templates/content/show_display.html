@@ -86,6 +86,7 @@
     <br>
     <div id="streaming">
         {% for service in streaming.items() %}
+            {# TODO: Would like to have this display an alternate message if there are no streaming options. #}
         {% if service[1] %}
         <div class="service" style="color: {{ stream_colors[service[0]][0] }}"><p>{{ "Netflix Prison" if service[0] == "prison" else service[0].capitalize() }}</p></div>
         <br>
