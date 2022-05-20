@@ -102,7 +102,7 @@ class Series(db.Model):
         base_ratings = {
             "pacing": [],
             "energy": [],
-            "drama": [],
+            "tone": [],
             "fantasy": [],
             "abstraction": [],
             "propriety": []
@@ -111,7 +111,7 @@ class Series(db.Model):
             for rating in show.user_ratings:
                     base_ratings["pacing"].append(rating.pacing)
                     base_ratings["energy"].append(rating.energy)
-                    base_ratings["drama"].append(rating.drama)
+                    base_ratings["tone"].append(rating.tone)
                     base_ratings["fantasy"].append(rating.fantasy)
                     base_ratings["abstraction"].append(rating.abstraction)
                     base_ratings["propriety"].append(rating.propriety)
@@ -119,7 +119,7 @@ class Series(db.Model):
         average_ratings = {
             "pacing": get_average(base_ratings["pacing"]),
             "energy": get_average(base_ratings["energy"]),
-            "drama": get_average(base_ratings["drama"]),
+            "tone": get_average(base_ratings["tone"]),
             "fantasy": get_average(base_ratings["fantasy"]),
             "abstraction": get_average(base_ratings["abstraction"]),
             "propriety": get_average(base_ratings["propriety"])
@@ -153,7 +153,7 @@ class Series(db.Model):
                 if rating:
                     base_ratings["pacing"].append(rating.pacing)
                     base_ratings["energy"].append(rating.energy)
-                    base_ratings["tone"].append(rating.drama)
+                    base_ratings["tone"].append(rating.tone)
                     base_ratings["fantasy"].append(rating.fantasy)
                     base_ratings["abstraction"].append(rating.abstraction)
                     base_ratings["propriety"].append(rating.propriety)
@@ -192,7 +192,9 @@ class Show(db.Model):
     type = Column(String)
     status = Column(String)
     episodes = Column(Integer)
-    cover_image = Column(String)
+    cover_med = Column(String)
+    cover_large = Column(String)
+    cover_xl = Column(String)
     description = Column(String)
     series_entry_id = Column(Integer, ForeignKey("series.id"))
     series_id = Column(Integer, ForeignKey("series.id"))
@@ -209,7 +211,7 @@ class Show(db.Model):
         base_ratings = {
             "pacing": [],
             "energy": [],
-            "drama": [],
+            "tone": [],
             "fantasy": [],
             "abstraction": [],
             "propriety": []
@@ -218,7 +220,7 @@ class Show(db.Model):
         for rating in self.user_ratings:
                 base_ratings["pacing"].append(rating.pacing)
                 base_ratings["energy"].append(rating.energy)
-                base_ratings["drama"].append(rating.drama)
+                base_ratings["tone"].append(rating.tone)
                 base_ratings["fantasy"].append(rating.fantasy)
                 base_ratings["abstraction"].append(rating.abstraction)
                 base_ratings["propriety"].append(rating.propriety)
@@ -226,7 +228,7 @@ class Show(db.Model):
         average_ratings = {
             "pacing": get_average(base_ratings["pacing"]),
             "energy": get_average(base_ratings["energy"]),
-            "drama": get_average(base_ratings["drama"]),
+            "tone": get_average(base_ratings["tone"]),
             "fantasy": get_average(base_ratings["fantasy"]),
             "abstraction": get_average(base_ratings["abstraction"]),
             "propriety": get_average(base_ratings["propriety"])
@@ -277,7 +279,7 @@ class Rating(db.Model):
     score = Column(Integer)
     pacing = Column(Integer)
     energy = Column(Integer)
-    drama = Column(Integer)
+    tone = Column(Integer)
     fantasy = Column(Integer)
     abstraction = Column(Integer)
     propriety = Column(Integer)
@@ -286,7 +288,7 @@ class Rating(db.Model):
         self.score = new_data["score"]
         self.pacing = new_data["pacing"]
         self.energy = new_data["energy"]
-        self.drama = new_data["tone"]
+        self.tone = new_data["tone"]
         self.fantasy = new_data["fantasy"]
         self.abstraction = new_data["abstraction"]
         self.propriety = new_data["propriety"]

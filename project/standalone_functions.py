@@ -37,7 +37,9 @@ query = """query($id: Int){
       }
     },
     coverImage {
-      large
+      medium,
+      large,
+      extraLarge
     }
   }
 }"""
@@ -96,7 +98,7 @@ def assign_data(ratings: list, x_data: str, y_data: str):
         else:
             for rating in ratings:
                 pacing_scores.append(rating.pacing)
-                tone_scores.append(rating.drama)
+                tone_scores.append(rating.tone)
                 energy_scores.append(rating.energy)
                 fantasy_scores.append(rating.fantasy)
                 abstraction_scores.append(rating.abstraction)
@@ -307,7 +309,7 @@ def average_ratings(ratings: list) -> dict:
         base_ratings["score"].append(rating.score)
         base_ratings["pacing"].append(rating.pacing)
         base_ratings["energy"].append(rating.energy)
-        base_ratings["tone"].append(rating.drama)
+        base_ratings["tone"].append(rating.tone)
         base_ratings["fantasy"].append(rating.fantasy)
         base_ratings["abstraction"].append(rating.abstraction)
         base_ratings["propriety"].append(rating.propriety)
