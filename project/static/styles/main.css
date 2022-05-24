@@ -316,3 +316,8 @@ html, body {
     content: "\279C";
     padding-right: 5px;
 }
+
+#update-logger .break:before {
+    content: "\1F527";
+    padding-right: 5px;
+}
