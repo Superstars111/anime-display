@@ -2,7 +2,7 @@
 # and from https://realpython.com/python-sqlite-sqlalchemy/
 # and from https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Boolean, Text
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
@@ -47,7 +47,7 @@ series_relation = Table(
 class User(UserMixin, db.Model):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     email = Column(String(80), unique=True, nullable=False)
     username = Column(String(100), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
@@ -67,7 +67,7 @@ class User(UserMixin, db.Model):
 class Series(db.Model):
     __tablename__ = "series"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     en_name = Column(String)
     jp_name = Column(String)
     rj_name = Column(String)
@@ -97,6 +97,11 @@ class Series(db.Model):
                 sorted_shows["minor_shows"].append(show)
 
         return sorted_shows
+
+    def update_entry_names(self, new_data: dict):
+        self.en_name = new_data["en_name"]
+        self.jp_name = new_data["jp_name"]
+        self.rj_name = new_data["rj_name"]
 
     def average_ratings(self) -> dict:
         base_ratings = {
@@ -182,7 +187,7 @@ class Series(db.Model):
 class Show(db.Model):
     __tablename__ = "shows"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     en_name = Column(String)
     jp_name = Column(String)
     rj_name = Column(String)
@@ -192,9 +197,9 @@ class Show(db.Model):
     type = Column(String)
     status = Column(String)
     episodes = Column(Integer)
-    cover_med = Column(String)
-    cover_large = Column(String)
-    cover_xl = Column(String)
+    cover_med = Column(Text)
+    cover_large = Column(Text)
+    cover_xl = Column(Text)
     description = Column(String)
     series_entry_id = Column(Integer, ForeignKey("series.id"))
     series_id = Column(Integer, ForeignKey("series.id"))
@@ -243,7 +248,9 @@ class Show(db.Model):
         self.type = new_data["format"]
         self.status = new_data["status"]
         self.episodes = new_data["episodes"]
-        self.cover_image = new_data["coverImage"]["large"]
+        self.cover_med = new_data["coverImage"]["medium"]
+        self.cover_large = new_data["coverImage"]["large"]
+        self.cover_xl = new_data["coverImage"]["extraLarge"]
         self.description = new_data["description"]
 
         # db.session.commit()
@@ -252,7 +259,7 @@ class Show(db.Model):
 class List(db.Model):
     __tablename__ = "lists"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
     shows = relationship("Show", secondary=show_list, back_populates="lists")
@@ -261,7 +268,7 @@ class List(db.Model):
 class Recommendation(db.Model):
     __tablename__ = "recommendations"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     sender_id = Column(Integer, ForeignKey("users.id"))
     receiver_id = Column(Integer, ForeignKey("users.id"))
     show_id = Column(Integer, ForeignKey("shows.id"))
@@ -273,7 +280,7 @@ class Recommendation(db.Model):
 class Rating(db.Model):
     __tablename__ = "ratings"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column("user_id", Integer, ForeignKey("users.id"))
     show_id = Column("show_id", Integer, ForeignKey("shows.id"))
     score = Column(Integer)

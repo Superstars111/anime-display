@@ -3,6 +3,7 @@ from project import db
 import pandas as pd
 import json
 from project.integrated_functions import update_full_series
+from project.standalone_functions import request_show_data
 import time
 
 # Temporary file used in development. Should eventually get phased out.
@@ -21,22 +22,30 @@ def add_lists():
 
 
 def update_library():
-    full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
-    library = full_data[2]
+    for show in db.session.query(Show).all():
+        print(f"Updating {show.rj_name}")
+        GQL_request = request_show_data(show.anilist_id)
+        show.update_entry(GQL_request)
+        db.session.commit()
+        time.sleep(1)
 
-    for entry in library:
-        show = Show.query.filter_by(anilist_id=entry["id"]).first()
-        if not show:
-            new_show = Show(
-                en_name=entry["englishTitle"],
-                rj_name=entry["romajiTitle"],
-                jp_name=entry["nativeTitle"],
-                anilist_id=entry["id"]
-            )
-            db.session.add(new_show)
-            print(f"Adding {new_show.en_name}, {new_show.rj_name}")
-
-    db.session.commit()
+    print("\n\nUpdate complete")
+    # full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
+    # library = full_data[2]
+    #
+    # for entry in library:
+    #     show = Show.query.filter_by(anilist_id=entry["id"]).first()
+    #     if not show:
+    #         new_show = Show(
+    #             en_name=entry["englishTitle"],
+    #             rj_name=entry["romajiTitle"],
+    #             jp_name=entry["nativeTitle"],
+    #             anilist_id=entry["id"]
+    #         )
+    #         db.session.add(new_show)
+    #         print(f"Adding {new_show.en_name}, {new_show.rj_name}")
+    #
+    # db.session.commit()
 
 
 def migrate_ratings():
@@ -85,10 +94,11 @@ def sort_anilist_data():
 
 def transfer_shows_to_series():
     for show in db.session.query(Show).all():
-        if show.priority == 1:
+        if show.priority == 1 and show.position == 1:
             print(f"---Transfering {show.rj_name} now---")
             update_full_series(show.anilist_id)
-            time.sleep(1.75)
+            time.sleep(2)
+            db.session.commit()
 
 
 # if __name__ == "__main__":

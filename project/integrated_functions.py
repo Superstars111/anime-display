@@ -18,7 +18,8 @@ def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series
     relations = add_show_to_series(anilist_id, position, checked_shows, main=main, series_id=series_id)
     checked_shows.append(anilist_id)
 
-    series_id = update_series_entry(anilist_id)
+    if not series_id:
+        series_id = update_series_entry(anilist_id)
 
     for relation in relations:
         if relation["node"]["type"] == "ANIME":
@@ -89,7 +90,7 @@ def update_show_entry(anilist_id: int, new_data: dict):
 
     else:
         print(f"Updating show {show.rj_name}, Anilist ID: {show.anilist_id}")
-
+        show.update_entry(new_data)
 
     db.session.commit()
 
@@ -114,22 +115,32 @@ def create_show_entry(anilist_id: int, new_data: dict):
 
 
 def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
+    show = Show.query.filter_by(anilist_id=initial_anilist_id).first()
     if series_id:
         series = Series.query.filter_by(id=series_id).first()
     else:
-        show = Show.query.filter_by(anilist_id=initial_anilist_id).first()
+        print(show.jp_name)
         series = Series.query.filter_by(entry_point_id=show.id).first()
 
-    if not series:
-        show = Show.query.filter_by(anilist_id=initial_anilist_id).first()
+    if series:
+        series_names = {
+            "en_name": show.en_name,
+            "jp_name": show.jp_name,
+            "rj_name": show.rj_name
+        }
+        series.update_entry_names(series_names)
+
+    else:
         print(f"+series for {show.rj_name}")
         series = Series(en_name=show.en_name, jp_name=show.jp_name, rj_name=show.rj_name, entry_point_id=show.id)
         db.session.add(series)
+        # FIXME: sqlalchemy.exc.DatabaseError: (mysql.connector.errors.DatabaseError) 1364 (HY000):
+        #  Field 'id' doesn't have a default value
         db.session.commit()
         show.series_id = series.id
         show.series_entry_id = series.id
 
-        db.session.commit()
+    db.session.commit()
 
     return series.id
 
