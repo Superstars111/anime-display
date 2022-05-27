@@ -3,12 +3,12 @@
 <main>
     <h2>{{title}}</h2>
     <div id="seasonal">
-        <img src="{{image}}" alt="Cover image for current show" style="float: left"><br>
+        <img src="{{coverLarge}}" alt="Cover image for current show" style="float: left"><br>
         <h3>Episodes (Total): {{totalEpisodes}}</h3>
         <h3>Episodes (Main): {{mainEpisodes}}</h3> <br><br><br>
-        <h3>Main content: {{ main }}</h3>
-        <h3>Side content: {{ side }}</h3>
-        <h3>Minor content: {{ minor }}</h3></div>
+        <h3>Main content: {{ main_seasons }}</h3>
+        <h3>Side content: {{ side_seasons }}</h3>
+        <h3>Minor content: {{ minor_seasons }}</h3></div>
     <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
     <div id="scoring"><div id="avgScores">Anilist avg score: {{ public }}, MAL avg score: N/A <br>
         Our avg score: {{ avgUserScore }}, Friends' avg score: N/A </div>
@@ -39,8 +39,8 @@
     <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
     <div id="changes">Put bar/line graph here.</div>
     <div id="shows-list">
-        {% for show in main %}
-        <div>{{ show.rj_name }}</div>
+        {% for show in main_shows %}
+        <div style="display: inline-block"><a href="/shows/{{ show.id }}"><img src="{{ show.cover_med }}" alt="Image for {{ show.rj_name }}"></a></div>
         {% endfor %}
     </div>
     <div id="streaming">
