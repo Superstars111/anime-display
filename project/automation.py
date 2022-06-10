@@ -58,7 +58,7 @@ def migrate_ratings():
     for entry in library:
         print(entry["id"])
         show = Show.query.filter_by(anilist_id=entry["id"]).first()
-        print(show.id)
+        print(show.rj_name)
         for rating in entry["houseScores"]:
             if rating[0] == "Simon":
                 if not Rating.query.filter_by(user_id=user.id, show_id=show.id).first():
@@ -67,7 +67,7 @@ def migrate_ratings():
                         show_id=show.id,
                         score=rating[1],
                         pacing=rating[2],
-                        drama=rating[3]
+                        tone=rating[3]
                     )
                     db.session.add(new_rating)
                     seen_list.shows += [show]
@@ -76,6 +76,29 @@ def migrate_ratings():
                     continue
 
     db.session.commit()
+
+
+def migrate_drama_to_tone():
+    full_data = pd.read_json("project/anime_data.json", typ="series", orient="records")
+    library = full_data[2]
+
+    for user in db.session.query(User).all():
+        for entry in library:
+            show = Show.query.filter_by(anilist_id=entry["id"]).first()
+            rating = Rating.query.filter_by(user_id=user.id, show_id=show.id).first()
+            if rating:
+                for score in entry["houseScores"]:
+                    if score[0] == "Jared" and user.id == 1:
+                        rating.tone = score[3]
+                    elif score[0] == "Kenan" and user.id == 3:
+                        rating.tone = score[3]
+                    elif score[0] == "Mom" and user.id == 4:
+                        rating.tone = score[3]
+                    elif score[0] == "Hannah" and user.id == 5:
+                        rating.tone = score[3]
+                    elif score[0] == "Simon" and user.id == 6:
+                        rating.tone = score[3]
+                db.session.commit()
 
 
 def sort_anilist_data():

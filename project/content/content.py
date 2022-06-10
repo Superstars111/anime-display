@@ -154,6 +154,7 @@ def series(series_id):
     series = Series.query.get(series_id)
     if not series:
         return redirect(url_for("404"))
+    # TODO: If there's a total of one show in the series, redirect to the show page
     entry = Show.query.get(series.entry_point_id)
     sorted_shows = series.sort_shows()
     all_user_ratings = series.ratings_by_user()

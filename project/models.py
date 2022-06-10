@@ -187,7 +187,7 @@ class Series(db.Model):
 class Show(db.Model):
     __tablename__ = "shows"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     en_name = Column(String)
     jp_name = Column(String)
     rj_name = Column(String)

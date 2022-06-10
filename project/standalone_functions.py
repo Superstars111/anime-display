@@ -4,9 +4,9 @@ import requests as rq
 import decimal as dc
 import time
 
-url = "https://graphql.anilist.co/"
+QUERY_URL = "https://graphql.anilist.co/"
 
-query = """query($id: Int){
+QUERY = """query($id: Int){
   Media(id: $id, type: ANIME){
     title {
       romaji
@@ -44,7 +44,7 @@ query = """query($id: Int){
   }
 }"""
 
-stream_info = {
+STREAM_INFO = {
             "crunchyroll": {"seasons": 0,
                             "movies": 0
                             },
@@ -146,12 +146,12 @@ def assign_data(ratings: list, x_data: str, y_data: str):
 def request_show_data(anilist_id: int) -> dict:
     id_var = {"id": anilist_id}
     try:
-        GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+        GQL_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
     except TypeError:
         print("Timeout- sleeping")
         time.sleep(65)
         print("Waking up")
-        GQL_request = rq.post(url, json={"query": query, "variables": id_var}).json()['data']["Media"]
+        GQL_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
 
     return GQL_request
 

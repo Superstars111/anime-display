@@ -104,10 +104,14 @@ def create_show_entry(anilist_id: int, new_data: dict):
         type=new_data["format"],
         status=new_data["status"],
         episodes=new_data["episodes"],
-        cover_image=new_data["coverImage"]["large"],
+        cover_med=new_data["coverImage"]["medium"],
+        cover_large=new_data["coverImage"]["large"],
+        cover_xl=new_data["coverImage"]["extraLarge"],
         description=new_data["description"],
     )
 
+    # FIXME: sqlalchemy.exc.DatabaseError: (mysql.connector.errors.DatabaseError) 1364 (HY000):
+    #  Field 'id' doesn't have a default value
     db.session.add(show)
     db.session.commit()
 
@@ -119,7 +123,7 @@ def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
     if series_id:
         series = Series.query.filter_by(id=series_id).first()
     else:
-        print(show.jp_name)
+        print(show.rj_name)
         series = Series.query.filter_by(entry_point_id=show.id).first()
 
     if series:
@@ -134,8 +138,6 @@ def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
         print(f"+series for {show.rj_name}")
         series = Series(en_name=show.en_name, jp_name=show.jp_name, rj_name=show.rj_name, entry_point_id=show.id)
         db.session.add(series)
-        # FIXME: sqlalchemy.exc.DatabaseError: (mysql.connector.errors.DatabaseError) 1364 (HY000):
-        #  Field 'id' doesn't have a default value
         db.session.commit()
         show.series_id = series.id
         show.series_entry_id = series.id
