@@ -2,14 +2,18 @@
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from .config import settings
+import os
 # from .models import UserModel
 # from .auth import auth as auth_blueprint
 # from .main import main as main_blueprint
 
-db = SQLAlchemy()
+# Potentially add to config file instead?
+# "pool_pre_ping": True to set to pessimistic disconnect handling was suggested, but apparently unnecessary
+db = SQLAlchemy(engine_options={"pool_recycle": 280})
 migrate = Migrate()
 
 
