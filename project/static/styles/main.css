@@ -259,6 +259,7 @@ h4
   top: 100%;
   transform: translateX(-50%);
 }
+
 .bubble::after {
   content: "";
   position: absolute;
@@ -320,4 +321,13 @@ html, body {
 #update-logger .break:before {
     content: "\1F527";
     padding-right: 5px;
+}
+
+.hide {
+    display: none;
+}
+
+.show-link:hover + .hide {
+    display: block;
+    position: absolute;
 }

@@ -6,8 +6,8 @@
         <img src="{{image}}" alt="Cover image for current show" style="float: left"><br>
         <h3>Episodes: {{episodes}}</h3> <br>
         <h3>Type: {{ type }}</h3> <br>
-        <h3>Season: N/A of N/A</h3> <br>
-        <h3>Aired: N/A</h3></div>
+        <h3>Season: <a href="/series/{{ series_id }}">{{ priority }} of {{ seasons }}</a></h3> <br>
+        <h3>Aired: Unknown</h3></div>
     <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
     <div id="scoring"><div id="avgScores">Anilist avg score: {{ public }}, MAL avg score: N/A <br>
         Our avg score: {{ avgUserScore }}, Friends' avg score: N/A </div>

@@ -154,8 +154,9 @@ def series(series_id):
     series = Series.query.get(series_id)
     if not series:
         return redirect(url_for("404"))
-    # TODO: If there's a total of one show in the series, redirect to the show page
     entry = Show.query.get(series.entry_point_id)
+    if len(series.shows) == 1:
+        return redirect(f"/shows/{entry.id}")
     sorted_shows = series.sort_shows()
     all_user_ratings = series.ratings_by_user()
 
@@ -207,7 +208,6 @@ def series(series_id):
         "coverLarge": entry.cover_large,
         "totalEpisodes": seasonal_data["totalEpisodes"],
         "mainEpisodes": seasonal_data["mainSeriesEpisodes"],
-        # "seasons": len(sorted_shows["main_shows"]),
         "sorted_shows": sorted_shows,
         "movies": "N/A",
         "unaired": "N/A",
@@ -243,6 +243,7 @@ def show(show_id):
     show = Show.query.filter_by(id=show_id).first()
     if not show:
         return redirect(url_for("404"))
+    series = Series.query.filter_by(id=show.series_id).first()
 
     GQL_request = request_show_data(show.anilist_id)
     if show.status not in ("FINISHED", "CANCELLED"):
@@ -296,6 +297,9 @@ def show(show_id):
         "episodes": show.episodes,
         "type": show.type,
         "synopsis": show.description,
+        "priority": show.priority,
+        "seasons": len(series.sort_shows()["main_shows"]),
+        "series_id": show.series_id,
         "genres": collect_genres(GQL_request["genres"]),
         "tags": tags,
         "spoilers": spoilers,
@@ -315,6 +319,20 @@ def show(show_id):
     }
 
     return render_template(f"{template_path}/show_display.html", **variables)
+
+
+@content.route("/series_list")
+def series_list():
+    all_series = db.session.query(Series).all()
+    series_names = [series.rj_name for series in all_series]
+    series_ids = [series.id for series in all_series]
+
+    variables = {
+        "series_names": series_names,
+        "series_ids": series_ids
+    }
+
+    return render_template(f"{template_path}/series_list.html", **variables)
 
 
 def collect_title(show):

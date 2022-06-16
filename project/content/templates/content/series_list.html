@@ -1,0 +1,10 @@
+{% extends "general/templates/general/base.html" %}
+{% block content %}
+<main>
+    <ul>Series list:
+    {% for series_name in series_names %}
+        <li><a href="/series/{{ series_ids[loop.index0] }}">{{ series_name }}</a></li>
+    {% endfor %}
+    </ul>
+</main>
+{% endblock %}

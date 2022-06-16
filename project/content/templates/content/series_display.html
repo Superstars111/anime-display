@@ -41,11 +41,12 @@
     <div id="shows-list">
     {# TODO: Add a listbox menu here so you can see all the shows in the series, not just main ones. Also find a way to display the title. #}
         {% for show in main_shows %}
-        <div style="display: inline-block"><a href="/shows/{{ show.id }}"><img src="{{ show.cover_med }}" alt="Image for {{ show.rj_name }}"></a></div>
+        <div class="show-link" style="display: inline-block"><a href="/shows/{{ show.id }}"><img src="{{ show.cover_med }}" alt="Image for {{ show.rj_name }}"></a></div>
+        <div class="hide">{{ show.rj_name }}</div>
         {% endfor %}
     </div>
     <div id="streaming">
-    {# Want to use enumerate() here with modulo for a better break system, but jinja2 doesn't like enumerate(). #}
+    {# Want to use enumerate() here with modulo for a better break system, but jinja2 doesn't like enumerate(). Use loop.index0 #}
         {% for service in mainStreaming.items() %}
         <div class="service" style="color: {{ stream_colors[service[0]][0] }}"><h4>{{ "Netflix Prison" if service[0] == "prison" else service[0].capitalize() }}</h4>
             <span style="color: {{ stream_colors[service[0]][1] }}">Main content: {{ service[1] }} <br>
