@@ -9,10 +9,18 @@ function updateGraphData() {
 const xSelector = document.getElementById("x-coord");
 const ySelector = document.getElementById("y-coord");
 
-const SELVAR = partial(setVariables, url, [xSelector, ySelector], updateGraphData);
+// FIXME: Removed needed lines from setGetVariables
 
-xSelector.onchange = SELVAR;
-ySelector.onchange = SELVAR;
+function submitGraphRequest() {
+  let variables = setGetVariables(url, [xSelector, ySelector]);
+  let post = JSON.stringify(variables)
+  let func = partial(checkStatus, updateGraphData);
+  makeRequest(url, post, func)
+}
+const SELVAR = partial(setGetVariables, url, [xSelector, ySelector], updateGraphData);
+
+xSelector.onchange = submitGraphRequest;
+ySelector.onchange = submitGraphRequest;
 // const graphButton = document.getElementById("graphButton");
 //
 // const GBVAR = partial(setVariables, "/graph_test", [graphButton], updateGraphData);

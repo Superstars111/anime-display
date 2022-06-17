@@ -1,4 +1,6 @@
 // Taken from https://stackoverflow.com/questions/321113/how-can-i-pre-set-arguments-in-javascript-function-call-partial-function-appli/321527#321527
+// Based on https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX/Getting_Started
+// Probably want to replace with fetch according to https://code.tutsplus.com/articles/create-a-javascript-ajax-post-request-with-and-without-jquery--cms-39195
 
 function partial(func /*, 0..n args */) {
   let args = Array.prototype.slice.call(arguments, 1);
@@ -8,21 +10,30 @@ function partial(func /*, 0..n args */) {
   };
 }
 
-// Taken and modified from https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX/Getting_Started
-
 let httpRequest;
 
-function setVariables(url, items, result) {
+function setPostVariables(items) {
+  let variables = {};
+  for (let i = 0; i < items.length; i++) {
+    variables[items[i].name] = items[i].value
+  }
+  for (let i = 0; i < variables.length; i++) {
+    console.log(variables.value);
+  }
+  console.log(variables);
+  return variables;
+}
+
+function setGetVariables(url, items) {
   let variables = [];
   for (let i = 0; i < items.length; i++) {
     variables.push(`${items[i].name}=${items[i].value}`)
   }
-  variables = variables.join("&")
-  let func = partial(checkStatus, result);
-  makeRequest(url, variables, func)
+  variables = variables.join("&");
+  return variables;
 }
 
-function makeRequest(url, variables, func) {
+function makeRequest(url, post, func) {
   httpRequest = new XMLHttpRequest();
 
   if (!httpRequest) {
@@ -30,11 +41,12 @@ function makeRequest(url, variables, func) {
       return false;
     }
 
-  httpRequest.open("GET", url + `?${variables}`);
-  httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); //Don't understand what this header means
+  httpRequest.open("POST", url, true);
+  httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8'); // Changed from application/x-www-form-urlencoded for POST instead of GET
   console.log(func)
   httpRequest.onreadystatechange = func;
-  httpRequest.send();
+  console.log(post)
+  httpRequest.send(post);
 }
 
 function checkStatus(func) {

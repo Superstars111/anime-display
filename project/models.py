@@ -44,24 +44,40 @@ series_relation = Table(
 )
 
 
+class Feedback(db.Model):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    type = Column(Integer)  # 1 = Bug report, 2 = Feature request, 3 = Data request
+    status = Column(Integer)  # 1 = Unreviewed, 2 = Queued, 3 = In progress, 4 = Closed
+    description = Column(Text)
+    note = Column(Text)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
 
+    # User info
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(80), unique=True, nullable=False)
     username = Column(String(100), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
     admin = Column(Boolean)
+
     lists = relationship("List", backref=backref("users"))
     friends = relationship("User",
                            secondary=friends,
-                           primaryjoin=id==friends.c.friend1_id,
-                           secondaryjoin=id==friends.c.friend2_id,
+                           primaryjoin=id == friends.c.friend1_id,
+                           secondaryjoin=id == friends.c.friend2_id,
                            back_populates="friends")
     # outgoing_recommendations = relationship("Recommendation", backref=backref("users"))
     # incoming_recommendations = relationship("Recommendation", backref=backref("users"))
     show_ratings = relationship("Rating", backref=backref("users"))
     alt_show_names = relationship("Show", secondary=alt_names, back_populates="alt_names")
+
+    # Preferences
+    # pref_names = Column(Integer)  # 1 = Japanese/native, 2 = Romaji, 3 = English, 4 = ?, 5 = ?
 
 
 class Series(db.Model):

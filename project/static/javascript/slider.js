@@ -3,7 +3,6 @@
 const ratingButton = document.getElementById("ratingButton");
 
 let sliders = [
-  ratingButton,
   document.getElementById("scoreRange"),
   document.getElementById("pacingRange"),
   document.getElementById("energyRange"),
@@ -13,12 +12,17 @@ let sliders = [
   document.getElementById("proprietyRange")
 ]
 
-const RBVAR = partial(setVariables, url, sliders, log);
-
-ratingButton.onclick = RBVAR;
+ratingButton.onclick = submitData;
 
 function log() {
   console.log("Values updated")
+}
+
+function submitData() {
+  let variables = setPostVariables(sliders);
+  let post = JSON.stringify(variables)
+  let func = partial(checkStatus, log);
+  makeRequest(url, post, func)
 }
 
 const allRanges = document.querySelectorAll(".range-wrap");

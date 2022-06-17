@@ -269,15 +269,18 @@ def show(show_id):
 
     new_rating = request.args.get("rate", "")
     if new_rating:
+        new_rating = request.get_json()
+        print("WE ARE HERE!!!")
         new_rating_data = {
-            "score": request.args.get("score"),
-            "pacing": request.args.get("pacing"),
-            "energy": request.args.get("energy"),
-            "tone": request.args.get("tone"),
-            "fantasy": request.args.get("fantasy"),
-            "abstraction": request.args.get("abstraction"),
-            "propriety": request.args.get("propriety"),
+            "score": int(new_rating["score"]),
+            "pacing": int(new_rating["pacing"]),
+            "energy": int(new_rating["energy"]),
+            "tone": int(new_rating["tone"]),
+            "fantasy": int(new_rating["fantasy"]),
+            "abstraction": int(new_rating["abstraction"]),
+            "propriety": int(new_rating["propriety"]),
         }
+        print(new_rating_data)
         if not user_rating:
             rating = Rating(show_id=show_id, user_id=current_user.id)
             rating.update(new_rating_data)
