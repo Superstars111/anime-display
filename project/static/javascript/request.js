@@ -33,7 +33,7 @@ function setGetVariables(url, items) {
   return variables;
 }
 
-function makeRequest(url, post, func) {
+function makePostRequest(url, post, func) {
   httpRequest = new XMLHttpRequest();
 
   if (!httpRequest) {
@@ -43,10 +43,22 @@ function makeRequest(url, post, func) {
 
   httpRequest.open("POST", url, true);
   httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8'); // Changed from application/x-www-form-urlencoded for POST instead of GET
-  console.log(func)
   httpRequest.onreadystatechange = func;
-  console.log(post)
   httpRequest.send(post);
+}
+
+function makeGetRequest(url, variables, func) {
+  httpRequest = new XMLHttpRequest();
+
+  if (!httpRequest) {
+      console.log('Giving up :( Cannot create an XMLHTTP instance');
+      return false;
+    }
+
+  httpRequest.open("GET", url + `?${variables}`, true);
+  httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded'); // Changed from application/x-www-form-urlencoded for POST instead of GET
+  httpRequest.onreadystatechange = func;
+  httpRequest.send();
 }
 
 function checkStatus(func) {

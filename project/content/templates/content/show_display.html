@@ -38,7 +38,7 @@
     </div></div>
     <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
     <div id="sliders">
-            <form action="" method="GET">
+            <form action="" method="POST">
             <div class="range-wrap">
                 <label for="score" class="range-label">&#8672; Low score &bullet; High score &#8674;
                 <input type="checkbox" checked><input type="range" id="scoreRange" name="score" min="0" max="100" value="{{ score }}" class="slider">

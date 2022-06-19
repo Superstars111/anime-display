@@ -267,10 +267,8 @@ def show(show_id):
         selected_list.shows += [show]
         db.session.commit()
 
-    new_rating = request.args.get("rate", "")
-    if new_rating:
+    if request.is_json:
         new_rating = request.get_json()
-        print("WE ARE HERE!!!")
         new_rating_data = {
             "score": int(new_rating["score"]),
             "pacing": int(new_rating["pacing"]),

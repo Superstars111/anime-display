@@ -13,9 +13,8 @@ const ySelector = document.getElementById("y-coord");
 
 function submitGraphRequest() {
   let variables = setGetVariables(url, [xSelector, ySelector]);
-  let post = JSON.stringify(variables)
   let func = partial(checkStatus, updateGraphData);
-  makeRequest(url, post, func)
+  makeGetRequest(url, variables, func)
 }
 const SELVAR = partial(setGetVariables, url, [xSelector, ySelector], updateGraphData);
 

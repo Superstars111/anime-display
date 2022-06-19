@@ -22,7 +22,7 @@ function submitData() {
   let variables = setPostVariables(sliders);
   let post = JSON.stringify(variables)
   let func = partial(checkStatus, log);
-  makeRequest(url, post, func)
+  makePostRequest(url, post, func)
 }
 
 const allRanges = document.querySelectorAll(".range-wrap");
