@@ -9,22 +9,14 @@ function updateGraphData() {
 const xSelector = document.getElementById("x-coord");
 const ySelector = document.getElementById("y-coord");
 
-// FIXME: Removed needed lines from setGetVariables
-
 function submitGraphRequest() {
   let variables = setGetVariables(url, [xSelector, ySelector]);
   let func = partial(checkStatus, updateGraphData);
   makeGetRequest(url, variables, func)
 }
-const SELVAR = partial(setGetVariables, url, [xSelector, ySelector], updateGraphData);
 
 xSelector.onchange = submitGraphRequest;
 ySelector.onchange = submitGraphRequest;
-// const graphButton = document.getElementById("graphButton");
-//
-// const GBVAR = partial(setVariables, "/graph_test", [graphButton], updateGraphData);
-//
-// graphButton.onclick = GBVAR;
 
 // Based on https://www.chartjs.org/docs/latest/samples/other-charts/scatter.html
 // And on http://www.java2s.com/example/javascript/chart.js/chartjs-to-create-scatter-chart.html
