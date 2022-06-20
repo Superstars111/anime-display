@@ -1,0 +1,20 @@
+{% extends "general/templates/general/base.html" %}
+
+{% block content %}
+<main>
+    <div>
+        <form action="" method="POST">
+            <select name="feedback-type" id="feedback-type">
+                <option value="1">Bug Report</option>
+                <option value="2">Feature Request</option>
+                <option value="3">Data Request</option>
+                <option value="4">Other Feedback</option>
+            </select>
+            <br>
+            <textarea name="feedback-description" id="feedback-description" cols="30" rows="10"></textarea>
+            <br>
+            <button type="submit" name="feedback-submission">Submit Feedback</button>
+        </form>
+    </div>
+</main>
+{% endblock %}

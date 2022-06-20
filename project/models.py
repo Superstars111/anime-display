@@ -49,8 +49,8 @@ class Feedback(db.Model):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    type = Column(Integer)  # 1 = Bug report, 2 = Feature request, 3 = Data request
-    status = Column(Integer)  # 1 = Unreviewed, 2 = Queued, 3 = In progress, 4 = Closed
+    type = Column(Integer)  # 1 = Bug report, 2 = Feature request, 3 = Data request, 4 = Other
+    status = Column(Integer)  # 1 = New feedback, 2 = Planned, 3 = In progress, 4 = Closed
     description = Column(Text)
     note = Column(Text)
 
