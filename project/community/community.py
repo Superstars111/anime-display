@@ -75,7 +75,8 @@ def list_display(username, list_name):
 
 @community.route("/give-feedback", methods=["GET", "POST"])
 def give_feedback():
-    if request.form.get("feedback-submission"):
+    feedback_alert = request.form.get("feedback-submission")
+    if feedback_alert:
         new_feedback = Feedback(
             user_id=current_user.id,
             type=request.form.get("feedback-type"),
@@ -121,7 +122,7 @@ def view_feedback():
             "note": feedback_item.note
         })
 
-    return render_template(f"{template_path}/feedback_list.html", context=feedback_list)
+    return render_template(f"{template_path}/feedback_list.html", feedback_list=feedback_list)
 
 
 def assign_values(x_data, y_data):

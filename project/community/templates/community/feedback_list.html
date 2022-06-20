@@ -5,16 +5,12 @@
     <div>
         {% for feedback_item in feedback_list %}
         <div>
-            <div style="border-style: solid">User: {{ feedback_item["user"] }}</div>
-            <br>
-            <div style="border-style: solid">Type: {{ feedback_item["type"] }}</div>
-            <br>
-            <div style="border-style: solid">Status: {{ feedback_item["status"] }}</div>
-            <br>
-            <div style="border-style: solid">Description: {{ feedback_item["description"] }}</div>
-            <br>
+            <div style="border-style: solid; border-bottom-style: none">User: {{ feedback_item["user"] }}</div>
+            <div style="border-style: solid; border-bottom-style: none">Type: {{ feedback_item["type"] }}</div>
+            <div style="border-style: solid; border-bottom-style: none">Status: {{ feedback_item["status"] }}</div>
+            <div style="border-style: solid; border-bottom-style: none">Description: {{ feedback_item["description"] }}</div>
             <div style="border-style: solid">Dev Notes: {{ feedback_item["note"] }}</div>
-        </div>
+        </div><br>
         {% endfor %}
     </div>
 </main>
