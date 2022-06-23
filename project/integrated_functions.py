@@ -1,7 +1,7 @@
 import json
 import requests as rq
 import decimal as dc
-from project.models import Show, Series
+from project.models import Show, Series, User, Feedback
 from . import db
 from project.standalone_functions import request_show_data, process_show_data
 import time
@@ -172,3 +172,45 @@ def collect_seasonal_data(series_id: int) -> dict:
     seasonal_data["sideAvailability"] = process_show_data(sorted_shows["side_shows"])["availability"]
 
     return seasonal_data
+
+
+def collect_feedback() -> list:
+    feedback_list = []
+    for feedback_item in db.session.query(Feedback).all():
+
+        user = User.query.filter_by(id=feedback_item.user_id).first()
+
+        if feedback_item.type == 1:
+            feedback_type = "Bug Report"
+        elif feedback_item.type == 2:
+            feedback_type = "Feature Request"
+        elif feedback_item.type == 3:
+            feedback_type = "Data Request"
+        else:
+            feedback_type = "Other Feedback"
+
+        if feedback_item.status == 1:
+            feedback_status = "New Feedback"
+        elif feedback_item.status == 2:
+            feedback_status = "Planned"
+        elif feedback_item.status == 3:
+            feedback_status = "In Progress"
+        else:
+            feedback_status = "Closed"
+
+        feedback_list.append({
+            "id": feedback_item.id,
+            "user": user.username,
+            "type": feedback_type,
+            "status": feedback_status,
+            "description": feedback_item.description,
+            "note": feedback_item.note
+        })
+
+    return feedback_list
+
+
+def update_feedback_status(feedback_id, new_status):
+    feedback = Feedback.query.filter_by(id=feedback_id).first()
+    feedback.status = new_status
+    db.session.commit()

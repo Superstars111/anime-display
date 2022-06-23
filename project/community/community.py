@@ -5,6 +5,7 @@ from project.models import User, List, Rating, Show, Feedback
 import json
 from project.automation import migrate_ratings, update_library, add_lists
 from project.standalone_functions import assign_data
+from project.integrated_functions import collect_feedback, update_feedback_status
 from project import db
 
 community = Blueprint("community", __name__, template_folder="../../project")
@@ -89,38 +90,14 @@ def give_feedback():
     return render_template(f"{template_path}/feedback_submission.html")
 
 
-@community.route("/view-feedback")
+@community.route("/view-feedback", methods=["GET", "POST"])
 def view_feedback():
-    feedback_list = []
-    for feedback_item in db.session.query(Feedback).all():
-
-        user = User.query.filter_by(id=feedback_item.user_id).first()
-
-        if feedback_item.type == 1:
-            feedback_type = "Bug Report"
-        elif feedback_item.type == 2:
-            feedback_type = "Feature Request"
-        elif feedback_item.type == 3:
-            feedback_type = "Data Request"
-        else:
-            feedback_type = "Other Feedback"
-
-        if feedback_item.status == 1:
-            feedback_status = "New Feedback"
-        elif feedback_item.status == 2:
-            feedback_status = "Planned"
-        elif feedback_item.status == 3:
-            feedback_status = "In Progress"
-        else:
-            feedback_status = "Closed"
-
-        feedback_list.append({
-            "user": user.username,
-            "type": feedback_type,
-            "status": feedback_status,
-            "description": feedback_item.description,
-            "note": feedback_item.note
-        })
+    feedback_list = collect_feedback()
+    print(feedback_list)
+    status_update = request.form.get("status-select")
+    feedback_id = request.form.get("feedback-id")
+    if status_update:
+        update_feedback_status(feedback_id, status_update)
 
     return render_template(f"{template_path}/feedback_list.html", feedback_list=feedback_list)
 

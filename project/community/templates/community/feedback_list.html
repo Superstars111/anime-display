@@ -4,13 +4,27 @@
 <main>
     <div>
         {% for feedback_item in feedback_list %}
-        <div>
+        <div style="width: 64em; display: inline-block">
             <div style="border-style: solid; border-bottom-style: none">User: {{ feedback_item["user"] }}</div>
-            <div style="border-style: solid; border-bottom-style: none">Type: {{ feedback_item["type"] }}</div>
-            <div style="border-style: solid; border-bottom-style: none">Status: {{ feedback_item["status"] }}</div>
-            <div style="border-style: solid; border-bottom-style: none">Description: {{ feedback_item["description"] }}</div>
-            <div style="border-style: solid">Dev Notes: {{ feedback_item["note"] }}</div>
-        </div><br>
+            <div style="border-style: solid; border-bottom-style: none; border-top-width: 1px;">Type: {{ feedback_item["type"] }}</div>
+            <div style="border-style: solid; border-bottom-style: none; border-top-width: 1px;">Status: {{ feedback_item["status"] }}</div>
+            <div style="border-style: solid; border-bottom-style: none; border-top-width: 1px;">Description:<br> {{ feedback_item["description"] }}</div>
+            <div style="border-style: solid; border-top-width: 1px;">Dev Notes:<br> {{ feedback_item["note"] }}</div>
+        </div>{% if current_user.admin %}
+        <div style="display: inline-block">
+            <form action="" method="POST">
+                <select name="status-select" id="status-select" onchange="this.form.submit()">
+                <option value="1">New Feedback</option>
+                <option value="2">Planned</option>
+                <option value="3">In Progress</option>
+                <option value="4">Closed</option>
+                </select>
+                <input type="hidden" value="{{ feedback_item['id'] }}" name="feedback-id">
+            </form>
+        </div>
+            {% endif %}
+            <br>
+            <br>
         {% endfor %}
     </div>
 </main>
