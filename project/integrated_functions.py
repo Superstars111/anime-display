@@ -1,7 +1,8 @@
 import json
 import requests as rq
 import decimal as dc
-from project.models import Show, Series, User, Feedback
+from project.models import Show, Series, User, Feedback, Rating, List
+from flask_login import current_user
 from . import db
 from project.standalone_functions import request_show_data, process_show_data
 import time
@@ -210,7 +211,50 @@ def collect_feedback() -> list:
     return feedback_list
 
 
-def update_feedback_status(feedback_id, new_status):
+def update_feedback_status(feedback_id: int, new_status: int):
     feedback = Feedback.query.filter_by(id=feedback_id).first()
     feedback.status = new_status
     db.session.commit()
+
+
+def update_user_show_rating(show_id, old_rating, new_rating):
+    new_rating = intify_dict_values(new_rating)
+    if not old_rating:
+        rating = Rating(show_id=show_id, user_id=current_user.id)
+        rating.update(new_rating)
+        db.session.add(rating)
+
+    else:
+        old_rating.update(new_rating)
+
+    db.session.commit()
+
+
+def add_show_to_list(list_id, show):
+    selected_list = List.query.filter_by(id=list_id).first()
+    selected_list.shows += [show]
+    db.session.commit()
+
+
+def update_user_series_rating(new_rating, series_id):
+    current_seen_list = List.query.filter_by(owner_id=current_user.id, name="Seen").first()
+    new_rating = intify_dict_values(new_rating)
+    series = Series.query.filter_by(id=series_id).first()
+
+    for show in series.shows:
+        if show in current_seen_list.shows:
+            user_rating = Rating.query.filter_by(user_id=current_user.id, show_id=show.id).first()
+            if not user_rating:
+                user_rating = Rating(user_id=current_user.id, show_id=show.id)
+                db.session.add(user_rating)
+
+            user_rating.update(new_rating)
+
+        db.session.commit()
+
+
+def intify_dict_values(item: dict) -> dict:
+    for key in item:
+        item[key] = int(item[key])
+
+    return item

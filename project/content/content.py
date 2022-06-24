@@ -9,15 +9,16 @@ from project.models import Show, Rating, List, User, Series
 from project import db
 import requests as rq
 import json
-from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry
+from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry, \
+    update_user_show_rating, add_show_to_list, update_user_series_rating
 from project.standalone_functions import assign_data, check_stream_locations, get_average, average_ratings
 
-template_path = "content/templates/content"
+TEMPLATE_PATH = "CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT"
 
-content = Blueprint("content", __name__, template_folder="../../project")
+CONTENT_BLUEPRINT = Blueprint("CONTENT_BLUEPRINT", __name__, template_folder="../../project")
 
 
-@content.route("/display_all")
+@CONTENT_BLUEPRINT.route("/display_all")
 def display_all():
     episodes = 0
     seasons = 0
@@ -65,10 +66,10 @@ def display_all():
         "private": avg_house_score
     }
 
-    return render_template("content/templates/content/lib_display.html", **variables)
+    return render_template("CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT/lib_display.html", **variables)
 
 
-@content.route("/compare")
+@CONTENT_BLUEPRINT.route("/compare")
 def compare():
     pass
     # show_id = request.args.get("options_list", "")
@@ -122,10 +123,10 @@ def compare():
     #     "stream_colors": streaming,
     # }
     #
-    # return render_template("content/templates/content/display.html", **variables)
+    # return render_template("CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT/display.html", **variables)
 
 
-@content.route("/options")
+@CONTENT_BLUEPRINT.route("/options")
 def options():
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
@@ -146,51 +147,21 @@ def options():
         session["selected_shows"].clear()
         session.modified = True
 
-    return render_template("content/templates/content/selection.html", chosen=session["selected_shows"])
+    return render_template("CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT/selection.html", chosen=session["selected_shows"])
 
 
-@content.route("/series/<int:series_id>")
+@CONTENT_BLUEPRINT.route("/series/<int:series_id>", methods=["GET", "POST"])
 def series(series_id):
+    # Collecting house database information
     series = Series.query.get(series_id)
     if not series:
         return redirect(url_for("404"))
     entry = Show.query.get(series.entry_point_id)
+
     if len(series.shows) == 1:
         return redirect(f"/shows/{entry.id}")
     sorted_shows = series.sort_shows()
     all_user_ratings = series.ratings_by_user()
-
-    seasonal_data = collect_seasonal_data(series_id)
-    tags, spoilers = collect_tags(seasonal_data["mainTags"])
-
-    x_data = request.args.get("x-coord", "")
-    y_data = request.args.get("y-coord", "")
-    data = assign_data(all_user_ratings, x_data, y_data)
-    if x_data or y_data:
-        return data
-
-    new_rating = request.args.get("rate", "")
-    if new_rating:
-        current_seen_list = List.query.filter_by(owner_id=current_user.id, name="Seen").first()
-        new_rating_data = {
-            "score": request.args.get("score"),
-            "pacing": request.args.get("pacing"),
-            "energy": request.args.get("energy"),
-            "tone": request.args.get("tone"),
-            "fantasy": request.args.get("fantasy"),
-            "abstraction": request.args.get("abstraction"),
-            "propriety": request.args.get("propriety"),
-        }
-        for show in series.shows:
-            if show in current_seen_list.shows:
-                user_rating = Rating.query.filter_by(user_id=current_user.id, show_id=show.id).first()
-                if not user_rating:
-                    user_rating = Rating(user_id=current_user.id, show_id=show.id)
-                    db.session.add(user_rating)
-
-                user_rating.update(new_rating_data)
-
-            db.session.commit()
 
     if current_user.is_authenticated:
         current_user_show_ratings = []
@@ -202,6 +173,22 @@ def series(series_id):
     else:
         current_user_average_ratings = None
 
+    # Collecting Anilist database information
+    seasonal_data = collect_seasonal_data(series_id)
+    tags, spoilers = collect_tags(seasonal_data["mainTags"])
+
+    # Collecting user input
+    x_data = request.args.get("x-coord", "")
+    y_data = request.args.get("y-coord", "")
+    data = assign_data(all_user_ratings, x_data, y_data)
+    if x_data or y_data:
+        return data
+
+    if request.is_json:
+        new_rating = request.get_json()
+        update_user_series_rating(new_rating, series_id)
+
+    # Setting data and sending to user
     variables = {
         "title": collect_title(series),
         "coverMed": entry.cover_med,
@@ -235,26 +222,30 @@ def series(series_id):
         "url": f"/series/{series_id}"
     }
 
-    return render_template(f"{template_path}/series_display.html", **variables)
+    return render_template(f"{TEMPLATE_PATH}/series_display.html", **variables)
 
 
-@content.route("/shows/<int:show_id>", methods=["GET", "POST"])
+@CONTENT_BLUEPRINT.route("/shows/<int:show_id>", methods=["GET", "POST"])
 def show(show_id):
+    # Collecting house database information
     show = Show.query.filter_by(id=show_id).first()
     if not show:
-        return redirect(url_for("404"))
+        return redirect(url_for("general.404"))
     series = Series.query.filter_by(id=show.series_id).first()
-
-    GQL_request = request_show_data(show.anilist_id)
-    if show.status not in ("FINISHED", "CANCELLED"):
-        show.update_entry(GQL_request)
-        db.session.commit()
-
     if current_user.is_authenticated:
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
     else:
         user_rating = None
 
+    # Collecting Anilist database information
+    anilist_request = request_show_data(show.anilist_id)
+    tags, spoilers = collect_tags(anilist_request["tags"])
+    availability = check_stream_locations(anilist_request["externalLinks"])
+    if show.status not in ("FINISHED", "CANCELLED"):
+        show.update_entry(anilist_request)
+        db.session.commit()
+
+    # Collecting user input
     x_data = request.args.get("x-coord", "")
     y_data = request.args.get("y-coord", "")
     data = assign_data(show.user_ratings, x_data, y_data)
@@ -263,35 +254,13 @@ def show(show_id):
 
     list_addition = request.form.get("lists")
     if list_addition:
-        selected_list = List.query.filter_by(id=list_addition).first()
-        selected_list.shows += [show]
-        db.session.commit()
+        add_show_to_list(list_addition, show)
 
     if request.is_json:
         new_rating = request.get_json()
-        new_rating_data = {
-            "score": int(new_rating["score"]),
-            "pacing": int(new_rating["pacing"]),
-            "energy": int(new_rating["energy"]),
-            "tone": int(new_rating["tone"]),
-            "fantasy": int(new_rating["fantasy"]),
-            "abstraction": int(new_rating["abstraction"]),
-            "propriety": int(new_rating["propriety"]),
-        }
-        print(new_rating_data)
-        if not user_rating:
-            rating = Rating(show_id=show_id, user_id=current_user.id)
-            rating.update(new_rating_data)
-            db.session.add(rating)
+        update_user_show_rating(show_id, user_rating, new_rating)
 
-        else:
-            user_rating.update(new_rating_data)
-
-        db.session.commit()
-
-    tags, spoilers = collect_tags(GQL_request["tags"])
-    availability = check_stream_locations(GQL_request["externalLinks"])
-
+    # Setting data and sending to user
     variables = {
         "title": collect_title(show),
         "image": show.cover_large,
@@ -301,10 +270,10 @@ def show(show_id):
         "priority": show.priority,
         "seasons": len(series.sort_shows()["main_shows"]),
         "series_id": show.series_id,
-        "genres": collect_genres(GQL_request["genres"]),
+        "genres": collect_genres(anilist_request["genres"]),
         "tags": tags,
         "spoilers": spoilers,
-        "public": GQL_request["averageScore"],
+        "public": anilist_request["averageScore"],
         "stream_colors": collect_streaming_colors(availability),
         "streaming": availability,
         "data": data,
@@ -319,10 +288,10 @@ def show(show_id):
         "url": f"/shows/{show_id}"
     }
 
-    return render_template(f"{template_path}/show_display.html", **variables)
+    return render_template(f"{TEMPLATE_PATH}/show_display.html", **variables)
 
 
-@content.route("/series_list")
+@CONTENT_BLUEPRINT.route("/series_list")
 def series_list():
     all_series = db.session.query(Series).all()
     series_names = [series.rj_name for series in all_series]
@@ -333,10 +302,10 @@ def series_list():
         "series_ids": series_ids
     }
 
-    return render_template(f"{template_path}/series_list.html", **variables)
+    return render_template(f"{TEMPLATE_PATH}/series_list.html", **variables)
 
 
-def collect_title(show):
+def collect_title(show) -> str:
     titles = []
     for title in (show.jp_name, show.en_name, show.rj_name):
         # Check to ensure title is not "None" before appending
@@ -419,22 +388,7 @@ def collect_streaming_colors(availability: dict, series=False) -> dict:
     return colors
 
 
-def sort_ratings(ratings):
-    # Names are not currently used, but hopefully will be in the future
-    names = []
-    scores = []
-    pacing_scores = []
-    drama_scores = []
-    # for rating in ratings:
-    #     names.append(rating[0])
-    #     scores.append(rating[1])
-    #     pacing_scores.append(rating[2])
-    #     drama_scores.append(rating[3])
-
-    return scores, pacing_scores, drama_scores
-
-
-def collect_genres(genres_list):
+def collect_genres(genres_list: list) -> str:
     genres = ", ".join(genres_list)
     return genres
 

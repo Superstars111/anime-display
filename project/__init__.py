@@ -49,7 +49,7 @@ def create_app():
     from project.community.community import community as community_blueprint
     app.register_blueprint(community_blueprint)
 
-    from project.content.content import content as content_blueprint
+    from project.content.content import CONTENT_BLUEPRINT as content_blueprint
     app.register_blueprint(content_blueprint)
 
     from project.admin.admin import admin as admin_blueprint
