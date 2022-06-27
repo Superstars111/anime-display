@@ -294,34 +294,19 @@ def int_filter(x):
         return False
 
 
-def average_ratings(ratings: list) -> dict:
-    base_ratings = {
-        "score": [],
-        "pacing": [],
-        "energy": [],
-        "tone": [],
-        "fantasy": [],
-        "abstraction": [],
-        "propriety": []
+def average_ratings(ratings_set: dict) -> dict:
+    average_ratings_set = {
+        "score": get_average(ratings_set["score"]),
+        "pacing": get_average(ratings_set["pacing"]),
+        "energy": get_average(ratings_set["energy"]),
+        "tone": get_average(ratings_set["tone"]),
+        "fantasy": get_average(ratings_set["fantasy"]),
+        "abstraction": get_average(ratings_set["abstraction"]),
+        "propriety": get_average(ratings_set["propriety"])
     }
 
-    for rating in ratings:
-        base_ratings["score"].append(rating.score)
-        base_ratings["pacing"].append(rating.pacing)
-        base_ratings["energy"].append(rating.energy)
-        base_ratings["tone"].append(rating.tone)
-        base_ratings["fantasy"].append(rating.fantasy)
-        base_ratings["abstraction"].append(rating.abstraction)
-        base_ratings["propriety"].append(rating.propriety)
+    return average_ratings_set
 
-    average_ratings = {
-        "score": get_average(base_ratings["score"]),
-        "pacing": get_average(base_ratings["pacing"]),
-        "energy": get_average(base_ratings["energy"]),
-        "tone": get_average(base_ratings["tone"]),
-        "fantasy": get_average(base_ratings["fantasy"]),
-        "abstraction": get_average(base_ratings["abstraction"]),
-        "propriety": get_average(base_ratings["propriety"])
-    }
 
-    return average_ratings
+def avg_series_score(series_id):
+    pass

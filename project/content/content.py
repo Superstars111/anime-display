@@ -10,15 +10,15 @@ from project import db
 import requests as rq
 import json
 from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry, \
-    update_user_show_rating, add_show_to_list, update_user_series_rating
+    update_user_show_rating, add_show_to_list, update_user_series_rating, sort_series_names, batch_show_ratings_by_user
 from project.standalone_functions import assign_data, check_stream_locations, get_average, average_ratings
 
-TEMPLATE_PATH = "CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT"
+TEMPLATE_PATH = "content/templates/content"
 
-CONTENT_BLUEPRINT = Blueprint("CONTENT_BLUEPRINT", __name__, template_folder="../../project")
+content = Blueprint("content", __name__, template_folder="../../project")
 
 
-@CONTENT_BLUEPRINT.route("/display_all")
+@content.route("/display_all")
 def display_all():
     episodes = 0
     seasons = 0
@@ -66,10 +66,10 @@ def display_all():
         "private": avg_house_score
     }
 
-    return render_template("CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT/lib_display.html", **variables)
+    return render_template("content/templates/content/lib_display.html", **variables)
 
 
-@CONTENT_BLUEPRINT.route("/compare")
+@content.route("/compare")
 def compare():
     pass
     # show_id = request.args.get("options_list", "")
@@ -123,10 +123,10 @@ def compare():
     #     "stream_colors": streaming,
     # }
     #
-    # return render_template("CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT/display.html", **variables)
+    # return render_template("content/templates/content/display.html", **variables)
 
 
-@CONTENT_BLUEPRINT.route("/options")
+@content.route("/options")
 def options():
     show_id = request.args.get("selection", "")
     removal_id = request.args.get("chosen", "")
@@ -147,10 +147,10 @@ def options():
         session["selected_shows"].clear()
         session.modified = True
 
-    return render_template("CONTENT_BLUEPRINT/templates/CONTENT_BLUEPRINT/selection.html", chosen=session["selected_shows"])
+    return render_template("content/templates/content/selection.html", chosen=session["selected_shows"])
 
 
-@CONTENT_BLUEPRINT.route("/series/<int:series_id>", methods=["GET", "POST"])
+@content.route("/series/<int:series_id>", methods=["GET", "POST"])
 def series(series_id):
     # Collecting house database information
     series = Series.query.get(series_id)
@@ -164,12 +164,11 @@ def series(series_id):
     all_user_ratings = series.ratings_by_user()
 
     if current_user.is_authenticated:
-        current_user_show_ratings = []
-        for show in series.shows:
-            current_user_rating = Rating.query.filter_by(show_id=show.id, user_id=current_user.id).first()
-            if current_user_rating:
-                current_user_show_ratings.append(current_user_rating)
-        current_user_average_ratings = average_ratings(current_user_show_ratings)
+        base_ratings = batch_show_ratings_by_user(current_user.id, series.shows)
+        if base_ratings:
+            current_user_average_ratings = average_ratings(base_ratings)
+        else:
+            current_user_average_ratings = None
     else:
         current_user_average_ratings = None
 
@@ -225,7 +224,7 @@ def series(series_id):
     return render_template(f"{TEMPLATE_PATH}/series_display.html", **variables)
 
 
-@CONTENT_BLUEPRINT.route("/shows/<int:show_id>", methods=["GET", "POST"])
+@content.route("/shows/<int:show_id>", methods=["GET", "POST"])
 def show(show_id):
     # Collecting house database information
     show = Show.query.filter_by(id=show_id).first()
@@ -291,15 +290,21 @@ def show(show_id):
     return render_template(f"{TEMPLATE_PATH}/show_display.html", **variables)
 
 
-@CONTENT_BLUEPRINT.route("/series_list")
+@content.route("/series_list")
 def series_list():
-    all_series = db.session.query(Series).all()
-    series_names = [series.rj_name for series in all_series]
-    series_ids = [series.id for series in all_series]
+    # all_series = db.session.query(Series).all()
+    sort_style = request.args.get("series-sorting")
+    if sort_style:
+        sorted_names, sorted_ids = sort_series_names(sort_style)
+    else:
+        sorted_names, sorted_ids = sort_series_names("en_alpha")
+    # series_names = [series.rj_name for series in all_series]
+    # sorted_names = sorted(series_names)
+    # series_ids = [series.id for series in all_series]
 
     variables = {
-        "series_names": series_names,
-        "series_ids": series_ids
+        "series_names": sorted_names,
+        "series_ids": sorted_ids
     }
 
     return render_template(f"{TEMPLATE_PATH}/series_list.html", **variables)

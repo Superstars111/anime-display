@@ -49,4 +49,4 @@ def administration():
     if current_user.admin:
         return render_template("/admin/templates/admin/administration.html")
     else:
-        return redirect(url_for("community.profile"))
+        return redirect(url_for("COMMUNITY_BLUEPRINT.profile"))

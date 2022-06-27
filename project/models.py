@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager
 from . import db
-from project.standalone_functions import get_average
+from project.standalone_functions import get_average, average_ratings
 import decimal as dc
 
 login = LoginManager()
@@ -121,6 +121,7 @@ class Series(db.Model):
 
     def average_ratings(self) -> dict:
         base_ratings = {
+            "score": [],
             "pacing": [],
             "energy": [],
             "tone": [],
@@ -129,26 +130,22 @@ class Series(db.Model):
             "propriety": []
         }
         for show in self.shows:
-            for rating in show.user_ratings:
-                    base_ratings["pacing"].append(rating.pacing)
-                    base_ratings["energy"].append(rating.energy)
-                    base_ratings["tone"].append(rating.tone)
-                    base_ratings["fantasy"].append(rating.fantasy)
-                    base_ratings["abstraction"].append(rating.abstraction)
-                    base_ratings["propriety"].append(rating.propriety)
+            show_ratings = show.all_ratings()
+            base_ratings["score"].append(show_ratings["score"])
+            base_ratings["pacing"].append(show_ratings["pacing"])
+            base_ratings["energy"].append(show_ratings["energy"])
+            base_ratings["tone"].append(show_ratings["tone"])
+            base_ratings["fantasy"].append(show_ratings["fantasy"])
+            base_ratings["abstraction"].append(show_ratings["abstraction"])
+            base_ratings["propriety"].append(show_ratings["propriety"])
 
-        average_ratings = {
-            "pacing": get_average(base_ratings["pacing"]),
-            "energy": get_average(base_ratings["energy"]),
-            "tone": get_average(base_ratings["tone"]),
-            "fantasy": get_average(base_ratings["fantasy"]),
-            "abstraction": get_average(base_ratings["abstraction"]),
-            "propriety": get_average(base_ratings["propriety"])
-        }
+        print(base_ratings)
+        average_ratings_dict = average_ratings(base_ratings)
 
-        return average_ratings
+        return average_ratings_dict
 
     def ratings_by_user(self) -> list:
+        # TODO: Double check functionality
         user_ids = []
         show_ids = []
         all_user_series_ratings = []
@@ -159,36 +156,44 @@ class Series(db.Model):
                 if rating.user_id not in user_ids:
                     user_ids.append(rating.user_id)
 
-        for user in user_ids:
-            base_ratings = {
-                "pacing": [],
-                "energy": [],
-                "tone": [],
-                "fantasy": [],
-                "abstraction": [],
-                "propriety": []
-            }
+        for user_id in user_ids:
+            # base_ratings = {
+            #     "score": [],
+            #     "pacing": [],
+            #     "energy": [],
+            #     "tone": [],
+            #     "fantasy": [],
+            #     "abstraction": [],
+            #     "propriety": []
+            # }
+            #
+            # for show_id in show_ids:
+            #     rating = Rating.query.filter_by(user_id=user_id, show_id=show_id).first()
+            #     if rating:
+            #         all_fields = rating.all_fields_dict()
+            #         for key, value in all_fields.items():
+            #             if key in base_ratings:
+            #                 base_ratings[key].extend([value])
+            #             else:
+            #                 base_ratings[key] = [value]
 
-            for show in show_ids:
-                rating = Rating.query.filter_by(user_id=user, show_id=show).first()
+            base_ratings = {}
+
+            for show in self.shows:
+                # TODO: Duplicated in integrated functions, but can't be imported from there. Find a solution.
+                rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
                 if rating:
-                    base_ratings["pacing"].append(rating.pacing)
-                    base_ratings["energy"].append(rating.energy)
-                    base_ratings["tone"].append(rating.tone)
-                    base_ratings["fantasy"].append(rating.fantasy)
-                    base_ratings["abstraction"].append(rating.abstraction)
-                    base_ratings["propriety"].append(rating.propriety)
+                    all_fields = rating.all_fields_dict()
+                    for key, value in all_fields.items():
+                        if key in base_ratings:
+                            base_ratings[key].extend([value])
+                        else:
+                            base_ratings[key] = [value]
+                        # batch_show_ratings_by_user(user_id, self.shows)
 
-            average_ratings = {
-                "pacing": get_average(base_ratings["pacing"], allow_null=True),
-                "energy": get_average(base_ratings["energy"], allow_null=True),
-                "tone": get_average(base_ratings["tone"], allow_null=True),
-                "fantasy": get_average(base_ratings["fantasy"], allow_null=True),
-                "abstraction": get_average(base_ratings["abstraction"], allow_null=True),
-                "propriety": get_average(base_ratings["propriety"], allow_null=True)
-            }
+            average_ratings_dict = average_ratings(base_ratings)
 
-            all_user_series_ratings.append(average_ratings)
+            all_user_series_ratings.append(average_ratings_dict)
 
         return all_user_series_ratings
 
@@ -229,7 +234,15 @@ class Show(db.Model):
     series = relationship("Series", foreign_keys=[series_id], post_update=True)
 
     def average_ratings(self) -> dict:
+        base_ratings = self.all_ratings()
+
+        average_ratings_dict = average_ratings(base_ratings)
+
+        return average_ratings_dict
+
+    def all_ratings(self) -> dict:
         base_ratings = {
+            "score": [],
             "pacing": [],
             "energy": [],
             "tone": [],
@@ -239,23 +252,15 @@ class Show(db.Model):
         }
 
         for rating in self.user_ratings:
-                base_ratings["pacing"].append(rating.pacing)
-                base_ratings["energy"].append(rating.energy)
-                base_ratings["tone"].append(rating.tone)
-                base_ratings["fantasy"].append(rating.fantasy)
-                base_ratings["abstraction"].append(rating.abstraction)
-                base_ratings["propriety"].append(rating.propriety)
+            base_ratings["score"].append(rating.score)
+            base_ratings["pacing"].append(rating.pacing)
+            base_ratings["energy"].append(rating.energy)
+            base_ratings["tone"].append(rating.tone)
+            base_ratings["fantasy"].append(rating.fantasy)
+            base_ratings["abstraction"].append(rating.abstraction)
+            base_ratings["propriety"].append(rating.propriety)
 
-        average_ratings = {
-            "pacing": get_average(base_ratings["pacing"]),
-            "energy": get_average(base_ratings["energy"]),
-            "tone": get_average(base_ratings["tone"]),
-            "fantasy": get_average(base_ratings["fantasy"]),
-            "abstraction": get_average(base_ratings["abstraction"]),
-            "propriety": get_average(base_ratings["propriety"])
-        }
-
-        return average_ratings
+        return base_ratings
 
     def update_entry(self, new_data: dict):
         self.en_name = new_data["title"]["english"]
@@ -315,3 +320,16 @@ class Rating(db.Model):
         self.fantasy = new_data["fantasy"]
         self.abstraction = new_data["abstraction"]
         self.propriety = new_data["propriety"]
+
+    def all_fields_dict(self) -> dict:
+        all_rating_fields = {
+            "score": self.score,
+            "pacing": self.pacing,
+            "energy": self.energy,
+            "tone": self.tone,
+            "fantasy": self.fantasy,
+            "abstraction": self.abstraction,
+            "propriety": self.propriety,
+        }
+
+        return all_rating_fields

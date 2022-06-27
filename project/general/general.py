@@ -28,7 +28,7 @@ template_path = "general/templates/general"
 @general.route("/")
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for("community.settings"))
+        return redirect(url_for("COMMUNITY_BLUEPRINT.settings"))
     else:
         return redirect(url_for("auth.login"))
 

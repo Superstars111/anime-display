@@ -4,7 +4,7 @@ import decimal as dc
 from project.models import Show, Series, User, Feedback, Rating, List
 from flask_login import current_user
 from . import db
-from project.standalone_functions import request_show_data, process_show_data
+from project.standalone_functions import request_show_data, process_show_data, average_ratings
 import time
 
 
@@ -258,3 +258,42 @@ def intify_dict_values(item: dict) -> dict:
         item[key] = int(item[key])
 
     return item
+
+
+def sort_series_names(sort_style: str):
+    all_series = db.session.query(Series).all()
+    if sort_style == "en-alpha":
+        sorted_series = sorted(all_series, key=lambda x: x.en_name)
+        series_names = [series.en_name for series in sorted_series]
+    elif sort_style == "rj-alpha":
+        sorted_series = sorted(all_series, key=lambda x: x.rj_name)
+        series_names = [series.rj_name for series in sorted_series]
+    elif sort_style == "total-avg-score":
+        sorted_series = sorted(all_series, key=lambda x: x.average_ratings()["score"])
+        series_names = [series.rj_name for series in sorted_series]
+    elif sort_style == "main-avg-score":
+        sorted_series = sorted(all_series, key=lambda x: average_ratings(x.sort_shows()["main_shows"])["score"])
+        series_names = [series.rj_name for series in sorted_series]
+    else:
+        sorted_series = all_series
+        series_names = [series.rj_name for series in sorted_series]
+
+    series_ids = [series.id for series in sorted_series]
+
+    return series_names, series_ids
+
+
+def batch_show_ratings_by_user(user_id: int, show_list: list) -> dict:
+    base_ratings = {}
+
+    for show in show_list:
+        rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
+        if rating:
+            all_fields = rating.all_fields_dict()
+            for key, value in all_fields.items():
+                if key in base_ratings:
+                    base_ratings[key].extend([value])
+                else:
+                    base_ratings[key] = [value]
+
+    return base_ratings
