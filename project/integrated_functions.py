@@ -217,6 +217,12 @@ def update_feedback_status(feedback_id: int, new_status: int):
     db.session.commit()
 
 
+def update_feedback_note(feedback_id: int, note: str):
+    feedback = Feedback.query.filter_by(id=feedback_id).first()
+    feedback.note = note
+    db.session.commit()
+
+
 def update_user_show_rating(show_id, old_rating, new_rating):
     new_rating = intify_dict_values(new_rating)
     if not old_rating:
@@ -264,6 +270,8 @@ def sort_series_names(sort_style: str):
     all_series = db.session.query(Series).all()
     if sort_style == "en-alpha":
         sorted_series = sorted(all_series, key=lambda x: x.en_name)
+        # FIXME: TypeError: '<' not supported between instances of 'NoneType' and 'str'
+        #  Not all series have en_name listed. Account for this.
         series_names = [series.en_name for series in sorted_series]
     elif sort_style == "rj-alpha":
         sorted_series = sorted(all_series, key=lambda x: x.rj_name)

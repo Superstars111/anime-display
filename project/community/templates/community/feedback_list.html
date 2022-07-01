@@ -21,6 +21,11 @@
                 </select>
                 <input type="hidden" value="{{ feedback_item['id'] }}" name="feedback-id">
             </form>
+            <form action="" method="POST">
+                <textarea name="dev-note" id="dev-note" cols="25" rows="3"></textarea>
+                <button type="submit">Add Note</button>
+                <input type="hidden" value="{{ feedback_item['id'] }}" name="feedback-id">
+            </form>
         </div>
             {% endif %}
             <br>
