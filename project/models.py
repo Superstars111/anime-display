@@ -65,6 +65,7 @@ class User(UserMixin, db.Model):
     password = Column(String(100), nullable=False)
     admin = Column(Boolean)
 
+    # Relationships
     lists = relationship("List", backref=backref("users"))
     friends = relationship("User",
                            secondary=friends,
@@ -77,7 +78,7 @@ class User(UserMixin, db.Model):
     alt_show_names = relationship("Show", secondary=alt_names, back_populates="alt_names")
 
     # Preferences
-    # pref_names = Column(Integer)  # 1 = Japanese/native, 2 = Romaji, 3 = English, 4 = ?, 5 = ?
+    names_preference = Column(Integer)  # 1 = Japanese, 2 = Romaji, 3 = English (if applicable), 4 = Default (TBA)
 
 
 class Series(db.Model):
@@ -157,26 +158,6 @@ class Series(db.Model):
                     user_ids.append(rating.user_id)
 
         for user_id in user_ids:
-            # base_ratings = {
-            #     "score": [],
-            #     "pacing": [],
-            #     "energy": [],
-            #     "tone": [],
-            #     "fantasy": [],
-            #     "abstraction": [],
-            #     "propriety": []
-            # }
-            #
-            # for show_id in show_ids:
-            #     rating = Rating.query.filter_by(user_id=user_id, show_id=show_id).first()
-            #     if rating:
-            #         all_fields = rating.all_fields_dict()
-            #         for key, value in all_fields.items():
-            #             if key in base_ratings:
-            #                 base_ratings[key].extend([value])
-            #             else:
-            #                 base_ratings[key] = [value]
-
             base_ratings = {}
 
             for show in self.shows:

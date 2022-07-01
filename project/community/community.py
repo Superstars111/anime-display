@@ -5,7 +5,7 @@ from project.models import User, List, Rating, Show, Feedback
 import json
 from project.automation import migrate_ratings, update_library, add_lists
 from project.standalone_functions import assign_data
-from project.integrated_functions import collect_feedback, update_feedback_status
+from project.integrated_functions import collect_feedback, update_feedback_status, update_feedback_note
 from project import db
 
 COMMUNITY_BLUEPRINT = Blueprint("community", __name__, template_folder="../../project")
@@ -93,9 +93,12 @@ def give_feedback():
 @COMMUNITY_BLUEPRINT.route("/view-feedback", methods=["GET", "POST"])
 def view_feedback():
     status_update = request.form.get("status-select")
+    note_update = request.form.get("dev-note")
     feedback_id = request.form.get("feedback-id")
     if status_update:
-        update_feedback_status(feedback_id, status_update)
+        update_feedback_status(int(feedback_id), int(status_update))
+    if note_update:
+        update_feedback_note(int(feedback_id), note_update)
     feedback_list = collect_feedback()
 
     return render_template(f"{TEMPLATE_PATH}/feedback_list.html", feedback_list=feedback_list)
