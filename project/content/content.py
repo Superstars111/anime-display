@@ -296,8 +296,10 @@ def series_list():
     sort_style = request.args.get("series-sorting")
     if sort_style:
         sorted_names, sorted_ids = sort_series_names(sort_style)
+    elif current_user.names_preference == 1:
+        sorted_names, sorted_ids = sort_series_names("total-avg-score")
     else:
-        sorted_names, sorted_ids = sort_series_names("en_alpha")
+        sorted_names, sorted_ids = sort_series_names("alpha")
     # series_names = [series.rj_name for series in all_series]
     # sorted_names = sorted(series_names)
     # series_ids = [series.id for series in all_series]

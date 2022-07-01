@@ -2,8 +2,9 @@
 {% block content %}
 <main>
     <form><select name="series-sorting" id="series-sorting" onchange="this.form.submit()">
-        <option value="en-alpha">Alphabetized (English)</option>
-        <option value="rj-alpha">Alphabetized (Romaji)</option>
+        {% if current_user.names_preference != 1 %}
+        <option value="alpha">Alphabetized</option>
+        {% endif %}
         <option value="total-avg-score">Average Score (Total)</option>
         <option value="main-avg-score">Average Score (Main)</option>
     </select></form>

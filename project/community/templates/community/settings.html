@@ -17,6 +17,18 @@
   <li>List of shows in a series on a graph showing rating, scales, etc.</li>
 </ul>
 </p>
+    <div>
+        <form action="" method="POST">
+            <label for="names-preference">Title Language:
+            <select name="names-preference" id="names-preference">
+                <option value="1">Japanese/Native</option>
+                <option value="2">Romaji</option>
+                <option value="3">English</option>
+            </select>
+            </label>
+            <button type="submit" name="set-preference" value="true">Set Preference</button>
+        </form>
+    </div>
 {% if current_user.admin %}
 <p>
   <ul>To add (admin edition):
@@ -25,9 +37,5 @@
     Also, what's up with that "energy" column? What about "intensity-subtlety", and/or "attention required?" How about "emotional-intellectual?"
     I think I can add back the timeline rating also, since you now rate a show rather than a series...
 </p>
-<form action="">
-<button type="submit" name="ratings" value="true">Migrate ratings</button></form>
-<form action=""><button type="submit" name="update" value="true">Update library</button></form>
-<form action=""><button type="submit" name="list" value="true">Update user lists</button></form>
 {% endif %}
 {% endblock %}

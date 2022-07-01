@@ -13,14 +13,17 @@ COMMUNITY_BLUEPRINT = Blueprint("community", __name__, template_folder="../../pr
 TEMPLATE_PATH = "community/templates/community"
 
 
-@COMMUNITY_BLUEPRINT.route("/settings")
+@COMMUNITY_BLUEPRINT.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
-
-    if current_user.is_authenticated:
-        return render_template(f"{TEMPLATE_PATH}/settings.html", name=current_user.username)
-    else:
+    if not current_user.is_authenticated:
         return redirect(url_for("auth.login"))
+
+    if request.form.get("set-preference"):
+        current_user.names_preference = int(request.form.get("names-preference"))
+        db.session.commit()
+
+    return render_template(f"{TEMPLATE_PATH}/settings.html", name=current_user.username)
 
 
 @COMMUNITY_BLUEPRINT.route("/users/<username>")

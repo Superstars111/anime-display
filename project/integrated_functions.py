@@ -268,24 +268,30 @@ def intify_dict_values(item: dict) -> dict:
 
 def sort_series_names(sort_style: str):
     all_series = db.session.query(Series).all()
-    if sort_style == "en-alpha":
-        sorted_series = sorted(all_series, key=lambda x: x.en_name)
-        # FIXME: TypeError: '<' not supported between instances of 'NoneType' and 'str'
-        #  Not all series have en_name listed. Account for this.
-        series_names = [series.en_name for series in sorted_series]
-    elif sort_style == "rj-alpha":
-        sorted_series = sorted(all_series, key=lambda x: x.rj_name)
-        series_names = [series.rj_name for series in sorted_series]
+
+    if sort_style == "alpha":
+        if current_user.names_preference in (1, 2):
+            sorted_series = sorted(all_series, key=lambda x: x.rj_name.lower())
+        else:
+            sorted_series = sorted(all_series, key=lambda x: x.en_name.lower() if x.en_name else x.rj_name.lower())
     elif sort_style == "total-avg-score":
         sorted_series = sorted(all_series, key=lambda x: x.average_ratings()["score"])
-        series_names = [series.rj_name for series in sorted_series]
     elif sort_style == "main-avg-score":
         sorted_series = sorted(all_series, key=lambda x: average_ratings(x.sort_shows()["main_shows"])["score"])
-        series_names = [series.rj_name for series in sorted_series]
     else:
         sorted_series = all_series
-        series_names = [series.rj_name for series in sorted_series]
 
+    series_names = []
+    for series in sorted_series:
+        if current_user.names_preference == 1:
+            series_names.append(series.jp_name)
+        elif current_user.names_preference == 2:
+            series_names.append(series.rj_name)
+        else:
+            if series.en_name:
+                series_names.append(series.en_name)
+            else:
+                series_names.append(series.rj_name)
     series_ids = [series.id for series in sorted_series]
 
     return series_names, series_ids
@@ -305,3 +311,8 @@ def batch_show_ratings_by_user(user_id: int, show_list: list) -> dict:
                     base_ratings[key] = [value]
 
     return base_ratings
+
+
+def update_user_preference(new_value: int):
+    User.query.filter_by(id=current_user.id).first()
+
