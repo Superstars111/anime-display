@@ -1,14 +1,7 @@
 from flask import Blueprint, request, session, render_template, url_for, redirect
 from flask_login import current_user
-import pandas as pd
-import decimal as dc
-import matplotlib
-import matplotlib.pyplot as plt
-from project.config import settings
-from project.models import Show, Rating, List, User, Series
+from project.models import Show, Rating, Series
 from project import db
-import requests as rq
-import json
 from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry, \
     update_user_show_rating, add_show_to_list, update_user_series_rating, sort_series_names, batch_show_ratings_by_user
 from project.standalone_functions import assign_data, check_stream_locations, get_average, average_ratings

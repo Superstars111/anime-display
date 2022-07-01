@@ -1,9 +1,6 @@
 from flask import render_template, Blueprint, redirect, url_for, request, abort
 from flask_login import current_user, login_required
-from project.config import settings
-from project.models import User, List, Rating, Show, Feedback
-import json
-from project.automation import migrate_ratings, update_library, add_lists
+from project.models import User, List, Feedback
 from project.standalone_functions import assign_data
 from project.integrated_functions import collect_feedback, update_feedback_status, update_feedback_note
 from project import db

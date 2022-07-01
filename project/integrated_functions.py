@@ -1,11 +1,7 @@
-import json
-import requests as rq
-import decimal as dc
 from project.models import Show, Series, User, Feedback, Rating, List
 from flask_login import current_user
 from . import db
-from project.standalone_functions import request_show_data, process_show_data, average_ratings
-import time
+from project.standalone_functions import request_show_data, process_show_data
 
 
 def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None) -> list:
@@ -277,7 +273,7 @@ def sort_series_names(sort_style: str):
     elif sort_style == "total-avg-score":
         sorted_series = sorted(all_series, key=lambda x: x.average_ratings()["score"])
     elif sort_style == "main-avg-score":
-        sorted_series = sorted(all_series, key=lambda x: average_ratings(x.sort_shows()["main_shows"])["score"])
+        sorted_series = sorted(all_series, key=lambda x: x.average_ratings(only_main=True)["score"])
     else:
         sorted_series = all_series
 
@@ -311,8 +307,3 @@ def batch_show_ratings_by_user(user_id: int, show_list: list) -> dict:
                     base_ratings[key] = [value]
 
     return base_ratings
-
-
-def update_user_preference(new_value: int):
-    User.query.filter_by(id=current_user.id).first()
-

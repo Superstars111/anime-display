@@ -145,6 +145,7 @@ def assign_data(ratings: list, x_data: str, y_data: str):
 
 def request_show_data(anilist_id: int) -> dict:
     id_var = {"id": anilist_id}
+    # This requires an internet connection. If this bit breaks while testing locally, check your connection first.
     try:
         GQL_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
     except TypeError:

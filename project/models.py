@@ -120,7 +120,12 @@ class Series(db.Model):
         self.jp_name = new_data["jp_name"]
         self.rj_name = new_data["rj_name"]
 
-    def average_ratings(self) -> dict:
+    def average_ratings(self, only_main=False) -> dict:
+        if only_main:
+            selected_shows = self.sort_shows()["main_shows"]
+        else:
+            selected_shows = self.shows
+
         base_ratings = {
             "score": [],
             "pacing": [],
@@ -130,7 +135,8 @@ class Series(db.Model):
             "abstraction": [],
             "propriety": []
         }
-        for show in self.shows:
+
+        for show in selected_shows:
             show_ratings = show.all_ratings()
             base_ratings["score"].append(show_ratings["score"])
             base_ratings["pacing"].append(show_ratings["pacing"])
