@@ -14,4 +14,15 @@
     {% endfor %}
     </ul>
 </main>
+    <script>
+      const seriesSorting = document.getElementById("series-sorting");
+      const url = "/series_list";
+      seriesSorting.onchange = newSortStyle;
+      function newSortStyle() {
+        let variables = setGetVariables([seriesSorting]);
+        let func = partial(checkStatus, console.log);
+        makeGetRequest("/series_list", variables, func);
+      }
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>
 {% endblock %}

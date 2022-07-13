@@ -146,7 +146,6 @@ class Series(db.Model):
             base_ratings["abstraction"].append(show_ratings["abstraction"])
             base_ratings["propriety"].append(show_ratings["propriety"])
 
-        print(base_ratings)
         average_ratings_dict = average_ratings(base_ratings)
 
         return average_ratings_dict

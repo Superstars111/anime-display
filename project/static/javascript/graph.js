@@ -10,7 +10,7 @@ const xSelector = document.getElementById("x-coord");
 const ySelector = document.getElementById("y-coord");
 
 function submitGraphRequest() {
-  let variables = setGetVariables(url, [xSelector, ySelector]);
+  let variables = setGetVariables([xSelector, ySelector]);
   let func = partial(checkStatus, updateGraphData);
   makeGetRequest(url, variables, func)
 }

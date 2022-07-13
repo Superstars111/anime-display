@@ -24,7 +24,7 @@ function setPostVariables(items) {
   return variables;
 }
 
-function setGetVariables(url, items) {
+function setGetVariables(items) {
   let variables = [];
   for (let i = 0; i < items.length; i++) {
     variables.push(`${items[i].name}=${items[i].value}`)

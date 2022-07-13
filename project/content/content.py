@@ -259,7 +259,7 @@ def show(show_id):
         "episodes": show.episodes,
         "type": show.type,
         "synopsis": show.description,
-        "priority": show.priority,
+        "position": show.position,
         "seasons": len(series.sort_shows()["main_shows"]),
         "series_id": show.series_id,
         "genres": collect_genres(anilist_request["genres"]),
