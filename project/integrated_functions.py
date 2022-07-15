@@ -1,51 +1,33 @@
 from project.models import Show, Series, User, Feedback, Rating, List
 from flask_login import current_user
 from . import db
-from project.standalone_functions import request_show_data, process_show_data
+from project.standalone_functions import request_show_data, process_show_data, sort_series_relations
 
 
 def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None) -> list:
     if not checked_shows:
         checked_shows = []
-    sequels = []
-    side_stories = []
-    minor_relations = []
-    related_series = []
 
     relations = add_show_to_series(anilist_id, position, checked_shows, main=main, series_id=series_id)
     checked_shows.append(anilist_id)
+    sorted_relations = sort_series_relations(relations)
 
     if not series_id:
         series_id = update_series_entry(anilist_id)
 
-    for relation in relations:
-        if relation["node"]["type"] == "ANIME":
-
-            if relation["relationType"] == "SEQUEL":
-                sequels.append(relation["node"]["id"])
-
-            elif relation["relationType"] == "SIDE_STORY":
-                side_stories.append(relation["node"]["id"])
-
-            elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
-                related_series.append(relation["node"]["id"])
-
-            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
-                minor_relations.append(relation["node"]["id"])
-
-    for show_id in sequels:
+    for show_id in sorted_relations["sequels"]:
         if show_id not in checked_shows:
             checked_shows = update_full_series(show_id, position=position + 1, main=main, series_id=series_id, checked_shows=checked_shows)
 
-    for show_id in side_stories:
+    for show_id in sorted_relations["side_stories"]:
         if show_id not in checked_shows:
             checked_shows = update_full_series(show_id, position=position, main=2, series_id=series_id, checked_shows=checked_shows)
 
-    for show_id in minor_relations:
+    for show_id in sorted_relations["minor_relations"]:
         if show_id not in checked_shows:
             checked_shows = update_full_series(show_id, position=position, main=3, series_id=series_id, checked_shows=checked_shows)
 
-    for show_id in related_series:
+    for show_id in sorted_relations["related_series"]:
         if show_id not in checked_shows:
             checked_shows = update_full_series(show_id, checked_shows=checked_shows)
 
@@ -219,7 +201,7 @@ def update_feedback_note(feedback_id: int, note: str):
     db.session.commit()
 
 
-def update_user_show_rating(show_id, old_rating, new_rating):
+def update_user_show_rating(show_id: int, old_rating: object, new_rating: dict):
     new_rating = intify_dict_values(new_rating)
     if not old_rating:
         rating = Rating(show_id=show_id, user_id=current_user.id)
@@ -232,13 +214,13 @@ def update_user_show_rating(show_id, old_rating, new_rating):
     db.session.commit()
 
 
-def add_show_to_list(list_id, show):
+def add_show_to_list(list_id: int, show: object):
     selected_list = List.query.filter_by(id=list_id).first()
     selected_list.shows += [show]
     db.session.commit()
 
 
-def update_user_series_rating(new_rating, series_id):
+def update_user_series_rating(new_rating: dict, series_id: int):
     current_seen_list = List.query.filter_by(owner_id=current_user.id, name="Seen").first()
     new_rating = intify_dict_values(new_rating)
     series = Series.query.filter_by(id=series_id).first()
@@ -291,19 +273,3 @@ def sort_series_names(sort_style: str):
     series_ids = [series.id for series in sorted_series]
 
     return series_names, series_ids
-
-
-def batch_show_ratings_by_user(user_id: int, show_list: list) -> dict:
-    base_ratings = {}
-
-    for show in show_list:
-        rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
-        if rating:
-            all_fields = rating.all_fields_dict()
-            for key, value in all_fields.items():
-                if key in base_ratings:
-                    base_ratings[key].extend([value])
-                else:
-                    base_ratings[key] = [value]
-
-    return base_ratings

@@ -3,7 +3,7 @@ from flask_login import current_user
 from project.models import Show, Rating, Series
 from project import db
 from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry, \
-    update_user_show_rating, add_show_to_list, update_user_series_rating, sort_series_names, batch_show_ratings_by_user
+    update_user_show_rating, add_show_to_list, update_user_series_rating, sort_series_names
 from project.standalone_functions import assign_data, check_stream_locations, get_average, average_ratings
 
 TEMPLATE_PATH = "content/templates/content"
@@ -157,7 +157,7 @@ def series(series_id):
     all_user_ratings = series.ratings_by_user()
 
     if current_user.is_authenticated:
-        base_ratings = batch_show_ratings_by_user(current_user.id, series.shows)
+        base_ratings = series.all_ratings_by_user(current_user.id)
         if base_ratings:
             current_user_average_ratings = average_ratings(base_ratings)
         else:

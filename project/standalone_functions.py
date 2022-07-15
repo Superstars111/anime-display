@@ -311,3 +311,29 @@ def average_ratings(ratings_set: dict) -> dict:
 
 def avg_series_score(series_id):
     pass
+
+
+def sort_series_relations(relations_list: list) -> dict:
+    sorted_relations = {
+        "sequels": [],
+        "side_stories": [],
+        "related_series": [],
+        "minor_relations": []
+    }
+
+    for relation in relations_list:
+        if relation["node"]["type"] == "ANIME":
+
+            if relation["relationType"] == "SEQUEL":
+                sorted_relations["sequels"].append(relation["node"]["id"])
+
+            elif relation["relationType"] == "SIDE_STORY":
+                sorted_relations["side_stories"].append(relation["node"]["id"])
+
+            elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
+                sorted_relations["related_series"].append(relation["node"]["id"])
+
+            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
+                sorted_relations["minor_relations"].append(relation["node"]["id"])
+
+    return sorted_relations

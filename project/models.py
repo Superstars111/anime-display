@@ -150,6 +150,23 @@ class Series(db.Model):
 
         return average_ratings_dict
 
+    def all_ratings_by_user(self, user_id: int, show_list: list = None) -> dict:
+        series_ratings = {}
+        if not show_list:
+            show_list = self.shows
+
+        for show in show_list:
+            rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
+            if rating:
+                all_fields = rating.all_fields_dict()
+                for key, value in all_fields.items():
+                    if key in series_ratings:
+                        series_ratings[key].extend([value])
+                    else:
+                        series_ratings[key] = [value]
+
+        return series_ratings
+
     def ratings_by_user(self) -> list:
         # TODO: Double check functionality
         user_ids = []
@@ -163,21 +180,9 @@ class Series(db.Model):
                     user_ids.append(rating.user_id)
 
         for user_id in user_ids:
-            base_ratings = {}
+            all_user_ratings = self.all_ratings_by_user(user_id)
 
-            for show in self.shows:
-                # TODO: Duplicated in integrated functions, but can't be imported from there. Find a solution.
-                rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
-                if rating:
-                    all_fields = rating.all_fields_dict()
-                    for key, value in all_fields.items():
-                        if key in base_ratings:
-                            base_ratings[key].extend([value])
-                        else:
-                            base_ratings[key] = [value]
-                        # batch_show_ratings_by_user(user_id, self.shows)
-
-            average_ratings_dict = average_ratings(base_ratings)
+            average_ratings_dict = average_ratings(all_user_ratings)
 
             all_user_series_ratings.append(average_ratings_dict)
 
