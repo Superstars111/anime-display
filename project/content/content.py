@@ -289,17 +289,18 @@ def series_list():
     sort_style = request.args.get("series-sorting")
     if sort_style:
         sorted_names, sorted_ids = sort_series_names(sort_style)
+        # return {"series_names": sorted_names, "series_ids": sorted_ids}
     elif current_user.names_preference == 1:
         sorted_names, sorted_ids = sort_series_names("total-avg-score")
+        sort_style = "total-avg-score"
     else:
         sorted_names, sorted_ids = sort_series_names("alpha")
-    # series_names = [series.rj_name for series in all_series]
-    # sorted_names = sorted(series_names)
-    # series_ids = [series.id for series in all_series]
+        sort_style = "alpha"
 
     variables = {
         "series_names": sorted_names,
-        "series_ids": sorted_ids
+        "series_ids": sorted_ids,
+        "sort_style": sort_style
     }
 
     return render_template(f"{TEMPLATE_PATH}/series_list.html", **variables)
