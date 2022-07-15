@@ -144,17 +144,32 @@ def assign_data(ratings: list, x_data: str, y_data: str):
 
 
 def request_show_data(anilist_id: int) -> dict:
+    """Sends a GraphQL request to AniList for information on a given show and returns a dictionary of the
+    collected data. \n
+    Contains: \n
+    "title": {"romaji", "english", "native"},\n
+    "genres": [],\n
+    "tags": {"name", "rank", "isMediaSpoiler"},\n
+    "averageScore": 0,\n
+    "externalLinks": {"site"},\n
+    "format": "",\n
+    "status": "",\n
+    "description": "",\n
+    "episodes": 0,\n
+    "relations": {"edges": {"relationType": {"node": {"id", "type"}}}},\n
+    "coverImage": {"medium", "large", "extraLarge"}"""
+
     id_var = {"id": anilist_id}
     # This requires an internet connection. If this bit breaks while testing locally, check your connection first.
     try:
-        GQL_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
+        gql_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
     except TypeError:
         print("Timeout- sleeping")
         time.sleep(65)
         print("Waking up")
-        GQL_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
+        gql_request = rq.post(QUERY_URL, json={"query": QUERY, "variables": id_var}).json()['data']["Media"]
 
-    return GQL_request
+    return gql_request
 
 
 def process_show_data(main_shows: list) -> dict:
@@ -211,6 +226,8 @@ def process_show_data(main_shows: list) -> dict:
 
 
 def check_stream_locations(streaming_links: list) -> dict:
+    """Given a list of dictionaries, {"site": "string"}, this function will check for a specific set of sites
+    and return a dictionary with True or False for each streaming service."""
     checked = []
     availability = {
         "crunchyroll": False,
