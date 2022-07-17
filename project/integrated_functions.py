@@ -5,12 +5,32 @@ from project.standalone_functions import request_show_data, process_show_data, s
 
 
 def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None) -> list:
+    """
+    Uses recursion and other functions to update the show data of an entire series from a given entry point.
+
+
+    :param anilist_id: The ID for the AniList database entry for the first show in the series. Exceptions made if
+        using recursion within this function.
+    :param position: The position of the show within the series- 1st season, 2nd season, etc.
+    :param main: The priority level of this show in the series. 1 for the main series, 2 for side content like OVAs,
+        and 3 for minor relations like promotional material and music videos.
+    :param series_id: The ID number of the series within the local database.
+    :param checked_shows: A list of AniList ID numbers of shows which have already been checked through recursion.
+        Leave blank if not calling from within the function itself.
+    :return: A list of updated AniList ID numbers that have been checked by the function.
+    """
     if not checked_shows:
         checked_shows = []
 
-    relations = add_show_to_series(anilist_id, position, checked_shows, main=main, series_id=series_id)
-    checked_shows.append(anilist_id)
-    sorted_relations = sort_series_relations(relations)
+    if anilist_id not in checked_shows:
+        gql_request = request_show_data(anilist_id)
+        relations = gql_request["relations"]["edges"]
+        update_show_entry(anilist_id, gql_request)
+        update_show_series_data(anilist_id, position, priority=main, series_id=series_id)
+        checked_shows.append(anilist_id)
+        sorted_relations = sort_series_relations(relations)
+    else:
+        sorted_relations = []
 
     if not series_id:
         series_id = update_series_entry(anilist_id)
@@ -34,37 +54,41 @@ def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series
     return checked_shows
 
 
-def add_show_to_series(anilist_id: int, position: int, checked_shows: list, main: int = 1, series_id: int = None) -> list:
-    if anilist_id not in checked_shows:
-        GQL_request = request_show_data(anilist_id)
-        show = Show.query.filter_by(anilist_id=anilist_id).first()
-        if not show:
-            show = create_show_entry(anilist_id, GQL_request)
-        else:
-            show.update_entry(GQL_request)
+def update_show_series_data(anilist_id: int, position: int, priority: int = 1, series_id: int = None):
+    """
+    Updates a show's series data to be current and accurate. If a series does not currently exist, a new one can be
+    created with `update_series_entry()`.
 
-        show.position = position
-        show.priority = main
+    :param anilist_id: The AniList ID number for the show to be updated
+    :param position: The position of the show within the series- e.g., season 1, 2, etc.
+    :param priority: 1 if the show is part of the main series, 2 for side content like OVAs, 3 for minor content such
+        as promotional material or music videos
+    :param series_id: The local ID number of the associated series for the show, if any
+    """
 
-        if series_id:
-            series = Series.query.filter_by(id=series_id).first()
-            show.series_id = series.id
+    show = Show.query.filter_by(anilist_id=anilist_id).first()
 
-        db.session.commit()
+    show.position = position
+    show.priority = priority
 
-        # Return list of related shows
-        return GQL_request["relations"]["edges"]
+    if series_id:
+        series = Series.query.filter_by(id=series_id).first()
+        show.series_id = series.id
 
-    else:
-        # Needed for when it iterates over the list later
-        return []
+    db.session.commit()
 
 
 def update_show_entry(anilist_id: int, new_data: dict):
+    """
+    Updates a show's database entry or creates a new one based on a dictionary of data from AniList.
+
+    :param anilist_id: The ID number of a show in AniList's database
+    :param new_data: A collection of data about a show, received from `request_show_data()`
+    """
     show = Show.query.filter_by(anilist_id=anilist_id).first()
 
     if not show:
-        print(f"+show {new_data['title']['romaji']}, Anilist ID: {anilist_id}")
+        print(f"Adding new show {new_data['title']['romaji']}, Anilist ID: {anilist_id}")
         create_show_entry(anilist_id, new_data)
 
     else:
@@ -75,6 +99,12 @@ def update_show_entry(anilist_id: int, new_data: dict):
 
 
 def create_show_entry(anilist_id: int, new_data: dict):
+    """
+    Creates a new database entry for a show based on data from AniList
+
+    :param anilist_id: The ID number of a show in AniList's database
+    :param new_data: A collection of data about a show, received from `request_show_data()`
+    """
     show = Show(
         en_name=new_data["title"]["english"],
         jp_name=new_data["title"]["native"],
@@ -91,6 +121,7 @@ def create_show_entry(anilist_id: int, new_data: dict):
 
     # FIXME: sqlalchemy.exc.DatabaseError: (mysql.connector.errors.DatabaseError) 1364 (HY000):
     #  Field 'id' doesn't have a default value
+    # TODO: Check if error still exists- should be patched
     db.session.add(show)
     db.session.commit()
 
@@ -102,10 +133,11 @@ def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
     if series_id:
         series = Series.query.filter_by(id=series_id).first()
     else:
-        print(show.rj_name)
+        print(f"Finding series for {show.rj_name}")
         series = Series.query.filter_by(entry_point_id=show.id).first()
 
     if series:
+        print(f"Updating existing series")
         series_names = {
             "en_name": show.en_name,
             "jp_name": show.jp_name,
@@ -114,7 +146,7 @@ def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
         series.update_entry_names(series_names)
 
     else:
-        print(f"+series for {show.rj_name}")
+        print(f"Adding new series for {show.rj_name}")
         series = Series(en_name=show.en_name, jp_name=show.jp_name, rj_name=show.rj_name, entry_point_id=show.id)
         db.session.add(series)
         db.session.commit()

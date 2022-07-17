@@ -144,20 +144,43 @@ def assign_data(ratings: list, x_data: str, y_data: str):
 
 
 def request_show_data(anilist_id: int) -> dict:
-    """Sends a GraphQL request to AniList for information on a given show and returns a dictionary of the
-    collected data. \n
-    Contains: \n
-    "title": {"romaji", "english", "native"},\n
-    "genres": [],\n
-    "tags": {"name", "rank", "isMediaSpoiler"},\n
-    "averageScore": 0,\n
-    "externalLinks": {"site"},\n
-    "format": "",\n
-    "status": "",\n
-    "description": "",\n
-    "episodes": 0,\n
-    "relations": {"edges": {"relationType": {"node": {"id", "type"}}}},\n
-    "coverImage": {"medium", "large", "extraLarge"}"""
+    """
+    Sends a GraphQL request to AniList for information on a given show and returns a dictionary of the
+    collected data.
+
+    The dictionary returned contains the following keys:
+
+    - title, dict
+        - romaji, string
+        - english, string
+        - native, string
+    - genres, list of strings
+    - tags, dict
+        - name, string
+        - rank, int
+        - isMediaSpoiler, bool
+    - averageScore, int
+    - externalLinks, dict
+        - site, string
+    - format, string
+    - status, string
+    - description, string
+    - episodes, int
+    - relations, dict
+        - edges, list of dicts
+            - relationType, dict
+            - node, dict
+                - id, int
+                - type, string
+    - coverImage, dict
+        - medium, string
+        - large, string
+        - extraLarge, string
+
+    :param anilist_id: The ID for a given show in the AniList database
+
+    :returns: Nested data about the show
+    """
 
     id_var = {"id": anilist_id}
     # This requires an internet connection. If this bit breaks while testing locally, check your connection first.
@@ -226,8 +249,17 @@ def process_show_data(main_shows: list) -> dict:
 
 
 def check_stream_locations(streaming_links: list) -> dict:
-    """Given a list of dictionaries, {"site": "string"}, this function will check for a specific set of sites
-    and return a dictionary with True or False for each streaming service."""
+    """
+    Given a list of dictionaries, {"site": "string"}, this function will check for a specific set of sites
+    and return a dictionary with True or False for each streaming service.
+
+    :param streaming_links: A list of dictionaries containing the key "site" and a string with the name of the
+        streaming service
+    :type streaming_links: list
+
+    :returns: A dictionary with streaming services as keys and True or False as items
+    :rtype: dict
+    """
     checked = []
     availability = {
         "crunchyroll": False,
@@ -286,8 +318,19 @@ def check_stream_locations(streaming_links: list) -> dict:
 
 
 def get_average(numbers: list, length: int = None, allow_null: bool = False) -> int:
+    """
+    Returns the "round half up" average of the integers in a list.
+    Null or other non-int list items are filtered out before averaging.
+
+    :param numbers: A list containing the integers to be averaged
+    :param length: A set number to divide the sum by instead of the number of integers given
+    :param allow_null: A list with no integers will return an average of None instead of 0.
+    :return: The average of the integers in the given list. A list with no integers will return 0 by default.
+    """
     average = 0
     filtered_numbers = []
+
+    # Filters out Null ratings
     for item in numbers:
         if type(item) == int:
             filtered_numbers.append(item)
@@ -305,7 +348,10 @@ def get_average(numbers: list, length: int = None, allow_null: bool = False) -> 
     return average
 
 
-def int_filter(x):
+def int_filter(x: any) -> bool:
+    """
+    Checks if a given parameter is an integer.
+    """
     if type(x) == int:
         return True
     else:
@@ -313,6 +359,12 @@ def int_filter(x):
 
 
 def average_ratings(ratings_set: dict) -> dict:
+    """
+    Receives a dictionary of lists and returns a dictionary of integers.
+
+    :param ratings_set: A dictionary with lists of ratings to be averaged
+    :return: A dictionary with the average of each given list, or 0 if the list contained no ratings
+    """
     average_ratings_set = {
         "score": get_average(ratings_set["score"]),
         "pacing": get_average(ratings_set["pacing"]),
@@ -331,6 +383,18 @@ def avg_series_score(series_id):
 
 
 def sort_series_relations(relations_list: list) -> dict:
+    """
+    Sorts the IDs of a set of shows into lists based on their relation to another show.
+
+    -----
+
+    The list given must contain dictionaries with the keys `relationType` and `node`. The `node` key must further
+    contain a dictionary with the keys `type` and `id`.
+    An appropriate list can be recieved from `request_show_data()["relations"]["edges"]`.
+
+    :param relations_list: A list of dictionaries containing appropriate keys
+    :return: A dictionary containing lists of show ID numbers, sorted by their relation to another show
+    """
     sorted_relations = {
         "sequels": [],
         "side_stories": [],
