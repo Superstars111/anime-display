@@ -1,7 +1,7 @@
 from project.models import Show, Series, User, Feedback, Rating, List
 from flask_login import current_user
 from . import db
-from project.standalone_functions import request_show_data, process_show_data, sort_series_relations
+from project.standalone_functions import request_show_data, process_show_data, sort_series_relations, intify_dict_values
 
 
 def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None) -> list:
@@ -98,12 +98,13 @@ def update_show_entry(anilist_id: int, new_data: dict):
     db.session.commit()
 
 
-def create_show_entry(anilist_id: int, new_data: dict):
+def create_show_entry(anilist_id: int, new_data: dict) -> object:
     """
     Creates a new database entry for a show based on data from AniList
 
     :param anilist_id: The ID number of a show in AniList's database
     :param new_data: A collection of data about a show, received from `request_show_data()`
+    :returns: The created database entry in object form
     """
     show = Show(
         en_name=new_data["title"]["english"],
@@ -129,6 +130,17 @@ def create_show_entry(anilist_id: int, new_data: dict):
 
 
 def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
+    """
+    Updates the names for a series in the database.
+
+    If the series_id parameter is left blank, the series will check for a series anyway based on the AniList ID of the
+    first season. If no series is found, a new one will be created with the associated show as the entry point. The
+    show in question will be updated to reflect this.
+
+    :param initial_anilist_id: The ID for AniList's database entry for the first season of the series.
+    :param series_id: The local database ID for the series to be updated. (Default is None)
+    :return: The local ID number for the series which was updated or created.
+    """
     show = Show.query.filter_by(anilist_id=initial_anilist_id).first()
     if series_id:
         series = Series.query.filter_by(id=series_id).first()
@@ -159,6 +171,17 @@ def update_series_entry(initial_anilist_id: int, series_id: int = None) -> int:
 
 
 def collect_seasonal_data(series_id: int) -> dict:
+    """
+    Collects a set of data regarding an entire series.
+
+    The function goes through every show in a series to collect information on the entire series. Information
+    collected includes the total number of episodes, the number of episodes in just the main shows (season 1, 2, etc.),
+    the tags and genres for the main shows, and the streaming availability for the main and side shows (according to
+    AniList).
+
+    :param series_id: The ID number for the series to collect data on
+    :return: dict with keys: totalEpisodes, mainSeriesEpisodes, mainTags, mainGenres, mainAvailability, sideAvailability
+    """
     series = Series.query.get(series_id)
     sorted_shows = series.sort_shows()
     seasonal_data = {
@@ -186,6 +209,12 @@ def collect_seasonal_data(series_id: int) -> dict:
 
 
 def collect_feedback() -> list:
+    """
+    Collects and returns a list of all feedback entries.
+
+    Each row in the feedback table is taken, converted into a dictionary, and appended to a list for iteration.
+    :return: List of dictionaries with keys: id, user, type, status, description, note
+    """
     feedback_list = []
     for feedback_item in db.session.query(Feedback).all():
 
@@ -222,18 +251,43 @@ def collect_feedback() -> list:
 
 
 def update_feedback_status(feedback_id: int, new_status: int):
+    """
+    Updates the status column for a given feedback entry.
+
+    :param feedback_id: The ID number for the feedback database entry
+    :param new_status: 1 for New Feedback, 2 for Planned, 3 for In Progress, 4 for Closed
+    """
     feedback = Feedback.query.filter_by(id=feedback_id).first()
     feedback.status = new_status
     db.session.commit()
 
 
 def update_feedback_note(feedback_id: int, note: str):
+    """
+    Adds a developer note to a given feedback entry. This will overwrite any existing note.
+
+    :param feedback_id: The ID number for the feedback database entry
+    :param note: The developer note to be added
+    """
     feedback = Feedback.query.filter_by(id=feedback_id).first()
     feedback.note = note
     db.session.commit()
 
 
 def update_user_show_rating(show_id: int, old_rating: object, new_rating: dict):
+    """
+    Updates the current user's rating entry for a given show.
+
+    The new rating data will overwrite the old data, even if the new data is 0 or Null.
+    If the old_rating parameter does not exist, a new rating will be created. A query should always be submitted for an
+    old rating and the result submitted as old_rating, even if the query results in None. Failure to do so may result
+    in duplicate ratings for a show. The dictionary submitted to new_rating must contain the same keys as would be
+    returned by the Rating() object.
+
+    :param show_id: The local database ID for the show to rate
+    :param old_rating: A Rating() object from the database
+    :param new_rating: Updated values for the rating object
+    """
     new_rating = intify_dict_values(new_rating)
     if not old_rating:
         rating = Rating(show_id=show_id, user_id=current_user.id)
@@ -247,12 +301,30 @@ def update_user_show_rating(show_id: int, old_rating: object, new_rating: dict):
 
 
 def add_show_to_list(list_id: int, show: object):
+    """
+    Adds a show to a user's custom list.
+
+    :param list_id: The ID for the database entry of the list to update
+    :param show: The Show() object to be added to the list
+    """
     selected_list = List.query.filter_by(id=list_id).first()
     selected_list.shows += [show]
     db.session.commit()
 
 
 def update_user_series_rating(new_rating: dict, series_id: int):
+    """
+    Updates the current user's rating for every seen show within a series.
+
+    For every show in the selected series, this function checks whether the show is in the current user's list named
+    "Seen," which is generated by default upon registration. If the show is found in the list, the current user's
+    rating for the show is pulled (or created if it doesn't exist) and updated with the new values. The old ratings
+    will be overwritten, even if the new values consist of 0 or Null. The dictionary submitted should contain the same
+    keys as would be returned by a Rating() object.
+
+    :param new_rating: The set of new values to be applied to the Rating() objects
+    :param series_id: The ID number for the series database entry to be checked
+    """
     current_seen_list = List.query.filter_by(owner_id=current_user.id, name="Seen").first()
     new_rating = intify_dict_values(new_rating)
     series = Series.query.filter_by(id=series_id).first()
@@ -269,18 +341,23 @@ def update_user_series_rating(new_rating: dict, series_id: int):
         db.session.commit()
 
 
-def intify_dict_values(item: dict) -> dict:
-    for key in item:
-        item[key] = int(item[key])
-
-    return item
-
-
 def sort_series_names(sort_style: str):
+    """
+    Sorts every series in the database by a given method.
+
+    The database is queried for all series entries, which are then sorted by title according to a given sort method.
+    The series' may be sorted alphabetically, by average score of the main shows in the series, or by average score of
+    all the shows in the series. Any invalid string submitted as sort_style will result in the series being returned
+    without being sorted. Two lists will be returned, the first of series names, and the second of series IDs. The
+    lists should be the same length, and a given index for one will match to the same series in the other.
+
+    :param sort_style: alpha, total-avg-score, or main-avg-score
+    :return: A list of series names, and a list of series IDs, both sorted in the same manner
+    """
     all_series = db.session.query(Series).all()
 
     if sort_style == "alpha":
-        if current_user.names_preference in (1, 2):
+        if current_user.names_preference in (1, 2):  # Japanese, Romaji
             sorted_series = sorted(all_series, key=lambda x: x.rj_name.lower())
         else:
             sorted_series = sorted(all_series, key=lambda x: x.en_name.lower() if x.en_name else x.rj_name.lower())
@@ -304,4 +381,5 @@ def sort_series_names(sort_style: str):
                 series_names.append(series.rj_name)
     series_ids = [series.id for series in sorted_series]
 
+    # TODO: Make it return a list of tuples instead of two lists, to better avoid mix-ups
     return series_names, series_ids

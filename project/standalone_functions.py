@@ -418,3 +418,17 @@ def sort_series_relations(relations_list: list) -> dict:
                 sorted_relations["minor_relations"].append(relation["node"]["id"])
 
     return sorted_relations
+
+
+def intify_dict_values(item: dict) -> dict:
+    """
+    Converts the values in a dictionary into ints. Values should be convertable to int.
+
+    :param item: A dictionary of int-able values
+    :return: A dictionary with contents converted to int
+    """
+    for key in item:
+        # TODO: Account for Null entries
+        item[key] = int(item[key])
+
+    return item

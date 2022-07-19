@@ -158,7 +158,7 @@ class Series(db.Model):
         for show in show_list:
             rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
             if rating:
-                all_fields = rating.all_fields_dict()
+                all_fields = rating.dictify()
                 for key, value in all_fields.items():
                     if key in series_ratings:
                         series_ratings[key].extend([value])
@@ -312,7 +312,7 @@ class Rating(db.Model):
         self.abstraction = new_data["abstraction"]
         self.propriety = new_data["propriety"]
 
-    def all_fields_dict(self) -> dict:
+    def dictify(self) -> dict:
         all_rating_fields = {
             "score": self.score,
             "pacing": self.pacing,
