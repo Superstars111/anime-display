@@ -78,69 +78,94 @@ STREAM_INFO = {
         }
 
 
-def assign_data(ratings: list, x_data: str, y_data: str):
-    pacing_scores = []
-    tone_scores = []
-    energy_scores = []
-    fantasy_scores = []
-    abstraction_scores = []
-    propriety_scores = []
+def graph_data_selection(ratings: list, x_data: str, y_data: str):
+    """
+    Selects and returns the data to be displayed on a graph.
+
+    From a list of dictionaries containing appropriate keys, data is sorted into categories. The user's selection is
+    determined, and the appropriate lists of ratings are sorted into coordinates and put into a list which is turned
+    into a json string.
+
+    :param ratings: A list of dictionaries containing the keys used in a Rating() object
+    :param x_data: A string of one key from a Rating() object
+    :param y_data: A string of one key from a Rating() object
+    :return: A list of dictionaries of integers with x and y keys, converted into a json string
+    """
+    all_scores = [[], [], [], [], [], []]
     data = []
     if ratings:
-        if type(ratings[0]) == dict:
-            for rating in ratings:
-                pacing_scores.append(rating["pacing"])
-                tone_scores.append(rating["tone"])
-                energy_scores.append(rating["energy"])
-                fantasy_scores.append(rating["fantasy"])
-                abstraction_scores.append(rating["abstraction"])
-                propriety_scores.append(rating["propriety"])
-        else:
-            for rating in ratings:
-                pacing_scores.append(rating.pacing)
-                tone_scores.append(rating.tone)
-                energy_scores.append(rating.energy)
-                fantasy_scores.append(rating.fantasy)
-                abstraction_scores.append(rating.abstraction)
-                propriety_scores.append(rating.propriety)
+        for rating in ratings:
+            all_scores[0].append(rating["pacing"])
+            all_scores[1].append(rating["tone"])
+            all_scores[2].append(rating["energy"])
+            all_scores[3].append(rating["fantasy"])
+            all_scores[4].append(rating["abstraction"])
+            all_scores[5].append(rating["propriety"])
 
-    if x_data == "tone":
-        x = tone_scores
-    elif x_data == "energy":
-        x = energy_scores
-    elif x_data == "fantasy":
-        x = fantasy_scores
-    elif x_data == "abstraction":
-        x = abstraction_scores
-    elif x_data == "propriety":
-        x = propriety_scores
-    else:
-        x = pacing_scores
+    x = find_rating_type(x_data)
+    x = all_scores[x]
+    y = find_rating_type(y_data)
+    y = all_scores[y]
 
-    if y_data == "pacing":
-        y = pacing_scores
-    elif y_data == "energy":
-        y = energy_scores
-    elif y_data == "fantasy":
-        y = fantasy_scores
-    elif y_data == "abstraction":
-        y = abstraction_scores
-    elif y_data == "propriety":
-        y = propriety_scores
-    else:
-        y = tone_scores
-
-    for idx, rank in enumerate(x):
+    for idx, value in enumerate(x):
         point = {
-            "x": rank,
+            "x": value,
             "y": y[idx]
         }
+        # Allows for Null ratings
         if type(point["x"]) == int and type(point["y"]) == int:
             data.append(point)
 
     data = json.dumps(data)
 
     return data
+
+
+def find_rating_type(rating_type: str) -> int:
+    """
+    Uses a string to find the correct index for a list.
+
+    Assuming a list of lists, each internal list corresponding to one of the keys from a Rating() object, this will
+    take a key and convert it into an integer for indexing.
+
+    - 0 = pacing
+    - 1 = tone
+    - 2 = energy
+    - 3 = fantasy
+    - 4 = abstraction
+    - 5 = propriety
+
+    :param rating_type: One of the keys from a Rating() object
+    :return: The index for a list of lists
+    """
+    if rating_type == "pacing":
+        rating_type = 0
+    elif rating_type == "tone":
+        rating_type = 1
+    elif rating_type == "energy":
+        rating_type = 2
+    elif rating_type == "fantasy":
+        rating_type = 3
+    elif rating_type == "abstraction":
+        rating_type = 4
+    else:  # rating_type == "propriety"
+        rating_type = 5
+
+    return rating_type
+
+
+def dictify_ratings_list(ratings: list) -> list:
+    """
+    Turns a list of Rating() objects into a list of dictionaries.
+
+    :param ratings: A list of Rating() objects
+    :return: A list of rating dictionaries
+    """
+    dict_ratings = []
+    for rating in ratings:
+        dict_ratings.append(rating.dictify())
+
+    return dict_ratings
 
 
 def request_show_data(anilist_id: int) -> dict:
@@ -195,124 +220,167 @@ def request_show_data(anilist_id: int) -> dict:
     return gql_request
 
 
-def process_show_data(main_shows: list) -> dict:
-    sorted_data = {
-        "availability": {
-            "crunchyroll": 0,
-            "funimation": 0,
-            "hidive": 0,
-            "vrv": 0,
-            "hulu": 0,
-            "amazon": 0,
-            "youtube": 0,
-            "prison": 0,
-            "hbo": 0,
-            "tubi": 0,
-        },
-        "genres": [],
-        "tags": {},
-    }
-    tags_list = []
-    for show in main_shows:
-        GQL_request = request_show_data(show.anilist_id)
-        show_availability = check_stream_locations(GQL_request["externalLinks"])
-        for service in show_availability.items():
-            if service[1] is True:
-                sorted_data["availability"][service[0]] += 1
+# def process_show_data(main_shows: list) -> dict:
+#     sorted_data = {
+#         "availability": {
+#             "crunchyroll": 0,
+#             "funimation": 0,
+#             "hidive": 0,
+#             "vrv": 0,
+#             "hulu": 0,
+#             "amazon": 0,
+#             "youtube": 0,
+#             "prison": 0,
+#             "hbo": 0,
+#             "tubi": 0,
+#         },
+#         "genres": [],
+#         "tags": {},
+#     }
+#     tags_list = []
+#     for show in main_shows:
+#         # TODO: Split into three functions for availability, tags, and genres. Move request_show_data() up a level.
+#         gql_request = request_show_data(show.anilist_id)
+#         show_availability = check_stream_locations(gql_request["externalLinks"])
+#         for service in show_availability.items():
+#             sorted_data["availability"][service[0]] += service[1]
+#
+#         if show.priority == 1:
+#             for genre in gql_request["genres"]:
+#                 if genre not in sorted_data["genres"]:
+#                     sorted_data["genres"].append(genre)
+#
+#             for tag in gql_request["tags"]:
+#                 try:
+#                     if sorted_data["tags"][tag["name"]]:
+#                         pass
+#                 except KeyError:
+#                     sorted_data["tags"][tag["name"]] = {}
+#                     sorted_data["tags"][tag["name"]]["name"] = tag["name"]
+#                     sorted_data["tags"][tag["name"]]["ranksList"] = []
+#                     sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = False
+#
+#                 sorted_data["tags"][tag["name"]]["ranksList"].append(tag["rank"])
+#                 if tag["isMediaSpoiler"]:
+#                     sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = True
+#
+#     for tag in sorted_data["tags"].items():
+#         tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(main_shows))
+#         tags_list.append(tag[1])
+#
+#     sorted_data["tags"] = tags_list
+#
+#     return sorted_data
 
-        if show.priority == 1:
-            for genre in GQL_request["genres"]:
-                if genre not in sorted_data["genres"]:
-                    sorted_data["genres"].append(genre)
 
-            for tag in GQL_request["tags"]:
-                try:
-                    if sorted_data["tags"][tag["name"]]:
-                        pass
-                except KeyError:
-                    sorted_data["tags"][tag["name"]] = {}
-                    sorted_data["tags"][tag["name"]]["name"] = tag["name"]
-                    sorted_data["tags"][tag["name"]]["ranksList"] = []
-                    sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = False
+def process_genres(show_genres, collected_genres=None):
+    """
 
-                sorted_data["tags"][tag["name"]]["ranksList"].append(tag["rank"])
-                if tag["isMediaSpoiler"]:
-                    sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = True
+    :param show_genres: gql_request["genres"]
+    :param collected_genres:
+    :return:
+    """
+    if not collected_genres:
+        collected_genres = []
 
-    for tag in sorted_data["tags"].items():
-        tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(main_shows))
-        tags_list.append(tag[1])
+    for genre in show_genres:
+        if genre not in collected_genres:
+            collected_genres.append(genre)
 
-    sorted_data["tags"] = tags_list
-
-    return sorted_data
+    return collected_genres
 
 
-def check_stream_locations(streaming_links: list) -> dict:
+def process_tags(show_tags, collected_tags=None):
+    if not collected_tags:
+        collected_tags = {}
+    for tag in show_tags:
+        try:
+            if collected_tags[tag["name"]]:
+                pass
+        except KeyError:
+            collected_tags[tag["name"]] = {}
+            collected_tags[tag["name"]]["name"] = tag["name"]
+            collected_tags[tag["name"]]["ranksList"] = []
+            collected_tags[tag["name"]]["isMediaSpoiler"] = False
+
+        collected_tags[tag["name"]]["ranksList"].append(tag["rank"])
+        if tag["isMediaSpoiler"]:
+            collected_tags[tag["name"]]["isMediaSpoiler"] = True
+
+    return collected_tags
+
+
+def count_series_episodes(shows_list):
+    episode_count = 0
+    for show in shows_list:
+        episode_count += show.episodes if show.episodes else 0
+
+    return episode_count
+
+
+def check_stream_locations(streaming_links: list[dict]) -> dict:
     """
     Given a list of dictionaries, {"site": "string"}, this function will check for a specific set of sites
-    and return a dictionary with True or False for each streaming service.
+    and return a dictionary with 1 or 0 for each streaming service.
 
     :param streaming_links: A list of dictionaries containing the key "site" and a string with the name of the
         streaming service
-    :type streaming_links: list
 
-    :returns: A dictionary with streaming services as keys and True or False as items
-    :rtype: dict
+    :returns: A dictionary with streaming services as keys and 1 or 0 as items
     """
     checked = []
     availability = {
-        "crunchyroll": False,
-        "funimation": False,
-        "prison": False,
-        "amazon": False,
-        "vrv": False,
-        "hulu": False,
-        "youtube": False,
-        "tubi": False,
-        "hbo": False,
-        "hidive": False,
+        "crunchyroll": 0,
+        "funimation": 0,
+        "prison": 0,
+        "amazon": 0,
+        "vrv": 0,
+        "hulu": 0,
+        "youtube": 0,
+        "tubi": 0,
+        "hbo": 0,
+        "hidive": 0,
     }
     for link in streaming_links:
         if link["site"] == "Crunchyroll" and "crunchyroll" not in checked:
             checked.append("crunchyroll")
-            availability["crunchyroll"] = True
+            availability["crunchyroll"] = 1
 
         elif link["site"] == "Funimation" and "funimation" not in checked:
             checked.append("funimation")
-            availability["funimation"] = True
+            availability["funimation"] = 1
 
         elif link["site"] == "Netflix" and "prison" not in checked:
             checked.append("prison")
-            availability["prison"] = True
+            availability["prison"] = 1
 
         elif link["site"] == "Amazon" and "amazon" not in checked:
             checked.append("amazon")
-            availability["amazon"] = True
+            availability["amazon"] = 1
 
         elif link["site"] == "VRV" and "vrv" not in checked:
             checked.append("vrv")
-            availability["vrv"] = True
+            availability["vrv"] = 1
 
         elif link["site"] == "Hulu" and "hulu" not in checked:
             checked.append("hulu")
-            availability["hulu"] = True
+            availability["hulu"] = 1
 
         elif link["site"] == "Youtube" and "youtube" not in checked:
             checked.append("youtube")
-            availability["youtube"] = True
+            availability["youtube"] = 1
 
         elif link["site"] == "Tubi TV" and "tubi" not in checked:
             checked.append("tubi")
-            availability["tubi"] = True
+            availability["tubi"] = 1
 
         elif link["site"] == "HBO Max" and "hbo" not in checked:
             checked.append("hbo")
-            availability["hbo"] = True
+            availability["hbo"] = 1
 
         elif link["site"] == "Hidive" and "hidive" not in checked:
             checked.append("hidive")
-            availability["hidive"] = True
+            availability["hidive"] = 1
 
     return availability
 

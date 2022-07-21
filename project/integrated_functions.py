@@ -1,7 +1,8 @@
 from project.models import Show, Series, User, Feedback, Rating, List
 from flask_login import current_user
 from . import db
-from project.standalone_functions import request_show_data, process_show_data, sort_series_relations, intify_dict_values
+from project.standalone_functions import request_show_data, sort_series_relations, \
+    intify_dict_values, process_genres, process_tags, check_stream_locations, get_average
 
 
 def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series_id: int = None, checked_shows: list = None) -> list:
@@ -175,35 +176,59 @@ def collect_seasonal_data(series_id: int) -> dict:
     Collects a set of data regarding an entire series.
 
     The function goes through every show in a series to collect information on the entire series. Information
-    collected includes the total number of episodes, the number of episodes in just the main shows (season 1, 2, etc.),
-    the tags and genres for the main shows, and the streaming availability for the main and side shows (according to
-    AniList).
+    collected includes the tags and genres for the main shows, and the streaming availability for the main and side
+    shows (according to AniList).
 
     :param series_id: The ID number for the series to collect data on
-    :return: dict with keys: totalEpisodes, mainSeriesEpisodes, mainTags, mainGenres, mainAvailability, sideAvailability
+    :return: dict with keys: mainTags, mainGenres, mainAvailability, sideAvailability
     """
     series = Series.query.get(series_id)
     sorted_shows = series.sort_shows()
     seasonal_data = {
-        "totalEpisodes": 0,
-        "mainSeriesEpisodes": 0,
         "mainTags": {},
         "mainGenres": [],
-        "mainAvailability": {},
-        "sideAvailability": {}
+        "mainAvailability": {
+            "crunchyroll": 0,
+            "funimation": 0,
+            "hidive": 0,
+            "vrv": 0,
+            "hulu": 0,
+            "amazon": 0,
+            "youtube": 0,
+            "prison": 0,
+            "hbo": 0,
+            "tubi": 0,
+        },
+        "sideAvailability": {
+            "crunchyroll": 0,
+            "funimation": 0,
+            "hidive": 0,
+            "vrv": 0,
+            "hulu": 0,
+            "amazon": 0,
+            "youtube": 0,
+            "prison": 0,
+            "hbo": 0,
+            "tubi": 0,
+        }
     }
+    tags_list = []
 
     for show in series.shows:
-        seasonal_data["totalEpisodes"] += show.episodes if show.episodes else 0
+        if show.priority in (1, 2):
+            gql_request = request_show_data(show.anilist_id)
+            show_availability = check_stream_locations(gql_request["externalLinks"])
+            for service in show_availability.items():
+                seasonal_data["mainAvailability" if show.priority == 1 else "sideAvailability"][service[0]] += service[1]
+            if show.priority == 1:
+                seasonal_data["mainGenres"] = process_genres(gql_request["genres"], collected_genres=seasonal_data["mainGenres"])
+                seasonal_data["mainTags"] = process_tags(gql_request["tags"], collected_tags=seasonal_data["mainTags"])
 
-        if show.priority == 1:
-            seasonal_data["mainSeriesEpisodes"] += show.episodes if show.episodes else 0
+    for tag in seasonal_data["mainTags"].items():
+        tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(sorted_shows["main_shows"]))
+        tags_list.append(tag[1])
 
-    processed_data = process_show_data(sorted_shows["main_shows"])
-    seasonal_data["mainAvailability"] = processed_data["availability"]
-    seasonal_data["mainGenres"] = processed_data["genres"]
-    seasonal_data["mainTags"] = processed_data["tags"]
-    seasonal_data["sideAvailability"] = process_show_data(sorted_shows["side_shows"])["availability"]
+    seasonal_data["mainTags"] = tags_list
 
     return seasonal_data
 

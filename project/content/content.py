@@ -4,7 +4,8 @@ from project.models import Show, Rating, Series
 from project import db
 from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry, \
     update_user_show_rating, add_show_to_list, update_user_series_rating, sort_series_names
-from project.standalone_functions import assign_data, check_stream_locations, get_average, average_ratings
+from project.standalone_functions import graph_data_selection, check_stream_locations, get_average, average_ratings, \
+    dictify_ratings_list, count_series_episodes
 
 TEMPLATE_PATH = "content/templates/content"
 
@@ -172,7 +173,7 @@ def series(series_id):
     # Collecting user input
     x_data = request.args.get("x-coord", "")
     y_data = request.args.get("y-coord", "")
-    data = assign_data(all_user_ratings, x_data, y_data)
+    data = graph_data_selection(all_user_ratings, x_data, y_data)
     if x_data or y_data:
         return data
 
@@ -185,8 +186,8 @@ def series(series_id):
         "title": collect_title(series),
         "coverMed": entry.cover_med,
         "coverLarge": entry.cover_large,
-        "totalEpisodes": seasonal_data["totalEpisodes"],
-        "mainEpisodes": seasonal_data["mainSeriesEpisodes"],
+        "totalEpisodes": count_series_episodes(series.shows),
+        "mainEpisodes": count_series_episodes(sorted_shows["main_shows"]),
         "sorted_shows": sorted_shows,
         "movies": "N/A",
         "unaired": "N/A",
@@ -240,7 +241,8 @@ def show(show_id):
     # Collecting user input
     x_data = request.args.get("x-coord", "")
     y_data = request.args.get("y-coord", "")
-    data = assign_data(show.user_ratings, x_data, y_data)
+    show_user_ratings = dictify_ratings_list(show.user_ratings)
+    data = graph_data_selection(show_user_ratings, x_data, y_data)
     if x_data or y_data:
         return data
 

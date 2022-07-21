@@ -1,7 +1,7 @@
 from flask import render_template, Blueprint, redirect, url_for, request, abort
 from flask_login import current_user, login_required
 from project.models import User, List, Feedback
-from project.standalone_functions import assign_data
+from project.standalone_functions import graph_data_selection, dictify_ratings_list
 from project.integrated_functions import collect_feedback, update_feedback_status, update_feedback_note
 from project import db
 
@@ -29,7 +29,8 @@ def profile(username):
 
     x_data = request.args.get("x-coord", "")
     y_data = request.args.get("y-coord", "")
-    data = assign_data(user.show_ratings, x_data, y_data)
+    user_ratings = dictify_ratings_list(user.show_ratings)
+    data = graph_data_selection(user_ratings, x_data, y_data)
     if x_data or y_data:
         return data
 
