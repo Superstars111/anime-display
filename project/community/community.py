@@ -103,7 +103,3 @@ def view_feedback():
     feedback_list = collect_feedback()
 
     return render_template(f"{TEMPLATE_PATH}/feedback_list.html", feedback_list=feedback_list)
-
-
-def assign_values(x_data, y_data):
-    pass

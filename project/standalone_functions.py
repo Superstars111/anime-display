@@ -78,7 +78,171 @@ STREAM_INFO = {
         }
 
 
-def graph_data_selection(ratings: list, x_data: str, y_data: str):
+# Admin Functions
+
+
+# Auth Functions
+
+
+# Community Functions
+
+
+# Content Functions
+
+
+def count_series_episodes(shows_list: list[object]) -> int:
+    """
+    Counts the episodes in a list of Show() objects.
+
+    :param shows_list: A list of Show() objects
+    :return: The total amount of episodes in the shows given
+    """
+    episode_count = 0
+    for show in shows_list:
+        episode_count += show.episodes if show.episodes else 0
+
+    return episode_count
+
+
+# General Functions
+
+
+# Other Functions
+
+
+def find_rating_type(rating_type: str) -> int:
+    """
+    Uses a string to find the correct index for a list.
+
+    Assuming a list of lists, each internal list corresponding to one of the keys from a Rating() object, this will
+    take a key and convert it into an integer for indexing.
+
+    - 0 = pacing
+    - 1 = tone
+    - 2 = energy
+    - 3 = fantasy
+    - 4 = abstraction
+    - 5 = propriety
+
+    :param rating_type: One of the keys from a Rating() object
+    :return: The index for a list of lists
+    """
+    if rating_type == "pacing":
+        rating_type = 0
+    elif rating_type == "tone":
+        rating_type = 1
+    elif rating_type == "energy":
+        rating_type = 2
+    elif rating_type == "fantasy":
+        rating_type = 3
+    elif rating_type == "abstraction":
+        rating_type = 4
+    else:  # rating_type == "propriety"
+        rating_type = 5
+
+    return rating_type
+
+
+def process_tags(show_tags: list[dict], collected_tags: dict[str, dict] = None) -> dict[str, dict]:
+    """
+    Collects a group of tags with a list of ranks instead of just one.
+
+    Creates a new dictionary if collected_tags is left blank. Each tag in show_tags is checked to see whether it
+    already exists in collected_tags. If not, it is added. If it does, then the rank is appended to ranksList. This is
+    intended to be used in a loop, passing the result back into itself with each new list of tags.
+
+    :param show_tags: A list of tags to be checked and added to collected_tags
+    :param collected_tags: A dictionary of previously collected tags
+    :return: A dictionary of all tags, with ranks appended into a list
+    """
+    if not collected_tags:
+        # Dict instead of list, so we can check by name whether a tag is already here.
+        collected_tags = {}
+    for tag in show_tags:
+        try:
+            if collected_tags[tag["name"]]:
+                # Key exists. Nothing more is needed here.
+                pass
+        except KeyError:
+            # Key didn't exist. It will be created.
+            collected_tags[tag["name"]] = {}
+            collected_tags[tag["name"]]["name"] = tag["name"]
+            collected_tags[tag["name"]]["ranksList"] = []
+            collected_tags[tag["name"]]["isMediaSpoiler"] = False
+
+        collected_tags[tag["name"]]["ranksList"].append(tag["rank"])
+        if tag["isMediaSpoiler"]:
+            collected_tags[tag["name"]]["isMediaSpoiler"] = True
+
+    return collected_tags
+
+
+def int_filter(x: any) -> bool:
+    """
+    Checks if a given parameter is an integer.
+    """
+    if type(x) == int:
+        return True
+    else:
+        return False
+
+
+def sort_series_relations(relations_list: list[dict]) -> dict[str, list[int]]:
+    """
+    Sorts the IDs of a set of shows into lists based on their relation to another show.
+
+    -----
+
+    The list given must contain dictionaries with the keys `relationType` and `node`. The `node` key must further
+    contain a dictionary with the keys `type` and `id`.
+    An appropriate list can be recieved from `request_show_data()["relations"]["edges"]`.
+
+    :param relations_list: A list of dictionaries containing appropriate keys
+    :return: A dictionary containing lists of show ID numbers, sorted by their relation to another show
+    """
+    sorted_relations = {
+        "sequels": [],
+        "side_stories": [],
+        "related_series": [],
+        "minor_relations": []
+    }
+
+    for relation in relations_list:
+        if relation["node"]["type"] == "ANIME":
+
+            if relation["relationType"] == "SEQUEL":
+                sorted_relations["sequels"].append(relation["node"]["id"])
+
+            elif relation["relationType"] == "SIDE_STORY":
+                sorted_relations["side_stories"].append(relation["node"]["id"])
+
+            elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
+                sorted_relations["related_series"].append(relation["node"]["id"])
+
+            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
+                sorted_relations["minor_relations"].append(relation["node"]["id"])
+
+    return sorted_relations
+
+
+def intify_dict_values(item: dict) -> dict:
+    """
+    Converts the values in a dictionary into ints. Values should be convertable to int.
+
+    :param item: A dictionary of int-able values
+    :return: A dictionary with contents converted to int
+    """
+    for key in item:
+        # TODO: Account for Null entries
+        item[key] = int(item[key])
+
+    return item
+
+
+# Multi-use Functions
+
+
+def graph_data_selection(ratings: list[dict], x_data: str, y_data: str) -> list[dict[str, int]]:
     """
     Selects and returns the data to be displayed on a graph.
 
@@ -121,40 +285,7 @@ def graph_data_selection(ratings: list, x_data: str, y_data: str):
     return data
 
 
-def find_rating_type(rating_type: str) -> int:
-    """
-    Uses a string to find the correct index for a list.
-
-    Assuming a list of lists, each internal list corresponding to one of the keys from a Rating() object, this will
-    take a key and convert it into an integer for indexing.
-
-    - 0 = pacing
-    - 1 = tone
-    - 2 = energy
-    - 3 = fantasy
-    - 4 = abstraction
-    - 5 = propriety
-
-    :param rating_type: One of the keys from a Rating() object
-    :return: The index for a list of lists
-    """
-    if rating_type == "pacing":
-        rating_type = 0
-    elif rating_type == "tone":
-        rating_type = 1
-    elif rating_type == "energy":
-        rating_type = 2
-    elif rating_type == "fantasy":
-        rating_type = 3
-    elif rating_type == "abstraction":
-        rating_type = 4
-    else:  # rating_type == "propriety"
-        rating_type = 5
-
-    return rating_type
-
-
-def dictify_ratings_list(ratings: list) -> list:
+def dictify_ratings_list(ratings: list[object]) -> list[dict]:
     """
     Turns a list of Rating() objects into a list of dictionaries.
 
@@ -220,105 +351,7 @@ def request_show_data(anilist_id: int) -> dict:
     return gql_request
 
 
-# def process_show_data(main_shows: list) -> dict:
-#     sorted_data = {
-#         "availability": {
-#             "crunchyroll": 0,
-#             "funimation": 0,
-#             "hidive": 0,
-#             "vrv": 0,
-#             "hulu": 0,
-#             "amazon": 0,
-#             "youtube": 0,
-#             "prison": 0,
-#             "hbo": 0,
-#             "tubi": 0,
-#         },
-#         "genres": [],
-#         "tags": {},
-#     }
-#     tags_list = []
-#     for show in main_shows:
-#         # TODO: Split into three functions for availability, tags, and genres. Move request_show_data() up a level.
-#         gql_request = request_show_data(show.anilist_id)
-#         show_availability = check_stream_locations(gql_request["externalLinks"])
-#         for service in show_availability.items():
-#             sorted_data["availability"][service[0]] += service[1]
-#
-#         if show.priority == 1:
-#             for genre in gql_request["genres"]:
-#                 if genre not in sorted_data["genres"]:
-#                     sorted_data["genres"].append(genre)
-#
-#             for tag in gql_request["tags"]:
-#                 try:
-#                     if sorted_data["tags"][tag["name"]]:
-#                         pass
-#                 except KeyError:
-#                     sorted_data["tags"][tag["name"]] = {}
-#                     sorted_data["tags"][tag["name"]]["name"] = tag["name"]
-#                     sorted_data["tags"][tag["name"]]["ranksList"] = []
-#                     sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = False
-#
-#                 sorted_data["tags"][tag["name"]]["ranksList"].append(tag["rank"])
-#                 if tag["isMediaSpoiler"]:
-#                     sorted_data["tags"][tag["name"]]["isMediaSpoiler"] = True
-#
-#     for tag in sorted_data["tags"].items():
-#         tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(main_shows))
-#         tags_list.append(tag[1])
-#
-#     sorted_data["tags"] = tags_list
-#
-#     return sorted_data
-
-
-def process_genres(show_genres, collected_genres=None):
-    """
-
-    :param show_genres: gql_request["genres"]
-    :param collected_genres:
-    :return:
-    """
-    if not collected_genres:
-        collected_genres = []
-
-    for genre in show_genres:
-        if genre not in collected_genres:
-            collected_genres.append(genre)
-
-    return collected_genres
-
-
-def process_tags(show_tags, collected_tags=None):
-    if not collected_tags:
-        collected_tags = {}
-    for tag in show_tags:
-        try:
-            if collected_tags[tag["name"]]:
-                pass
-        except KeyError:
-            collected_tags[tag["name"]] = {}
-            collected_tags[tag["name"]]["name"] = tag["name"]
-            collected_tags[tag["name"]]["ranksList"] = []
-            collected_tags[tag["name"]]["isMediaSpoiler"] = False
-
-        collected_tags[tag["name"]]["ranksList"].append(tag["rank"])
-        if tag["isMediaSpoiler"]:
-            collected_tags[tag["name"]]["isMediaSpoiler"] = True
-
-    return collected_tags
-
-
-def count_series_episodes(shows_list):
-    episode_count = 0
-    for show in shows_list:
-        episode_count += show.episodes if show.episodes else 0
-
-    return episode_count
-
-
-def check_stream_locations(streaming_links: list[dict]) -> dict:
+def check_stream_locations(streaming_links: list[dict]) -> dict[str, int]:
     """
     Given a list of dictionaries, {"site": "string"}, this function will check for a specific set of sites
     and return a dictionary with 1 or 0 for each streaming service.
@@ -416,17 +449,7 @@ def get_average(numbers: list, length: int = None, allow_null: bool = False) -> 
     return average
 
 
-def int_filter(x: any) -> bool:
-    """
-    Checks if a given parameter is an integer.
-    """
-    if type(x) == int:
-        return True
-    else:
-        return False
-
-
-def average_ratings(ratings_set: dict) -> dict:
+def average_ratings(ratings_set: dict[str, list[int]]) -> dict[str, int]:
     """
     Receives a dictionary of lists and returns a dictionary of integers.
 
@@ -448,55 +471,3 @@ def average_ratings(ratings_set: dict) -> dict:
 
 def avg_series_score(series_id):
     pass
-
-
-def sort_series_relations(relations_list: list) -> dict:
-    """
-    Sorts the IDs of a set of shows into lists based on their relation to another show.
-
-    -----
-
-    The list given must contain dictionaries with the keys `relationType` and `node`. The `node` key must further
-    contain a dictionary with the keys `type` and `id`.
-    An appropriate list can be recieved from `request_show_data()["relations"]["edges"]`.
-
-    :param relations_list: A list of dictionaries containing appropriate keys
-    :return: A dictionary containing lists of show ID numbers, sorted by their relation to another show
-    """
-    sorted_relations = {
-        "sequels": [],
-        "side_stories": [],
-        "related_series": [],
-        "minor_relations": []
-    }
-
-    for relation in relations_list:
-        if relation["node"]["type"] == "ANIME":
-
-            if relation["relationType"] == "SEQUEL":
-                sorted_relations["sequels"].append(relation["node"]["id"])
-
-            elif relation["relationType"] == "SIDE_STORY":
-                sorted_relations["side_stories"].append(relation["node"]["id"])
-
-            elif relation["relationType"] in ("SPIN_OFF", "ALTERNATIVE"):
-                sorted_relations["related_series"].append(relation["node"]["id"])
-
-            elif relation["relationType"] not in ("PREQUEL", "PARENT", "CHARACTER"):
-                sorted_relations["minor_relations"].append(relation["node"]["id"])
-
-    return sorted_relations
-
-
-def intify_dict_values(item: dict) -> dict:
-    """
-    Converts the values in a dictionary into ints. Values should be convertable to int.
-
-    :param item: A dictionary of int-able values
-    :return: A dictionary with contents converted to int
-    """
-    for key in item:
-        # TODO: Account for Null entries
-        item[key] = int(item[key])
-
-    return item

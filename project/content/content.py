@@ -2,7 +2,7 @@ from flask import Blueprint, request, session, render_template, url_for, redirec
 from flask_login import current_user
 from project.models import Show, Rating, Series
 from project import db
-from project.integrated_functions import collect_seasonal_data, request_show_data, update_show_entry, \
+from project.integrated_functions import seasonal_anilist_data, request_show_data, update_show_entry, \
     update_user_show_rating, add_show_to_list, update_user_series_rating, sort_series_names
 from project.standalone_functions import graph_data_selection, check_stream_locations, get_average, average_ratings, \
     dictify_ratings_list, count_series_episodes
@@ -167,7 +167,7 @@ def series(series_id):
         current_user_average_ratings = None
 
     # Collecting Anilist database information
-    seasonal_data = collect_seasonal_data(series_id)
+    seasonal_data = seasonal_anilist_data(series_id)
     tags, spoilers = collect_tags(seasonal_data["mainTags"])
 
     # Collecting user input
@@ -248,7 +248,7 @@ def show(show_id):
 
     list_addition = request.form.get("lists")
     if list_addition:
-        add_show_to_list(list_addition, show)
+        add_show_to_list(int(list_addition), show)
 
     if request.is_json:
         new_rating = request.get_json()
@@ -264,7 +264,7 @@ def show(show_id):
         "position": show.position,
         "seasons": len(series.sort_shows()["main_shows"]),
         "series_id": show.series_id,
-        "genres": collect_genres(anilist_request["genres"]),
+        "genres": collect_genres(list(anilist_request["genres"])),
         "tags": tags,
         "spoilers": spoilers,
         "public": anilist_request["averageScore"],
@@ -308,7 +308,7 @@ def series_list():
     return render_template(f"{TEMPLATE_PATH}/series_list.html", **variables)
 
 
-def collect_title(show) -> str:
+def collect_title(show: object) -> str:
     titles = []
     for title in (show.jp_name, show.en_name, show.rj_name):
         # Check to ensure title is not "None" before appending
@@ -392,7 +392,7 @@ def collect_streaming_colors(availability: dict, series=False) -> dict:
 
 
 def collect_genres(genres_list: list) -> str:
-    genres = ", ".join(genres_list)
+    genres = ", ".join(sorted(genres_list))
     return genres
 
 
