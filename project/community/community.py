@@ -1,8 +1,8 @@
 from flask import render_template, Blueprint, redirect, url_for, request, abort
 from flask_login import current_user, login_required
 from project.models import User, List, Feedback
-from project.standalone_functions import graph_data_selection, dictify_ratings_list
-from project.integrated_functions import collect_feedback, update_feedback_status, update_feedback_note
+import project.standalone_functions as sf
+import project.integrated_functions as intf
 from project import db
 
 COMMUNITY_BLUEPRINT = Blueprint("community", __name__, template_folder="../../project")
@@ -29,8 +29,8 @@ def profile(username):
 
     x_data = request.args.get("x-coord", "")
     y_data = request.args.get("y-coord", "")
-    user_ratings = dictify_ratings_list(user.show_ratings)
-    data = graph_data_selection(user_ratings, x_data, y_data)
+    user_ratings = sf.dictify_ratings_list(user.show_ratings)
+    data = sf.graph_data_selection(user_ratings, x_data, y_data)
     if x_data or y_data:
         return data
 
@@ -97,9 +97,9 @@ def view_feedback():
     note_update = request.form.get("dev-note")
     feedback_id = request.form.get("feedback-id")
     if status_update:
-        update_feedback_status(int(feedback_id), int(status_update))
+        intf.update_feedback_status(int(feedback_id), int(status_update))
     if note_update:
-        update_feedback_note(int(feedback_id), note_update)
-    feedback_list = collect_feedback()
+        intf.update_feedback_note(int(feedback_id), note_update)
+    feedback_list = intf.collect_feedback()
 
     return render_template(f"{TEMPLATE_PATH}/feedback_list.html", feedback_list=feedback_list)

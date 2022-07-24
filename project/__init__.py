@@ -17,11 +17,6 @@ def create_app():
 
     app.config.from_object(settings)
 
-    # app.config["SECRET_KEY"] = "secret-key"
-    # # Not sure how this is different than app.secret_key =
-    # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
-    # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
     db.init_app(app)
     migrate.init_app(app, db)
 

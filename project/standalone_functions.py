@@ -286,12 +286,7 @@ def process_tags(show_tags: list[dict], collected_tags: dict[str, dict] = None) 
         # Dict instead of list, so we can check by name whether a tag is already here.
         collected_tags = {}
     for tag in show_tags:
-        try:
-            if collected_tags[tag["name"]]:
-                # Key exists. Nothing more is needed here.
-                pass
-        except KeyError:
-            # Key didn't exist. It will be created.
+        if tag["name"] not in collected_tags.keys():
             collected_tags[tag["name"]] = {}
             collected_tags[tag["name"]]["name"] = tag["name"]
             collected_tags[tag["name"]]["ranksList"] = []

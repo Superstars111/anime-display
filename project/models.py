@@ -4,13 +4,9 @@
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Boolean, Text
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, LoginManager
 from . import db
 from project.standalone_functions import get_average, average_ratings
-import decimal as dc
 
 login = LoginManager()
 
@@ -22,7 +18,7 @@ friends = Table(
 )
 
 show_list = Table(
-    "show_list",
+    "shows_list",
     db.metadata,
     Column("list_id", Integer, ForeignKey("lists.id")),
     Column("show_id", Integer, ForeignKey("shows.id"))
@@ -98,7 +94,14 @@ class Series(db.Model):
                                   secondaryjoin=id == series_relation.c.series2_id,
                                   back_populates="related_series")
 
-    def sort_shows(self) -> dict:
+    def sort_shows(self) -> dict[str, list[object]]:
+        """
+        Sorts associated shows into categories based on Show().priority.
+
+        Dict keys are "main_shows", "side_shows", and "minor_shows".
+
+        :return: A dictionary containing lists of Show() objects
+        """
         sorted_shows = {
             "main_shows": [],
             "side_shows": [],
@@ -115,53 +118,62 @@ class Series(db.Model):
 
         return sorted_shows
 
-    def update_entry_names(self, new_data: dict):
+    def update_entry_names(self, new_data: dict[str, str]):
+        """
+        Updates the name fields of the series.
+
+        Passed dict should include keys "en_name", "jp_name", and "rj_name".
+
+        :param new_data: New names for the series
+        """
+
         self.en_name = new_data["en_name"]
         self.jp_name = new_data["jp_name"]
         self.rj_name = new_data["rj_name"]
 
-    def average_ratings(self, only_main=False) -> dict:
+    def average_ratings(self, only_main: bool = False) -> dict[str, int]:
+        """
+        Gathers the average values of each field for all ratings across all shows in the series.
+
+        :param only_main: If true, only collects values for shows with priority == 1
+        :return: The average value for each field from a Rating() object
+        """
         if only_main:
             selected_shows = self.sort_shows()["main_shows"]
         else:
             selected_shows = self.shows
 
-        base_ratings = {
-            "score": [],
-            "pacing": [],
-            "energy": [],
-            "tone": [],
-            "fantasy": [],
-            "abstraction": [],
-            "propriety": []
-        }
+        base_ratings = {}
 
         for show in selected_shows:
             show_ratings = show.all_ratings()
-            for key, value in base_ratings.items():
-                value.append(show_ratings[key])
-            # base_ratings["score"].append(show_ratings["score"])
-            # base_ratings["pacing"].append(show_ratings["pacing"])
-            # base_ratings["energy"].append(show_ratings["energy"])
-            # base_ratings["tone"].append(show_ratings["tone"])
-            # base_ratings["fantasy"].append(show_ratings["fantasy"])
-            # base_ratings["abstraction"].append(show_ratings["abstraction"])
-            # base_ratings["propriety"].append(show_ratings["propriety"])
+            for key, value in show_ratings.items():
+                if key in base_ratings:
+                    base_ratings[key].extend(value)
+                else:
+                    base_ratings[key] = value
 
         average_ratings_dict = average_ratings(base_ratings)
 
         return average_ratings_dict
 
-    def ratings_from_single_user(self, user_id: int, show_list: list = None) -> dict:
-        series_ratings = {}
-        if not show_list:
-            show_list = self.shows
+    def ratings_from_single_user(self, user_id: int, shows_list: list[object] = None) -> dict[str, list[int]]:
+        """
+        Gathers every rating by a given user for the shows in the series.
 
-        for show in show_list:
+        :param user_id: The ID to use for querying the database
+        :param shows_list: The list of Show() objects to gather ratings on
+        :return: Lists of ratings, contained by field in a dict
+        """
+        series_ratings = {}
+        if not shows_list:
+            shows_list = self.shows
+
+        for show in shows_list:
             rating = Rating.query.filter_by(user_id=user_id, show_id=show.id).first()
             if rating:
-                all_fields = rating.dictify()
-                for key, value in all_fields.items():
+                rating_dict = rating.dictify()
+                for key, value in rating_dict.items():
                     if key in series_ratings:
                         series_ratings[key].append(value)
                     else:
@@ -169,14 +181,24 @@ class Series(db.Model):
 
         return series_ratings
 
-    def ratings_by_user(self) -> list:
-        # TODO: Double check functionality
+    def ratings_by_user(self) -> list[dict[str, int]]:
+        """
+        Collects each user's average ratings for the series as a whole.
+
+        This function goes through every rating in every show in the series to find the users who have rated it. Each
+        users ratings for the series are then collected and averaged. This allows graph data to be displayed on the
+        series page.
+
+        :return: All ratings for the series, grouped and averaged by user
+        """
         user_ids = []
         show_ids = []
         all_user_series_ratings = []
 
         for show in self.shows:
             show_ids.append(show.id)
+            # TODO: Going through every rating in the database for a given series likely won't scale well...
+            #   Find a better solution.
             for rating in show.user_ratings:
                 if rating.user_id not in user_ids:
                     user_ids.append(rating.user_id)
@@ -190,7 +212,12 @@ class Series(db.Model):
 
         return all_user_series_ratings
 
-    def ratings_by_show(self) -> list:
+    def ratings_by_show(self) -> list[dict[str, int]]:
+        """
+        Collects all ratings for the series, grouped and averaged by show.
+
+        :return: Each show's average ratings as dicts in a list
+        """
         all_ratings = []
         for show in self.shows:
             all_ratings.append(show.average_ratings())
@@ -226,36 +253,63 @@ class Show(db.Model):
     series_entry = relationship("Series", foreign_keys=[series_entry_id], uselist=False)
     series = relationship("Series", foreign_keys=[series_id], post_update=True)
 
-    def average_ratings(self) -> dict:
+    def average_ratings(self) -> dict[str, int]:
+        """
+        Determines the average rating for the show across all users.
+
+        :return: Average ratings for the show for each field in a Rating() object
+        """
         base_ratings = self.all_ratings()
 
         average_ratings_dict = average_ratings(base_ratings)
 
         return average_ratings_dict
 
-    def all_ratings(self) -> dict:
-        base_ratings = {
-            "score": [],
-            "pacing": [],
-            "energy": [],
-            "tone": [],
-            "fantasy": [],
-            "abstraction": [],
-            "propriety": []
-        }
+    def all_ratings(self) -> dict[str, list[int]]:
+        """
+        Collects every rating for the show.
 
-        for rating in self.user_ratings:
-            base_ratings["score"].append(rating.score)
-            base_ratings["pacing"].append(rating.pacing)
-            base_ratings["energy"].append(rating.energy)
-            base_ratings["tone"].append(rating.tone)
-            base_ratings["fantasy"].append(rating.fantasy)
-            base_ratings["abstraction"].append(rating.abstraction)
-            base_ratings["propriety"].append(rating.propriety)
+        Every rating in the show has its values appended to lists sorted by field and put into a dictionary.
+
+        :return: A dict with keys for each rating field, containing lists of all ratings for the show
+        """
+        base_ratings = {}
+
+        if self.user_ratings:
+            for rating in self.user_ratings:
+                rating_dict = rating.dictify()
+                for key, value in rating_dict.items():
+                    if key in base_ratings.keys():
+                        base_ratings[key].append(value)
+                    else:
+                        base_ratings[key] = [value]
+        else:
+            for field in Rating().fields():
+                base_ratings[field] = []
 
         return base_ratings
 
     def update_entry(self, new_data: dict):
+        """
+        Updates the data for a show.
+
+        Data used for the update can be recieved from an AniList API request.
+
+        Fields updated include:
+
+        - en_name
+        - jp_name
+        - rj_name
+        - type
+        - status
+        - episodes
+        - cover_med
+        - cover_large
+        - cover_xl
+        - description
+
+        :param new_data: Data to use for a full show update
+        """
         self.en_name = new_data["title"]["english"]
         self.jp_name = new_data["title"]["native"]
         self.rj_name = new_data["title"]["romaji"]
@@ -306,6 +360,21 @@ class Rating(db.Model):
     propriety = Column(Integer)
 
     def update(self, new_data: dict):
+        """
+        Updates the data associated with the Rating() object.
+
+        Fields updated include:
+
+        - score
+        - pacing
+        - energy
+        - tone
+        - fantasy
+        - abstraction
+        - propriety
+
+        :param new_data: A dictionary with keys corresponding to a Rating() object
+        """
         self.score = new_data["score"]
         self.pacing = new_data["pacing"]
         self.energy = new_data["energy"]
@@ -314,7 +383,12 @@ class Rating(db.Model):
         self.abstraction = new_data["abstraction"]
         self.propriety = new_data["propriety"]
 
-    def dictify(self) -> dict:
+    def dictify(self) -> dict[str, int]:
+        """
+        Makes and returns a dictionary with the contents of the object.
+
+        :return: A dictionary with keys and values corresponding to the Rating() object
+        """
         all_rating_fields = {
             "score": self.score,
             "pacing": self.pacing,
@@ -326,3 +400,21 @@ class Rating(db.Model):
         }
 
         return all_rating_fields
+
+    def fields(self) -> list[str]:
+        """
+        Returns a list of the fields contained in a Rating() object.
+
+        :return: A list of the fields contained in a Rating() object
+        """
+        field_names = [
+            "score",
+            "pacing",
+            "energy",
+            "tone",
+            "fantasy",
+            "abstraction",
+            "propriety"
+        ]
+
+        return field_names
