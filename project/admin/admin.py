@@ -3,22 +3,22 @@ from flask_login import login_required, current_user
 from project.automation import migrate_ratings, update_library, add_lists, transfer_shows_to_series, migrate_drama_to_tone
 from project.integrated_functions import update_full_series
 
-admin = Blueprint("admin", __name__, template_folder="../../project")
+ADMIN_BLUEPRINT = Blueprint("admin", __name__, template_folder="../../project")
 
 
-@admin.route("/edit")
+@ADMIN_BLUEPRINT.route("/edit")
 @login_required
 def edit():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
 
 
-@admin.route("/warnings")
+@ADMIN_BLUEPRINT.route("/warnings")
 @login_required
 def warnings():
     return """This page is a work in progress. <a href="/display">Go back</a>"""
 
 
-@admin.route("/administration", methods=["GET", "POST"])
+@ADMIN_BLUEPRINT.route("/administration", methods=["GET", "POST"])
 @login_required
 def administration():
     ratings = request.args.get("ratings")

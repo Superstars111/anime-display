@@ -104,6 +104,133 @@ def count_series_episodes(shows_list: list[object]) -> int:
     return episode_count
 
 
+def collect_title(show: object) -> str:
+    """
+    Generates a single string with all non-null titles of a Show() object.
+
+    :param show: A Show() object
+    :return: jp_name * en_name * rj_name
+    """
+    titles = []
+    for title in (show.jp_name, show.en_name, show.rj_name):
+        # Check to ensure title is not "None" before appending
+        if title and title not in titles:
+            titles.append(title)
+    return f" \u2022 ".join(titles)
+
+
+def collect_avg_user_score(rating_list: list[dict], field: str):
+    """
+    Collects the score value from a list of Rating() objects and determines the average.
+
+    :param rating_list: A list of Rating() objects
+    :param field: A string to be used as a dict key. Should be compatible with a Rating() dict.
+    :return: The average rating of the given field across the dictionaries. Returns "N/A" if the average is 0.
+    """
+    all_ratings = []
+    for rating in rating_list:
+        all_ratings.append(rating[field])
+
+    avg_user_score = get_average(all_ratings)
+
+    if avg_user_score == 0:
+        avg_user_score = "N/A"
+
+    return avg_user_score
+
+
+def collect_streaming_colors(availability: dict[str, int], series_length: int = 1) -> dict[str, tuple[str, str]]:
+    """
+    Determines the colors to use for display of streaming services based on availability of a show or series.
+
+    A dictionary is passed in containing a list of streaming services and an integer indicating how much of a given
+    series is available to stream on that platform. For a single show, that number will always be 1 or 0. A new
+    dictionary is formed with the streaming service and the appropriate color based on how much is available there. The
+    series_length parameter indicates which number should be considered "100%" for a given series. For a single show,
+    leave this parameter at the default value.
+
+    - 100% availability = brand color, black
+    - Partial availability = black, black
+    - No availability = gray, gray
+
+    :param availability: A dict of streaming services with how many shows they have available in a series
+    :param series_length: The value to be measured against for 100%
+    :return: A dict of streaming services with colors based on what percentage of a series they have
+    """
+    colors = {}
+    for service in availability.items():
+        if service[1] == series_length:  # Show or series is fully available on that platform
+            # All colors must work in CSS.
+            if service[0] == "crunchyroll":
+                color = "#FF8C00"  # CSS DarkOrange
+            elif service[0] == "funimation":
+                color = "#4B0082"  # CSS Indigo
+            elif service[0] == "hbo":
+                color = "#6495ED"  # CSS CornflowerBlue
+            elif service[0] == "hidive":
+                color = "#1E90FF"  # CSS DodgerBlue
+            elif service[0] == "amazon":
+                color = "#00BFFF"  # CSS DeepSkyBlue
+            elif service[0] == "vrv":
+                color = "#FFD700"  # CSS Gold
+            elif service[0] == "hulu":
+                color = "#9ACD32"  # CSS YellowGreen
+            elif service[0] == "youtube":
+                color = "#FF0000"  # CSS Red
+            elif service[0] == "prison":
+                color = "#B22222"  # CSS FireBrick
+            elif service[0] == "tubi":
+                color = "#FFA500"  # CSS Orange
+            else:
+                color = "#000000"  # CSS Black
+            colors[service[0]] = (color, "#000000")
+
+        elif service[1]:  # Show or series is partially available on that platform
+            colors[service[0]] = ("#000000", "#000000")  # CSS Black
+
+        else:  # Show or series is not available on that platform
+            colors[service[0]] = ("#808080", "#808080")  # CSS Gray
+
+    return colors
+
+
+def collect_genres(genres_list: list[str]) -> str:
+    """
+    Generates a string joined by commas from a list.
+
+    :param genres_list: The genres to be joined
+    :return: A string formed from the list of genres
+    """
+    genres = ", ".join(sorted(genres_list))
+    return genres
+
+
+def collect_tags(raw_tags: list[dict]):
+    """
+    Sorts a list of tags by rank and spoiler status, and returns them as strings.
+
+    The list passed as raw_tags will first be sorted by item["rank"]. Tags are then converted into individual strings
+    including name and rank, and are then sorted into one of two lists based on spoiler status. Finally, these two
+    lists are converted into strings, which are returned.
+
+    :param raw_tags: A list of tags in dict form. Should contain keys "name" "rank" and "isMediaSpoiler".
+    :return: Two strings- one of regular tags and one of spoiler tags, both sorted by rank
+    """
+    raw_tags.sort(key=lambda x: x["rank"], reverse=True)
+    tags = []
+    spoilers = []
+    for tag in raw_tags:
+        s = f"{tag['name']} ({tag['rank']}%)"
+        if tag['isMediaSpoiler']:
+            spoilers.append(s)
+        else:
+            tags.append(s)
+
+    tags = ", ".join(tags)
+    spoilers = ", ".join(spoilers)
+    return tags, spoilers
+
+
 # General Functions
 
 
@@ -237,6 +364,34 @@ def intify_dict_values(item: dict) -> dict:
         item[key] = int(item[key])
 
     return item
+
+
+def collect_colors(scores: list[int]) -> list[str]:
+    """
+    Turns a list of ints into a list of colors.
+
+    - 0 = black
+    - 1-54 = red
+    - 55-69 = orange
+    - 70-84 = blue
+    - 85+ = purple
+
+    :param scores: A list of scores
+    :return: A list of colors corresponding to the scores passed in
+    """
+    colors = []
+    for score in scores:
+        if score >= 85:
+            colors.append("purple")
+        elif score >= 70:
+            colors.append("blue")
+        elif score >= 55:
+            colors.append("orange")
+        elif score >= 1:
+            colors.append("red")
+        else:
+            colors.append("black")
+    return colors
 
 
 # Multi-use Functions
@@ -449,24 +604,28 @@ def get_average(numbers: list, length: int = None, allow_null: bool = False) -> 
     return average
 
 
-def average_ratings(ratings_set: dict[str, list[int]]) -> dict[str, int]:
+def average_ratings(ratings_set: dict[str, list[int]], rating_type: str = None) -> dict[str, int]:
     """
-    Receives a dictionary of lists and returns a dictionary of integers.
+    Returns the average of a collection of ratings.
 
     :param ratings_set: A dictionary with lists of ratings to be averaged
+    :param rating_type: Gather only a single rating average. Should be a string from a Rating() object.
     :return: A dictionary with the average of each given list, or 0 if the list contained no ratings
     """
-    average_ratings_set = {
-        "score": get_average(ratings_set["score"]),
-        "pacing": get_average(ratings_set["pacing"]),
-        "energy": get_average(ratings_set["energy"]),
-        "tone": get_average(ratings_set["tone"]),
-        "fantasy": get_average(ratings_set["fantasy"]),
-        "abstraction": get_average(ratings_set["abstraction"]),
-        "propriety": get_average(ratings_set["propriety"])
-    }
+    if rating_type:
+        ratings_average = get_average(ratings_set[rating_type])
+    else:
+        ratings_average = {
+            "score": get_average(ratings_set["score"]),
+            "pacing": get_average(ratings_set["pacing"]),
+            "energy": get_average(ratings_set["energy"]),
+            "tone": get_average(ratings_set["tone"]),
+            "fantasy": get_average(ratings_set["fantasy"]),
+            "abstraction": get_average(ratings_set["abstraction"]),
+            "propriety": get_average(ratings_set["propriety"])
+        }
 
-    return average_ratings_set
+    return ratings_average
 
 
 def avg_series_score(series_id):

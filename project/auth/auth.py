@@ -4,16 +4,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from project.models import User, List
 from project import db
 
-auth = Blueprint("auth", __name__)
+AUTH_BLUEPRINT = Blueprint("auth", __name__)
+
+TEMPLATE_PATH = "auth/templates/auth"
 
 
-@auth.route("/login")
+@AUTH_BLUEPRINT.route("/login")
 def login():
 
-    return render_template("auth/templates/auth/login.html")
+    return render_template(f"{TEMPLATE_PATH}/login.html")
 
 
-@auth.route("/login", methods=["POST"])
+@AUTH_BLUEPRINT.route("/login", methods=["POST"])
 def login_post():
     email = request.form.get("email")
     password = request.form.get("password")
@@ -23,19 +25,19 @@ def login_post():
 
     if not user or not check_password_hash(user.password, password):
         flash("Your login details don't match. Please try again.")
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("AUTH_BLUEPRINT.login"))
 
     login_user(user, remember=remember)
     return redirect(f"/users/{user.username}")
 
 
-@auth.route("/register")
+@AUTH_BLUEPRINT.route("/register")
 def register():
 
-    return render_template("auth/templates/auth/register.html")
+    return render_template(f"{TEMPLATE_PATH}/register.html")
 
 
-@auth.route("/register", methods=["POST"])
+@AUTH_BLUEPRINT.route("/register", methods=["POST"])
 def register_post():
 
     email = request.form.get("email")
@@ -46,7 +48,7 @@ def register_post():
 
     if user:
         flash("This email is already in use")
-        return redirect(url_for("auth.register"))
+        return redirect(url_for("AUTH_BLUEPRINT.register"))
 
     new_user = User(email=email, username=username, password=generate_password_hash(password, method="sha256"))
     db.session.add(new_user)
@@ -59,12 +61,12 @@ def register_post():
     db.session.add_all([seen_list, to_watch_list, partially_seen_list])
     db.session.commit()
 
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("AUTH_BLUEPRINT.login"))
 
 
-@auth.route("/logout")
+@AUTH_BLUEPRINT.route("/logout")
 @login_required
 def logout():
     session.pop("selected_shows", None)
     logout_user()
-    return redirect(url_for("general.index"))
+    return redirect(url_for("GENERAL_BLUEPRINT.index"))

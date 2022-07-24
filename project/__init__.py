@@ -2,14 +2,9 @@
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from .config import settings
-import os
-# from .models import UserModel
-# from .auth import auth as auth_blueprint
-# from .main import main as main_blueprint
 
 # Potentially add to config file instead?
 # "pool_pre_ping": True to set to pessimistic disconnect handling was suggested, but apparently unnecessary
@@ -40,19 +35,19 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from project.auth.auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    from project.auth.auth import AUTH_BLUEPRINT as AUTH_BLUEPRINT
+    app.register_blueprint(AUTH_BLUEPRINT)
 
-    from project.general.general import general as general_blueprint
-    app.register_blueprint(general_blueprint)
+    from project.general.general import GENERAL_BLUEPRINT as GENERAL_BLUEPRINT
+    app.register_blueprint(GENERAL_BLUEPRINT)
 
-    from project.community.community import COMMUNITY_BLUEPRINT as community_blueprint
-    app.register_blueprint(community_blueprint)
+    from project.community.community import COMMUNITY_BLUEPRINT as COMMUNITY_BLUEPRINT
+    app.register_blueprint(COMMUNITY_BLUEPRINT)
 
-    from project.content.content import content as content_blueprint
-    app.register_blueprint(content_blueprint)
+    from project.content.content import CONTENT_BLUEPRINT as CONTENT_BLUEPRINT
+    app.register_blueprint(CONTENT_BLUEPRINT)
 
-    from project.admin.admin import admin as admin_blueprint
-    app.register_blueprint(admin_blueprint)
+    from project.admin.admin import ADMIN_BLUEPRINT as ADMIN_BLUEPRINT
+    app.register_blueprint(ADMIN_BLUEPRINT)
 
     return app

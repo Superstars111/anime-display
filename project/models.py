@@ -138,19 +138,21 @@ class Series(db.Model):
 
         for show in selected_shows:
             show_ratings = show.all_ratings()
-            base_ratings["score"].append(show_ratings["score"])
-            base_ratings["pacing"].append(show_ratings["pacing"])
-            base_ratings["energy"].append(show_ratings["energy"])
-            base_ratings["tone"].append(show_ratings["tone"])
-            base_ratings["fantasy"].append(show_ratings["fantasy"])
-            base_ratings["abstraction"].append(show_ratings["abstraction"])
-            base_ratings["propriety"].append(show_ratings["propriety"])
+            for key, value in base_ratings.items():
+                value.append(show_ratings[key])
+            # base_ratings["score"].append(show_ratings["score"])
+            # base_ratings["pacing"].append(show_ratings["pacing"])
+            # base_ratings["energy"].append(show_ratings["energy"])
+            # base_ratings["tone"].append(show_ratings["tone"])
+            # base_ratings["fantasy"].append(show_ratings["fantasy"])
+            # base_ratings["abstraction"].append(show_ratings["abstraction"])
+            # base_ratings["propriety"].append(show_ratings["propriety"])
 
         average_ratings_dict = average_ratings(base_ratings)
 
         return average_ratings_dict
 
-    def all_ratings_by_user(self, user_id: int, show_list: list = None) -> dict:
+    def ratings_from_single_user(self, user_id: int, show_list: list = None) -> dict:
         series_ratings = {}
         if not show_list:
             show_list = self.shows
@@ -161,7 +163,7 @@ class Series(db.Model):
                 all_fields = rating.dictify()
                 for key, value in all_fields.items():
                     if key in series_ratings:
-                        series_ratings[key].extend([value])
+                        series_ratings[key].append(value)
                     else:
                         series_ratings[key] = [value]
 
@@ -180,7 +182,7 @@ class Series(db.Model):
                     user_ids.append(rating.user_id)
 
         for user_id in user_ids:
-            all_user_ratings = self.all_ratings_by_user(user_id)
+            all_user_ratings = self.ratings_from_single_user(user_id)
 
             average_ratings_dict = average_ratings(all_user_ratings)
 
