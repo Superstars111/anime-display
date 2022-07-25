@@ -239,9 +239,9 @@ def sort_series_names(sort_style: str):
         else:
             sorted_series = sorted(all_series, key=lambda x: x.en_name.lower() if x.en_name else x.rj_name.lower())
     elif sort_style == "total-avg-score":
-        sorted_series = sorted(all_series, key=lambda x: x.average_ratings()["score"])
+        sorted_series = sorted(all_series, key=lambda x: x.average_ratings()["score"], reverse=True)
     elif sort_style == "main-avg-score":
-        sorted_series = sorted(all_series, key=lambda x: x.average_ratings(only_main=True)["score"])
+        sorted_series = sorted(all_series, key=lambda x: x.average_ratings(only_main=True)["score"], reverse=True)
     else:
         sorted_series = all_series
 

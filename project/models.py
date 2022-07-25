@@ -2,7 +2,7 @@
 # and from https://realpython.com/python-sqlite-sqlalchemy/
 # and from https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, Boolean, Text
+import sqlalchemy as sqa
 from sqlalchemy.orm import relationship, backref
 from flask_login import UserMixin, LoginManager
 from . import db
@@ -10,81 +10,151 @@ from project.standalone_functions import get_average, average_ratings
 
 login = LoginManager()
 
-friends = Table(
+friends = sqa.Table(
     "friends",
     db.metadata,
-    Column("friend1_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("friend2_id", Integer, ForeignKey("users.id"), primary_key=True)
+    sqa.Column("friend1_id", sqa.Integer, sqa.ForeignKey("users.id"), primary_key=True),
+    sqa.Column("friend2_id", sqa.Integer, sqa.ForeignKey("users.id"), primary_key=True)
 )
 
-show_list = Table(
+show_list = sqa.Table(
     "shows_list",
     db.metadata,
-    Column("list_id", Integer, ForeignKey("lists.id")),
-    Column("show_id", Integer, ForeignKey("shows.id"))
+    sqa.Column("list_id", sqa.Integer, sqa.ForeignKey("lists.id")),
+    sqa.Column("show_id", sqa.Integer, sqa.ForeignKey("shows.id"))
 )
 
-alt_names = Table(
+alt_names = sqa.Table(
     "names",
     db.metadata,
-    Column("alt_name", String),
-    Column("user_id", Integer, ForeignKey("users.id")),
-    Column("show_id", Integer, ForeignKey("shows.id"))
+    sqa.Column("alt_name", sqa.String),
+    sqa.Column("user_id", sqa.Integer, sqa.ForeignKey("users.id")),
+    sqa.Column("show_id", sqa.Integer, sqa.ForeignKey("shows.id"))
 )
 
-series_relation = Table(
+series_relation = sqa.Table(
     "series_relation",
     db.metadata,
-    Column("series1_id", Integer, ForeignKey("series.id"), primary_key=True),
-    Column("series2_id", Integer, ForeignKey("series.id"), primary_key=True)
+    sqa.Column("series1_id", sqa.Integer, sqa.ForeignKey("series.id"), primary_key=True),
+    sqa.Column("series2_id", sqa.Integer, sqa.ForeignKey("series.id"), primary_key=True)
 )
 
 
 class Feedback(db.Model):
     __tablename__ = "feedback"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    type = Column(Integer)  # 1 = Bug report, 2 = Feature request, 3 = Data request, 4 = Other
-    status = Column(Integer)  # 1 = New feedback, 2 = Planned, 3 = In progress, 4 = Closed
-    description = Column(Text)
-    note = Column(Text)
+    id = sqa.Column(sqa.Integer, primary_key=True)
+    user_id = sqa.Column(sqa.Integer, sqa.ForeignKey("users.id"))
+    type = sqa.Column(sqa.Integer)  # 1 = Bug report, 2 = Feature request, 3 = Data request, 4 = Other
+    status = sqa.Column(sqa.Integer)  # 1 = New feedback, 2 = Planned, 3 = In progress, 4 = Closed
+    description = sqa.Column(sqa.Text)
+    note = sqa.Column(sqa.Text)
 
 
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
+class List(db.Model):
+    __tablename__ = "lists"
 
-    # User info
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(80), unique=True, nullable=False)
-    username = Column(String(100), unique=True, nullable=False)
-    password = Column(String(100), nullable=False)
-    admin = Column(Boolean)
+    id = sqa.Column(sqa.Integer, primary_key=True, index=True)
+    name = sqa.Column(sqa.String)
+    owner_id = sqa.Column(sqa.Integer, sqa.ForeignKey("users.id"))
+    shows = relationship("Show", secondary=show_list, back_populates="lists")
 
-    # Relationships
-    lists = relationship("List", backref=backref("users"))
-    friends = relationship("User",
-                           secondary=friends,
-                           primaryjoin=id == friends.c.friend1_id,
-                           secondaryjoin=id == friends.c.friend2_id,
-                           back_populates="friends")
-    # outgoing_recommendations = relationship("Recommendation", backref=backref("users"))
-    # incoming_recommendations = relationship("Recommendation", backref=backref("users"))
-    show_ratings = relationship("Rating", backref=backref("users"))
-    alt_show_names = relationship("Show", secondary=alt_names, back_populates="alt_names")
 
-    # Preferences
-    names_preference = Column(Integer)  # 1 = Japanese, 2 = Romaji, 3 = English (if applicable), 4 = Default (TBA)
+class Rating(db.Model):
+    __tablename__ = "ratings"
+
+    id = sqa.Column(sqa.Integer, primary_key=True, index=True)
+    user_id = sqa.Column("user_id", sqa.Integer, sqa.ForeignKey("users.id"))
+    show_id = sqa.Column("show_id", sqa.Integer, sqa.ForeignKey("shows.id"))
+    score = sqa.Column(sqa.Integer)
+    pacing = sqa.Column(sqa.Integer)
+    energy = sqa.Column(sqa.Integer)
+    tone = sqa.Column(sqa.Integer)
+    fantasy = sqa.Column(sqa.Integer)
+    abstraction = sqa.Column(sqa.Integer)
+    propriety = sqa.Column(sqa.Integer)
+
+    def update(self, new_data: dict):
+        """
+        Updates the data associated with the Rating() object.
+
+        Fields updated include:
+
+        - score
+        - pacing
+        - energy
+        - tone
+        - fantasy
+        - abstraction
+        - propriety
+
+        :param new_data: A dictionary with keys corresponding to a Rating() object
+        """
+        self.score = new_data["score"]
+        self.pacing = new_data["pacing"]
+        self.energy = new_data["energy"]
+        self.tone = new_data["tone"]
+        self.fantasy = new_data["fantasy"]
+        self.abstraction = new_data["abstraction"]
+        self.propriety = new_data["propriety"]
+
+    def dictify(self) -> dict[str, int]:
+        """
+        Makes and returns a dictionary with the contents of the object.
+
+        :return: A dictionary with keys and values corresponding to the Rating() object
+        """
+        all_rating_fields = {
+            "score": self.score,
+            "pacing": self.pacing,
+            "energy": self.energy,
+            "tone": self.tone,
+            "fantasy": self.fantasy,
+            "abstraction": self.abstraction,
+            "propriety": self.propriety,
+        }
+
+        return all_rating_fields
+
+    def fields(self) -> list[str]:
+        """
+        Returns a list of the fields contained in a Rating() object.
+
+        :return: A list of the fields contained in a Rating() object
+        """
+        field_names = [
+            "score",
+            "pacing",
+            "energy",
+            "tone",
+            "fantasy",
+            "abstraction",
+            "propriety"
+        ]
+
+        return field_names
+
+
+class Recommendation(db.Model):
+    __tablename__ = "recommendations"
+
+    id = sqa.Column(sqa.Integer, primary_key=True, index=True)
+    sender_id = sqa.Column(sqa.Integer, sqa.ForeignKey("users.id"))
+    receiver_id = sqa.Column(sqa.Integer, sqa.ForeignKey("users.id"))
+    show_id = sqa.Column(sqa.Integer, sqa.ForeignKey("shows.id"))
+
+    sender = relationship("User", foreign_keys="Recommendation.sender_id")
+    receiver = relationship("User", foreign_keys="Recommendation.receiver_id")
 
 
 class Series(db.Model):
     __tablename__ = "series"
 
-    id = Column(Integer, primary_key=True, index=True)
-    en_name = Column(String)
-    jp_name = Column(String)
-    rj_name = Column(String)
-    entry_point_id = Column(Integer, ForeignKey("shows.id"), unique=True)
+    id = sqa.Column(sqa.Integer, primary_key=True, index=True)
+    en_name = sqa.Column(sqa.String)
+    jp_name = sqa.Column(sqa.String)
+    rj_name = sqa.Column(sqa.String)
+    entry_point_id = sqa.Column(sqa.Integer, sqa.ForeignKey("shows.id"), unique=True)
     # show_ids = Column(Integer, ForeignKey("shows.id"))
     shows = relationship("Show", back_populates="series", foreign_keys="[Show.series_id]")
     entry_point = relationship("Show", foreign_keys=[entry_point_id], post_update=True)
@@ -228,22 +298,22 @@ class Series(db.Model):
 class Show(db.Model):
     __tablename__ = "shows"
 
-    id = Column(Integer, primary_key=True)
-    en_name = Column(String)
-    jp_name = Column(String)
-    rj_name = Column(String)
-    anilist_id = Column(Integer, unique=True)
-    position = Column(Integer)
-    priority = Column(Integer)  # 1 = main, 2 = side, 3 = minor
-    type = Column(String)
-    status = Column(String)
-    episodes = Column(Integer)
-    cover_med = Column(Text)
-    cover_large = Column(Text)
-    cover_xl = Column(Text)
-    description = Column(String)
-    series_entry_id = Column(Integer, ForeignKey("series.id"))
-    series_id = Column(Integer, ForeignKey("series.id"))
+    id = sqa.Column(sqa.Integer, primary_key=True)
+    en_name = sqa.Column(sqa.String)
+    jp_name = sqa.Column(sqa.String)
+    rj_name = sqa.Column(sqa.String)
+    anilist_id = sqa.Column(sqa.Integer, unique=True)
+    position = sqa.Column(sqa.Integer)
+    priority = sqa.Column(sqa.Integer)  # 1 = main, 2 = side, 3 = minor
+    type = sqa.Column(sqa.String)
+    status = sqa.Column(sqa.String)
+    episodes = sqa.Column(sqa.Integer)
+    cover_med = sqa.Column(sqa.Text)
+    cover_large = sqa.Column(sqa.Text)
+    cover_xl = sqa.Column(sqa.Text)
+    description = sqa.Column(sqa.String)
+    series_entry_id = sqa.Column(sqa.Integer, sqa.ForeignKey("series.id"))
+    series_id = sqa.Column(sqa.Integer, sqa.ForeignKey("series.id"))
 
     lists = relationship("List", secondary=show_list, back_populates="shows")
     recommendations = relationship("Recommendation", backref=backref("shows"))
@@ -324,97 +394,27 @@ class Show(db.Model):
         # db.session.commit()
 
 
-class List(db.Model):
-    __tablename__ = "lists"
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    shows = relationship("Show", secondary=show_list, back_populates="lists")
+    # User info
+    id = sqa.Column(sqa.Integer, primary_key=True, index=True)
+    email = sqa.Column(sqa.String(80), unique=True, nullable=False)
+    username = sqa.Column(sqa.String(100), unique=True, nullable=False)
+    password = sqa.Column(sqa.String(100), nullable=False)
+    admin = sqa.Column(sqa.Boolean)
 
+    # Relationships
+    lists = relationship("List", backref=backref("users"))
+    friends = relationship("User",
+                           secondary=friends,
+                           primaryjoin=id == friends.c.friend1_id,
+                           secondaryjoin=id == friends.c.friend2_id,
+                           back_populates="friends")
+    # outgoing_recommendations = relationship("Recommendation", backref=backref("users"))
+    # incoming_recommendations = relationship("Recommendation", backref=backref("users"))
+    show_ratings = relationship("Rating", backref=backref("users"))
+    alt_show_names = relationship("Show", secondary=alt_names, back_populates="alt_names")
 
-class Recommendation(db.Model):
-    __tablename__ = "recommendations"
-
-    id = Column(Integer, primary_key=True, index=True)
-    sender_id = Column(Integer, ForeignKey("users.id"))
-    receiver_id = Column(Integer, ForeignKey("users.id"))
-    show_id = Column(Integer, ForeignKey("shows.id"))
-
-    sender = relationship("User", foreign_keys="Recommendation.sender_id")
-    receiver = relationship("User", foreign_keys="Recommendation.receiver_id")
-
-
-class Rating(db.Model):
-    __tablename__ = "ratings"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column("user_id", Integer, ForeignKey("users.id"))
-    show_id = Column("show_id", Integer, ForeignKey("shows.id"))
-    score = Column(Integer)
-    pacing = Column(Integer)
-    energy = Column(Integer)
-    tone = Column(Integer)
-    fantasy = Column(Integer)
-    abstraction = Column(Integer)
-    propriety = Column(Integer)
-
-    def update(self, new_data: dict):
-        """
-        Updates the data associated with the Rating() object.
-
-        Fields updated include:
-
-        - score
-        - pacing
-        - energy
-        - tone
-        - fantasy
-        - abstraction
-        - propriety
-
-        :param new_data: A dictionary with keys corresponding to a Rating() object
-        """
-        self.score = new_data["score"]
-        self.pacing = new_data["pacing"]
-        self.energy = new_data["energy"]
-        self.tone = new_data["tone"]
-        self.fantasy = new_data["fantasy"]
-        self.abstraction = new_data["abstraction"]
-        self.propriety = new_data["propriety"]
-
-    def dictify(self) -> dict[str, int]:
-        """
-        Makes and returns a dictionary with the contents of the object.
-
-        :return: A dictionary with keys and values corresponding to the Rating() object
-        """
-        all_rating_fields = {
-            "score": self.score,
-            "pacing": self.pacing,
-            "energy": self.energy,
-            "tone": self.tone,
-            "fantasy": self.fantasy,
-            "abstraction": self.abstraction,
-            "propriety": self.propriety,
-        }
-
-        return all_rating_fields
-
-    def fields(self) -> list[str]:
-        """
-        Returns a list of the fields contained in a Rating() object.
-
-        :return: A list of the fields contained in a Rating() object
-        """
-        field_names = [
-            "score",
-            "pacing",
-            "energy",
-            "tone",
-            "fantasy",
-            "abstraction",
-            "propriety"
-        ]
-
-        return field_names
+    # Preferences
+    names_preference = sqa.Column(sqa.Integer)  # 1 = Japanese, 2 = Romaji, 3 = English (if applicable), 4 = Default (TBA)
