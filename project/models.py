@@ -18,7 +18,7 @@ friends = sqa.Table(
 )
 
 show_list = sqa.Table(
-    "shows_list",
+    "show_list",
     db.metadata,
     sqa.Column("list_id", sqa.Integer, sqa.ForeignKey("lists.id")),
     sqa.Column("show_id", sqa.Integer, sqa.ForeignKey("shows.id"))

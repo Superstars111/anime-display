@@ -392,7 +392,7 @@ def collect_colors(scores: list[int]) -> list[str]:
 # Multi-use Functions
 
 
-def graph_data_selection(ratings: list[dict], x_data: str, y_data: str) -> list[dict[str, int]]:
+def graph_data_selection(ratings: list[dict], x_data: str, y_data: str) -> str:
     """
     Selects and returns the data to be displayed on a graph.
 
@@ -405,6 +405,10 @@ def graph_data_selection(ratings: list[dict], x_data: str, y_data: str) -> list[
     :param y_data: A string of one key from a Rating() object
     :return: A list of dictionaries of integers with x and y keys, converted into a json string
     """
+    if not x_data:
+        x_data = "pacing"
+    if not y_data:
+        y_data = "tone"
     all_scores = [[], [], [], [], [], []]
     data = []
     if ratings:
