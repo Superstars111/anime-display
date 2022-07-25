@@ -1,0 +1,128 @@
+{% extends "general/templates/general/base.html" %}
+{% block content %}
+<main>
+    <h2>{{title}}</h2>
+    <div id="seasonal">
+        <img src="{{coverLarge}}" alt="Cover image for current show" style="float: left"><br>
+        <h3>Episodes (Total): {{totalEpisodes}}</h3>
+        <h3>Episodes (Main): {{mainEpisodes}}</h3> <br><br><br>
+        <h3>Main content: {{ main_seasons }}</h3>
+        <h3>Side content: {{ side_seasons }}</h3>
+        <h3>Minor content: {{ minor_seasons }}</h3></div>
+    <div id="synopsis"><h3>Synopsis</h3><br><br><p>{{synopsis}}</p></div>
+    <div id="scoring"><div id="avgScores">Anilist avg score: {{ public }}, MAL avg score: N/A <br>
+        Our avg score: {{ avgUserScore }}, Friends' avg score: N/A </div>
+        <div id="userScore"><span style="vertical-align: middle">Your score:<br>{{ score }}</span></div><br><div id="chart_container">
+        <canvas id="display_graph" data-points="{{ data }}"></canvas>
+    </div>
+    <div>
+        <form action="" method="GET">
+        <label for="x-coord">X:</label>
+        <select name="x-coord" id="x-coord">
+            <option value="pacing" selected>Pacing</option>
+            <option value="tone">Tone</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="abstraction">Abstraction</option>
+            <option value="energy">Energy</option>
+            <option value="propriety">Propriety</option>
+        </select>
+        <label for="y-coord">Y:</label>
+        <select name="y-coord" id="y-coord">
+            <option value="pacing">Pacing</option>
+            <option value="tone" selected>Tone</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="abstraction">Abstraction</option>
+            <option value="energy">Energy</option>
+            <option value="propriety">Propriety</option>
+        </select></form>
+    </div></div>
+    <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
+    <div id="changes">Put bar/line graph here.</div>
+    <div id="shows-list">
+    {# TODO: Add a listbox menu here so you can see all the shows in the series, not just main ones. Also find a way to display the title. #}
+        {% for show in main_shows %}
+        <div class="show-link" style="display: inline-block"><a href="/shows/{{ show.id }}"><img src="{{ show.cover_med }}" alt="Image for {{ show.rj_name }}"></a></div>
+        <div class="hide">{{ show.rj_name }}</div>
+        {% endfor %}
+    </div>
+    <div id="streaming">
+    {# Want to use enumerate() here with modulo for a better break system, but jinja2 doesn't like enumerate(). Use loop.index0 #}
+        {% for service in mainStreaming.items() %}
+        <div class="service" style="color: {{ stream_colors[service[0]][0] }}"><h4>{{ "Netflix Prison" if service[0] == "prison" else service[0].capitalize() }}</h4>
+            <span style="color: {{ stream_colors[service[0]][1] }}">Main content: {{ service[1] }} <br>
+                Side content: {{ sideStreaming[service[0]] }}</span>
+        </div>
+            {% if service[0] in ("funimation", "vrv", "amazon", "prison", "tubi") %}
+                <br>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <br>
+    {% if current_user.is_authenticated %}
+        <div id="sliders">
+            <form action="" method="POST">
+            <div class="range-wrap">
+                WARNING! Submitting these values will <span style="font-weight: bold">completely</span> overwrite <span style="font-weight: bold">all</span>
+            ratings for all shows marked "seen" in this series! ("Even if I uncheck the box?" Yes, even if you uncheck the box.)
+                <label for="score" class="range-label">&#8672; Low score &bullet; High score &#8674;
+                <input type="checkbox" checked><input type="range" id="scoreRange" name="score" min="0" max="100" value="{{ score }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <div class="range-wrap">
+                <label for="pacing" class="range-label">&#8672; Slow paced &bullet; Fast paced &#8674;
+                <input type="checkbox" checked><input type="range" id="pacingRange" name="pacing" min="-50" max="50" value="{{ pacing }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <div class="range-wrap">
+                <label for="energy" class="range-label">&#8672; Low energy &bullet; High energy &#8674;
+                <input type="checkbox" checked><input type="range" id="energyRange" name="energy" min="-50" max="50" value="{{ energy }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <div class="range-wrap">
+                <label for="tone" class="range-label">&#8672; Serious tone &bullet; Lighthearted tone &#8674;
+                <input type="checkbox" checked><input type="range" id="toneRange" name="tone" min="-50" max="50" value="{{ tone }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <div class="range-wrap">
+                <label for="fantasy" class="range-label">&#8672; Realistic setting &bullet; Fantastic setting &#8674;
+                <input type="checkbox" checked><input type="range" id="fantasyRange" name="fantasy" min="-50" max="50" value="{{ fantasy }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <div class="range-wrap">
+                <label for="abstraction" class="range-label">&#8672; Realistic story &bullet; Abstract story &#8674;
+                <input type="checkbox" checked><input type="range" id="abstractionRange" name="abstraction" min="-50" max="50" value="{{ abstraction }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <div class="range-wrap">
+                <label for="propriety" class="range-label">&#8672; All ages &bullet; Mature audiences &#8674;
+                <input type="checkbox" checked><input type="range" id="proprietyRange" name="propriety" min="-50" max="50" value="{{ propriety }}" class="slider">
+                </label>
+                <output class="bubble"></output>
+            </div><br>
+            <button name="rate" id="ratingButton" value="true" type="button">Submit</button>
+            </form>
+        </div>
+        <div>
+            <form action="" method="post">
+            <select name="lists" id="lists" onchange="this.form.submit()">
+                <option value="" selected>Add To List</option>
+                {% for list in current_user.lists %}
+                <option value="{{ list.id }}">{{ list.name }}</option>
+                {% endfor %}
+            </select>
+            </form>
+        </div>
+    {% endif %}
+</main>
+    <script type="text/javascript">let url = "{{ url }}";</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/chart.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/slider.js') }}"></script>
+{% endblock %}

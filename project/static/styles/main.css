@@ -1,80 +1,126 @@
-#wrapper
-	{
-		margin-left: auto;
-		margin-right: auto;
-		width: 100%;
-		background-color: #FFFFFF;
-		min-width: 960px;
-		max-width: 2048px;
-		box-shadow: 3px 3px 3px #2E0000;
-	}
+nav {
+    background-color: #FFFFFF;
+}
 
-#options
-    {
-        float: left;
-        height: 55em;
-        border-style: solid;
-    }
+#wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    background-color: #ffdbba;
+    min-width: 960px;
+    max-width: 2048px;
+    box-shadow: 3px 3px 3px #2E0000;
+    /*clear: both;*/
+    position: relative;
+    overflow: auto;
+}
 
-# options select
-    {
-        width: 20em;
-        margin: .75em;
-    }
+#seasonal {
+    width: 27em;
+    height: 21.6em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    border-width: 2px;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#seasonal
-    {
-        width: 39.25em;
-        height: 21.6em;
-        margin: 1em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-    }
+#synopsis {
+    width: 39.25em;
+    height: 21.6em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    border-color: lightcyan;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#synopsis
-    {
-        width: 39.25em;
-        height: 21.6em;
-        margin: 1em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-    }
+#scoring {
+    width: 27em;
+    height: 30em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    border-color: darkblue;
+    display: inline-block;
+    float: left;
+    text-align: center;
+    clear: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#scoring
-    {
-        width: 39.25em;
-        height: 26.5em;
-        margin: 1em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-        float: left;
-        text-align: center;
-    }
+#tags {
+    width: 39.25em;
+    height: 30em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#tags
-    {
-        width: 39.25em;
-        height: 26.5em;
-        margin: 1em;
-        padding: .25em;
-        border-style: solid;
-        display: inline-block;
-    }
+#changes {
+    width: 68.125em;
+    height: 14em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+}
 
-#streaming
-    {
-        border-style: solid;
-        float: right;
-        margin: .75em;
-        padding: .25em;
-        width: 81em;
-        text-align: center;
-    }
+#shows-list {
+    width: 68.125em;
+    height: 14em;
+    margin: 0.5em;
+    padding: .25em;
+    border-style: solid;
+    display: inline-block;
+    float: left;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    clear: both;
+    overflow: scroll;
+}
+
+#streaming {
+    border-style: solid;
+    /*float: right;*/
+    margin: 0.5em;
+    /*padding: .15em;*/
+    width: 24em;
+    text-align: center;
+    display: inline-block;
+    float: top;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    border-color: #444444;
+}
+
+#avgScores {
+    border-style: solid;
+    display: inline-block;
+    height: 2.75em;
+}
+
+#userScore {
+    border-style: solid;
+    display: inline-block;
+    height: 2.75em;
+    vertical-align: top;
+    text-align: center;
+}
 
 .service
     {
@@ -82,18 +128,22 @@
         display: inline-block;
         text-align: center;
         width: 9.75em;
-        height: 6em;
+        height: auto;
         padding: .5em;
         margin: .2em;
     }
 
-nav ul
-    {
-        font-weight: bold;
-		list-style-type: none;
-		margin: 5px;
-  	    font-size: 1.25em;
-    }
+.service p {
+    font-weight: 900;
+    margin: 0;
+}
+
+nav ul {
+    font-weight: bold;
+    list-style-type: none;
+    margin: 5px;
+    font-size: 1.25em;
+}
 
 nav li
 	{
@@ -104,6 +154,16 @@ nav li
 nav a
     {
         text-decoration: none;
+    }
+
+nav a:link, a:visited
+    {
+        color:blue;
+    }
+
+nav a:hover
+    {
+        color:dodgerblue;
     }
 
 h1
@@ -131,3 +191,143 @@ h4
     {
         margin-top: .2em;
     }
+
+#sliders {
+    display: inline-block;
+    border-style: solid;
+    width: 24em;
+    margin: 0.5em;
+    /*text-align: center;*/
+    border-radius: 15px;
+    background-color: #FFFFFF;
+    border-color: darkorange;
+}
+
+.slider {
+    -webkit-appearance: none;
+    border-radius: 15px;
+    height: .85em;
+    background: #d3d3d3;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    width: 100%;
+}
+
+.slider:hover {
+    opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+    cursor: pointer;
+    background: cyan;
+    border-color: black;
+    border-width: 3px;
+    border-radius: 50%;
+}
+
+.slider::-moz-range-thumb {
+    cursor: pointer;
+    background: cyan;
+    border-color: black;
+    border-width: 3px;
+    border-radius: 50%;
+}
+
+.range-wrap {
+    position: relative;
+    width: 85%;
+    height: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: .5em;
+    /*display: inline-block;*/
+}
+
+.range-label {
+    text-align: center;
+    display: inline-block;
+}
+
+.bubble {
+  background: red;
+  color: white;
+  padding: 4px 12px;
+  position: absolute;
+  border-radius: 4px;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: red;
+  top: -1px;
+  left: 50%;
+}
+
+/* Starting graph test below */
+
+html, body {
+    margin: 0;
+    height: 100%;
+}
+
+#chart_container {
+    height: 25em;
+    width: 25em;
+    display: inline-block;
+    background-color: #FFFFFF;
+}
+
+#update-logger {
+    list-style: none;
+}
+
+#update-logger .addition:before {
+    content: "\2295";
+    padding-right: 5px;
+}
+
+#update-logger .removal:before {
+    content: "\2296";
+    padding-right: 5px;
+}
+
+#update-logger .bug-fix:before {
+    content: "\229B";
+    padding-right: 5px;
+}
+
+#update-logger .redesign:before {
+    content: "\2299";
+    padding-right: 5px;
+}
+
+#update-logger .admin:before {
+    content: "\1F3A9";
+    padding-right: 5px;
+}
+
+#update-logger .feedback:before {
+    content: "\279C";
+    padding-right: 5px;
+}
+
+#update-logger .break:before {
+    content: "\1F527";
+    padding-right: 5px;
+}
+
+.hide {
+    display: none;
+}
+
+.show-link:hover + .hide {
+    display: block;
+    position: absolute;
+}

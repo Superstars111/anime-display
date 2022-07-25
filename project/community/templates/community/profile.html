@@ -1,0 +1,53 @@
+{% extends "general/templates/general/base.html" %}
+
+{% block content %}
+<main>
+  <h1>{{username}}</h1>
+  <p>
+    <ul>To add:
+        <li>Profile picture</li>
+        <li>Introduction/description</li>
+        <li>Friends list</li>
+        <li>Average score per field bar chart</li>
+        <li>Most common tags</li>
+        <li>TBD</li>
+    </ul>
+      <br>
+      <ul>
+        {% for list in lists %}
+        <li><a href="/users/{{ username }}/lists/{{ list.name }}">{{ list.name }}</a></li>
+        {% endfor %}
+      </ul>
+  </p>
+    <div id="chart_container">
+        <canvas id="display_graph" data-points="{{ data }}"></canvas>
+    </div>
+        <br>
+        <div>
+        <label for="x-coord">X:</label>
+        <select name="x-coord" id="x-coord">
+            <option value="pacing" selected>Pacing</option>
+            <option value="tone">Tone</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="abstraction">Abstraction</option>
+            <option value="energy">Energy</option>
+            <option value="propriety">Propriety</option>
+        </select>
+        <label for="y-coord">Y:</label>
+        <select name="y-coord" id="y-coord">
+            <option value="pacing">Pacing</option>
+            <option value="tone" selected>Tone</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="abstraction">Abstraction</option>
+            <option value="energy">Energy</option>
+            <option value="propriety">Propriety</option>
+        </select>
+    </div>
+    <div><canvas></canvas></div>
+    <div></div>
+</main>
+    <script type="text/javascript">let url = "{{ url }}";</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/chart.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
+{% endblock %}

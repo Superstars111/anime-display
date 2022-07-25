@@ -1,0 +1,10 @@
+{% extends "general/templates/general/base.html" %}
+{% block content %}
+<main>
+    <ul>
+    {% for show in shows %}
+        <li><a href="/shows/{{ show.id }}">{{ show.rj_name }}</a></li>
+    {% endfor %}
+    </ul>
+</main>
+{% endblock %}

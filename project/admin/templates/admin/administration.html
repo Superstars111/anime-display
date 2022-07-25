@@ -1,0 +1,19 @@
+{% extends "general/templates/general/base.html" %}
+
+{% block content %}
+<main>
+{% if current_user.admin %}
+<form action=""><button type="submit" name="ratings" value="true">Migrate ratings</button></form>
+<form action=""><button type="submit" name="update" value="true">Update library</button></form>
+<form action=""><button type="submit" name="list" value="true">Update user lists</button></form>
+<form action=""><button type="submit" name="transfer" value="true">Update shows to series'</button></form>
+<form action=""><button type="submit" name="migrate" value="true">Migrate drama scores to tone</button></form>
+<form action="" method="POST"><label for="seriesID">Series Entry Point Anilist ID:</label><input type="number" name="seriesID"><button type="submit">Add/Update Series</button></form>
+{% endif %}
+<ul>To Do:
+    <li>Edit warnings</li>
+    <li>Edit show/series data</li>
+    <li>Edit user permissions</li>
+</ul>
+</main>
+{% endblock %}

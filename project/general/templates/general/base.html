@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static',filename='styles/main.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/d3.min.js') }}"></script>
+    <title>Anime Displayinator 9001 Beta</title>
+</head>
+<body>
+    <div id="wrapper">
+        <h1>Anime Data Program</h1>
+        <nav>
+            <ul>
+{#                <li><a href="/display">Display Page</a></li>#}
+{#                <li><a href="/options">Select Options</a></li>#}
+{#                <li><a href="/display_all">Display All</a></li>#}
+                <li><a href="/updates">Updates</a></li>
+                <li><a href="/series_list">Series</a></li>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.admin %}
+                <li><a href="/administration">Admin</a></li>
+                    {% endif %}
+                <li><a href="/users">Users</a></li>
+                <li><a href="/users/{{current_user.username}}">Profile</a></li>
+                <li><a href="/settings">Settings</a></li>
+                <li><a href="/give-feedback">Give Feedback</a></li>
+                <li><a href="/view-feedback">View Feedback</a></li>
+                <li><a href="/logout">Log Out</a></li>
+                {% endif %}
+                {% if not current_user.is_authenticated %}
+                <li><a href="/login">Log In</a></li>
+                <li><a href="/register">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% block content %}{% endblock %}
+    </div>
+{#    <script>#}
+{#        // Taken from https://stackoverflow.com/a/58743412/17274200#}
+{##}
+{#        document.addEventListener("DOMContentLoaded", function(event) {#}
+{#            let scrollpos = localStorage.getItem('scrollpos');#}
+{#            if (scrollpos) window.scrollTo(0, scrollpos);#}
+{#        });#}
+{##}
+{#        window.onbeforeunload = function(e) {#}
+{#            localStorage.setItem('scrollpos', window.scrollY);#}
+{#        };#}
+{#    </script>#}
+</body>
+</html>

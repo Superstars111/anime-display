@@ -3,12 +3,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from .config import settings
-# from .models import UserModel
-# from .auth import auth as auth_blueprint
-# from .main import main as main_blueprint
 
-db = SQLAlchemy()
+# Potentially add to config file instead?
+# "pool_pre_ping": True to set to pessimistic disconnect handling was suggested, but apparently unnecessary
+db = SQLAlchemy(engine_options={"pool_recycle": 280})
+migrate = Migrate()
 
 
 def create_app():
@@ -16,27 +17,32 @@ def create_app():
 
     app.config.from_object(settings)
 
-    # app.config["SECRET_KEY"] = "secret-key"
-    # # Not sure how this is different than app.secret_key =
-    # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
-    # app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
     db.init_app(app)
+    migrate.init_app(app, db)
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
     login_manager.init_app(app)
 
-    from .models import UserModel
+    from .models import User
 
     @login_manager.user_loader
     def load_user(user_id):
-        return UserModel.query.get(int(user_id))
+        return User.query.get(int(user_id))
 
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    from project.auth.auth import AUTH_BLUEPRINT as AUTH_BLUEPRINT
+    app.register_blueprint(AUTH_BLUEPRINT)
 
-    from .main import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    from project.general.general import GENERAL_BLUEPRINT as GENERAL_BLUEPRINT
+    app.register_blueprint(GENERAL_BLUEPRINT)
+
+    from project.community.community import COMMUNITY_BLUEPRINT as COMMUNITY_BLUEPRINT
+    app.register_blueprint(COMMUNITY_BLUEPRINT)
+
+    from project.content.content import CONTENT_BLUEPRINT as CONTENT_BLUEPRINT
+    app.register_blueprint(CONTENT_BLUEPRINT)
+
+    from project.admin.admin import ADMIN_BLUEPRINT as ADMIN_BLUEPRINT
+    app.register_blueprint(ADMIN_BLUEPRINT)
 
     return app

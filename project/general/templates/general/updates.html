@@ -1,0 +1,141 @@
+{% extends "general/templates/general/base.html" %}
+{% block content %}
+<main>
+    <p>
+    <h2>v0.5.1-alpha</h2>
+    <h3>Monday, July 25 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Fixed graphs not displaying properly by default</li>
+    </ul>
+    <h2>v0.5.0-alpha</h2>
+    <h3>Monday, July 25 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Fixed sorting series by score placing highest-rated series at the top</li>
+    </ul>
+    <h3>Sunday, July 24 2022</h3>
+    <ul id="update-logger">
+        <li class="redesign">Significant code cleanup, documentation, and function rework</li>
+    </ul>
+    <h3>Friday, July 15 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Series list selector now remembers selection when reloading the page</li>
+    </ul>
+    <h3>Thursday, July 14 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Shows now display the correct season instead of always being stuck at 1</li>
+    </ul>
+    <h3>Tuesday, July 12 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Added AUTO_INCREMENT to relevant database tables, fixing data insertion bug</li>
+    </ul>
+    <h3>Friday, July 1 2022</h3>
+    <ul id="update-logger">
+        <li class="admin">Added ability to add dev notes to feedback items</li>
+        <li class="bug-fix">Fixed series names not properly sorting alphabetically by English title</li>
+        <li class="admin">Removed unused buttons from admin settings</li>
+        <li class="addition">Added ability to choose your preferred language for titles</li>
+        <li class="bug-fix">Fixed bug causing site to break when sorting series list by average main score</li>
+    </ul>
+    <h3>Thursday, June 30 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Fixed profile graph selectors displaying incorrectly</li>
+    </ul>
+    <h2>v0.4.0-alpha</h2>
+    <h3>Monday, June 27 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Mid-level code rewrite for streamlining and bug fixes</li>
+    </ul>
+    <h3>Sunday, June 26 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Added ability to sort the list of series'</li>
+    </ul>
+    <h3>Friday, June 24 2022</h3>
+    <ul id="update-logger">
+        <li class="redesign">Made series rating submission more secure</li>
+    </ul>
+    <h3>Thursday, June 23 2022</h3>
+    <ul id="update-logger">
+        <li class="admin">Added admin ability to change feedback status</li>
+    </ul>
+    <h3>Monday, June 20 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Added ability to submit feedback</li>
+        <li class="bug-fix">Fixed old category "timeline" appearing as an option on profile graphs</li>
+    </ul>
+    <h3>Sunday, June 19 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Fixed bug causing graph updates to break the app</li>
+    </ul>
+    <h3>Friday, June 17 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Added table for feedback system (to be implemented)</li>
+        <li class="removal">Removed broken nav links</li>
+        <li class="redesign">Made rating submission more secure</li>
+    </ul>
+    <h3>Thursday, June 16 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Added link to get from show page to series page</li>
+        <li class="addition">Added list of series' with links</li>
+        <li class="addition">Added (ugly) hover text to series page for show names</li>
+        <li class="redesign">Links to series with only one show now redirect directly to the show page</li>
+    </ul>
+    <h2>v0.3.0-alpha</h2>
+    <h3>Thursday, June 16 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">MySQL connection no longer dies after being unused for 5 minutes</li>
+    </ul>
+    <h3>Friday, June 10 2022</h3>
+    <ul id="update-logger">
+        <li class="bug-fix">Data insertion for MySQL now works properly in local test environment</li>
+    </ul>
+    <h3>Friday, May 27 2022</h3>
+    <ul id="update-logger">
+        <li class="redesign">Finished local/development data transfer from SQLite to MySQL- however, no new data can be added currently</li>
+        <li class="addition">Added links/images to series page for main shows in the series</li>
+    </ul>
+    <h3>Friday, May 20 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Series page sliders now update user data</li>
+        <li class="addition">Added div for related shows to series page</li>
+        <li class="break">Database corruption- need to learn about MySQL and transfer data from a backup</li>
+    </ul>
+    <h3>Thursday, May 19 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Series page now (slowly) displays graph data</li>
+        <li class="addition">Series page sliders now display (but do not submit) user data</li>
+        <li class="redesign">Altered function files for more efficient code use</li>
+    </ul>
+    <h3>Tuesday, May 17 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Series page now displays episode and content count</li>
+        <li class="redesign">Altered code and organization for various calculations</li>
+    </ul>
+    </p>
+    <p>
+    <h2>v0.2.0-alpha</h2>
+    <h3>Friday, May 13 2022</h3>
+    <ul id="update-logger">
+        <li class="feedback">Feedback requested: Tested (but didn't decide on) border styles for show page</li>
+        <li class="redesign">Made series page functional</li>
+        <br>
+        <span style="font-weight: bold">Dev notes:</span> It's interesting how when things get summed up in a particular way, they can seem less intensive than they are.<br>
+    For example, the process to make the series page functional involved writing multiple new (moderately large, as they
+        <br> go) functions,
+    re-writing even more (extremely large) functions, redesigning the layout of entire processes, adding a new <br>column to the database (which
+    requires adjusting all code relating to said column, as well as updating the entire database), <br>and essentially making an entire massive endpoint
+    work. All of that summed up in, "made series page functional."<br>
+    <br>
+    Of course, what everyone will comment on is, "oh, it looks different!" (~3 lines of code changed.)
+    </ul>
+    <br>
+    <h3>Thursday, May 12 2022</h3>
+    <ul id="update-logger">
+        <li class="addition">Added update tracker</li>
+        <li class="addition">Added users list page</li>
+        <li class="redesign">Altered show page layout</li>
+        <li class="redesign">Cleaned up show generation code</li>
+        <li class="admin">Removed two unused admin pages</li>
+    </ul>
+    </p>
+</main>
+{% endblock %}

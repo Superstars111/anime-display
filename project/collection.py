@@ -187,17 +187,17 @@ if __name__ == "__main__":
 
     jared_rating[0] = int(input("Please input Jared's show rating from 1-100. "))
     jared_rating[1] = int(input("Please input Jared's pacing rating- -50 is slow, 50 is fast. "))
-    jared_rating[2] = int(input("Please input Jared's comedy/drama rating. -50 is dramatic, 50 is funny. "))
+    jared_rating[2] = int(input("Please input Jared's comedy/tone rating. -50 is dramatic, 50 is funny. "))
 
     if input("Does Simon have available ratings? ").lower() in ("y", "yes"):
         simon_rating[0] = int(input("Please input Simon's show rating from 1-100. "))
         simon_rating[1] = int(input("Please input Simon's pacing rating- -50 is slow, 50 is fast. "))
-        simon_rating[2] = int(input("Please input Simon's comedy/drama rating. -50 is dramatic, 50 is funny. "))
+        simon_rating[2] = int(input("Please input Simon's comedy/tone rating. -50 is dramatic, 50 is funny. "))
 
     if input("Does Kenan have available ratings? ").lower() in ("y", "yes"):
         kenan_rating[0] = int(input("Please input Kenan's show rating from 1-100. "))
         kenan_rating[1] = int(input("Please input Kenan's pacing rating- -50 is slow, 50 is fast. "))
-        kenan_rating[2] = int(input("Please input Kenan's comedy/drama rating. -50 is dramatic, 50 is funny. "))
+        kenan_rating[2] = int(input("Please input Kenan's comedy/tone rating. -50 is dramatic, 50 is funny. "))
 
 
     entry = {

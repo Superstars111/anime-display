@@ -1,0 +1,19 @@
+{% extends "general/templates/general/base.html" %}
+{% block content %}
+<main>
+    <form><select name="series-sorting" id="series-sorting" onchange="this.form.submit()">
+        {% if current_user.names_preference != 1 %}
+        <option value="alpha" {% if sort_style == "alpha" %} selected {% endif %} >Alphabetized</option>
+        {% endif %}
+        <option value="total-avg-score" {% if sort_style == "total-avg-score" %} selected {% endif %} >Average Score (Total)</option>
+        <option value="main-avg-score" {% if sort_style == "main-avg-score" %} selected {% endif %} >Average Score (Main)</option>
+    </select></form>
+    <div id="series-list">
+        <ul>Series list:
+        {% for series_name in series_names %}
+        <li><a href="/series/{{ series_ids[loop.index0] }}">{{ series_name }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
+</main>
+{% endblock %}
