@@ -2,6 +2,17 @@
 {% block content %}
 <main>
     <p>
+    {% for version in releases %}
+        <h2>{{ version }}</h2>
+        <ul id="update-logger">
+            {% for update in displayed_updates %}
+            {% if update.version == version %}
+            <li class="{{ update["type"] }}">{{ update["comment"] }}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
     <h2>v0.5.1-alpha</h2>
     <h3>Monday, July 25 2022</h3>
     <ul id="update-logger">

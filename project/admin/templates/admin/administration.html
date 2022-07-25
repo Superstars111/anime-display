@@ -9,6 +9,29 @@
 <form action=""><button type="submit" name="transfer" value="true">Update shows to series'</button></form>
 <form action=""><button type="submit" name="migrate" value="true">Migrate drama scores to tone</button></form>
 <form action="" method="POST"><label for="seriesID">Series Entry Point Anilist ID:</label><input type="number" name="seriesID"><button type="submit">Add/Update Series</button></form>
+<form action="" method="POST">
+    New update: <br>
+    <input type="text" name="version-number">
+    <br>
+    <select name="update-type" id="update-type">
+        <option value="1">Bug Fix</option>
+        <option value="2">New Feature</option>
+        <option value="3">Removed Feature</option>
+        <option value="4">Administrative</option>
+        <option value="5">Redesign</option>
+        <option value="6">Code Cleanup</option>
+    </select>
+    <br>
+    <input type="date" name="update-date">
+    <br>
+    <textarea name="update-description" id="update-description" cols="25" rows="5"></textarea>
+    <br>
+    <button type="submit" name="submit-update" value="true">Add Update</button>
+</form>
+<form action="" method="POST">
+Publish update:
+    <input type="text" name="published-version"><button type="submit" name="publish-update" value="true">Publish Update</button>
+</form>
 {% endif %}
 <ul>To Do:
     <li>Edit warnings</li>

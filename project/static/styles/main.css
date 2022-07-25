@@ -288,7 +288,7 @@ html, body {
     list-style: none;
 }
 
-#update-logger .addition:before {
+#update-logger .feature:before {
     content: "\2295";
     padding-right: 5px;
 }

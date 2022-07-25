@@ -394,6 +394,47 @@ class Show(db.Model):
         # db.session.commit()
 
 
+class Update(db.Model):
+    __tablename__ = "updates"
+
+    id = sqa.Column(sqa.Integer, primary_key=True)
+    version = sqa.Column(sqa.String(100))
+    type = sqa.Column(sqa.Integer)  # 1 = Bug Fix, 2 = Feature, 3 = Removal, 4 = Admin, 5 = Redesign, 6 = Code Cleanup
+    comment = sqa.Column(sqa.Text)
+    date = sqa.Column(sqa.Date)
+    published = sqa.Column(sqa.Boolean)
+
+    def dictify(self) -> dict:
+        """
+        Forms a dictionary with the contents of the object. Text is substituted for ints in self.type.
+
+        :return: A dictionary of the Update() object
+        """
+
+        if self.type == 1:
+            type_text = "Bug Fix"
+        elif self.type == 2:
+            type_text = "Feature"
+        elif self.type == 3:
+            type_text = "Removal"
+        elif self.type == 4:
+            type_text = "Admin"
+        elif self.type == 5:
+            type_text = "Redesign"
+        else:  # self.type == 6
+            type_text = "Code Cleanup"
+
+        update_dict = {
+            "version": self.version,
+            "type": type_text,
+            "comment": self.comment,
+            "date": self.date,
+            "published": self.published
+        }
+
+        return update_dict
+
+
 class User(UserMixin, db.Model):
     __tablename__ = "users"
 

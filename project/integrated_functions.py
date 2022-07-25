@@ -25,7 +25,7 @@ def collect_feedback() -> list:
     for feedback_item in db.session.query(Feedback).all():
 
         user = User.query.filter_by(id=feedback_item.user_id).first()
-
+        # TODO: Turn this into a dictify method for Feedback()
         if feedback_item.type == 1:
             feedback_type = "Bug Report"
         elif feedback_item.type == 2:
