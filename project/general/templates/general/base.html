@@ -11,22 +11,61 @@
         <h1>Anime Data Program</h1>
         <nav>
             <ul>
+                <li>
+                    <div class="dropdown">Content
+                        <div class="dropdown-content">
+                            <a href="/series_list">Series</a>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="dropdown">Community
+                        <div class="dropdown-content">
+                            <a href="/users">Users</a>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="dropdown">Site
+                        <div class="dropdown-content">
+                            <a href="/updates">Updates</a>
+                            {% if current_user.is_authenticated %}
+                            <a href="/give-feedback">Give Feedback</a>
+                            {% endif %}
+                            <a href="/view-feedback">View Feedback</a>
+                        </div>
+                    </div>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li>
+                    <div class="dropdown">{{ current_user.username }}
+                        <div class="dropdown-content">
+                            <a href="/users/{{ current_user.username }}">Profile</a>
+                            <a href="/settings">Settings</a>
+                            {% if current_user.admin %}
+                            <a href="/administration">Admin</a>
+                            {% endif %}
+                            <a href="/logout">Log Out</a>
+                        </div>
+                    </div>
+                </li>
+                {% endif %}
 {#                <li><a href="/display">Display Page</a></li>#}
 {#                <li><a href="/options">Select Options</a></li>#}
 {#                <li><a href="/display_all">Display All</a></li>#}
-                <li><a href="/updates">Updates</a></li>
-                <li><a href="/series_list">Series</a></li>
-                {% if current_user.is_authenticated %}
-                    {% if current_user.admin %}
-                <li><a href="/administration">Admin</a></li>
-                    {% endif %}
-                <li><a href="/users">Users</a></li>
-                <li><a href="/users/{{current_user.username}}">Profile</a></li>
-                <li><a href="/settings">Settings</a></li>
-                <li><a href="/give-feedback">Give Feedback</a></li>
-                <li><a href="/view-feedback">View Feedback</a></li>
-                <li><a href="/logout">Log Out</a></li>
-                {% endif %}
+{#                <li><a href="/updates">Updates</a></li>#}
+{#                <li><a href="/series_list">Series</a></li>#}
+{#                {% if current_user.is_authenticated %}#}
+{#                    {% if current_user.admin %}#}
+{#                <li><a href="/administration">Admin</a></li>#}
+{#                    {% endif %}#}
+{#                <li><a href="/users">Users</a></li>#}
+{#                <li><a href="/users/{{current_user.username}}">Profile</a></li>#}
+{#                <li><a href="/settings">Settings</a></li>#}
+{#                <li><a href="/give-feedback">Give Feedback</a></li>#}
+{#                <li><a href="/view-feedback">View Feedback</a></li>#}
+{#                <li><a href="/logout">Log Out</a></li>#}
+{#                {% endif %}#}
                 {% if not current_user.is_authenticated %}
                 <li><a href="/login">Log In</a></li>
                 <li><a href="/register">Register</a></li>

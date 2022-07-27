@@ -23,10 +23,7 @@ def update_log():
     displayed_updates = []
     for update in published_updates:
         update_dict = update.dictify()
-        print(update_dict["type"])
-        print(re.split(" ", update_dict["type"].lower()))
         update_dict["type"] = "-".join(re.split(" ", update_dict["type"].lower()))
-        print(update_dict["type"])
         displayed_updates.append(update_dict)
         if update.version not in releases:
             releases.append(update.version)

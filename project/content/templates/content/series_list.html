@@ -8,8 +8,8 @@
         <option value="total-avg-score" {% if sort_style == "total-avg-score" %} selected {% endif %} >Average Score (Total)</option>
         <option value="main-avg-score" {% if sort_style == "main-avg-score" %} selected {% endif %} >Average Score (Main)</option>
     </select></form>
-    <div id="series-list">
-        <ul>Series list:
+    <div>
+        <ul id="series-list">Series list:
         {% for series_name in series_names %}
         <li><a href="/series/{{ series_ids[loop.index0] }}">{{ series_name }}</a></li>
         {% endfor %}

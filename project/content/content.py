@@ -1,4 +1,4 @@
-from flask import Blueprint, request, session, render_template, url_for, redirect
+from flask import Blueprint, request, session, render_template, url_for, redirect, abort
 from flask_login import current_user
 from project.models import Show, Rating, Series
 from project import db
@@ -170,7 +170,8 @@ def show(show_id):
     # Collecting house database information
     show = Show.query.filter_by(id=show_id).first()
     if not show:
-        return redirect(url_for("general.404"))
+        abort(404)
+        # return redirect(url_for("general.error404"))
     series = Series.query.filter_by(id=show.series_id).first()
     if current_user.is_authenticated:
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
