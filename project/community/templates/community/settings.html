@@ -20,13 +20,20 @@
     <div>
         <form action="" method="POST">
             <label for="names-preference">Title Language:
-            <select name="names-preference" id="names-preference">
-                <option value="1">Japanese/Native</option>
-                <option value="2">Romaji</option>
-                <option value="3">English</option>
-            </select>
+                <select name="names-preference" id="names-preference">
+                    <option value="1" {% if current_user.names_preference == 1 %} selected {% endif %}>Japanese/Native</option>
+                    <option value="2" {% if current_user.names_preference == 2 %} selected {% endif %}>Romaji</option>
+                    <option value="3" {% if current_user.names_preference == 3 %} selected {% endif %}>English</option>
+                </select>
             </label>
-            <button type="submit" name="set-preference" value="true">Set Preference</button>
+            <label for="spoiler-preference">By default, spoiler tags display:
+                <select name="spoiler-preference" id="spoiler-preference">
+                    <option value="1" {% if current_user.spoiler_preference == 1 %} selected {% endif %}>Never</option>
+                    <option value="2" {% if current_user.spoiler_preference == 2 %} selected {% endif %}>On shows marked "seen"</option>
+                    <option value="3" {% if current_user.spoiler_preference == 3 %} selected {% endif %}>Always</option>
+                </select>
+            </label>
+            <button type="submit" name="set-preference" value="true">Set Preferences</button>
         </form>
     </div>
 {% if current_user.admin %}

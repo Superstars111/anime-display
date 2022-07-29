@@ -459,3 +459,4 @@ class User(UserMixin, db.Model):
 
     # Preferences
     names_preference = sqa.Column(sqa.Integer)  # 1 = Japanese, 2 = Romaji, 3 = English (if applicable), 4 = Default (TBA)
+    spoiler_preference = sqa.Column(sqa.Integer)  # 1 = Never, 2 = On "seen" shows, 3 = Always

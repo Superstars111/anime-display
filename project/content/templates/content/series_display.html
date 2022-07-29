@@ -41,7 +41,7 @@
         <h3>Tags:</h3> {{ tags }}<br><br>
         <h3>Content Warnings:</h3> <br><br>
         <h3><label for="spoiler-checkbox"><input type="checkbox" id="spoiler-checkbox" oninput="toggleSpoilers()">Spoiler Tags:</label></h3>
-        <div id="spoiler-tags" style="display: none">{{ spoilers }}</div>
+        <div id="spoiler-tags" style="display: {{ spoiler_display }}">{{ spoilers }}</div>
     </div>
     <div id="changes">Put bar/line graph here.</div>
     <div id="shows-list">

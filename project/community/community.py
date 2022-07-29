@@ -18,6 +18,7 @@ def settings():
 
     if request.form.get("set-preference"):
         current_user.names_preference = int(request.form.get("names-preference"))
+        current_user.spoiler_preference = int(request.form.get("spoiler-preference"))
         db.session.commit()
 
     return render_template(f"{TEMPLATE_PATH}/settings.html", name=current_user.username)

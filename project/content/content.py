@@ -110,8 +110,10 @@ def series(series_id):
             current_user_average_ratings = sf.average_ratings(base_ratings)
         else:
             current_user_average_ratings = None
+        spoiler_display = intf.spoiler_display_status(sorted_shows["main_shows"])
     else:
         current_user_average_ratings = None
+        spoiler_display = "none"
 
     # Collecting Anilist database information
     seasonal_data = intf.seasonal_anilist_data(series_id)
@@ -159,6 +161,7 @@ def series(series_id):
         "fantasy": current_user_average_ratings["fantasy"] if current_user_average_ratings else 0,
         "abstraction": current_user_average_ratings["abstraction"] if current_user_average_ratings else 0,
         "propriety": current_user_average_ratings["propriety"] if current_user_average_ratings else 0,
+        "spoiler_display": spoiler_display,
         "url": f"/series/{series_id}"
     }
 
@@ -171,15 +174,19 @@ def show(show_id):
     show = Show.query.filter_by(id=show_id).first()
     if not show:
         abort(404)
-        # return redirect(url_for("general.error404"))
+
     series = Series.query.filter_by(id=show.series_id).first()
+
+    # TODO: Check whether this if statement is even necessary. If so, leave a comment on why.
     if current_user.is_authenticated:
         user_rating = Rating.query.filter_by(show_id=show_id, user_id=current_user.id).first()
+        spoiler_display = intf.spoiler_display_status([show])
     else:
         user_rating = None
+        spoiler_display = "none"
 
     # Collecting Anilist database information
-    anilist_request = intf.request_show_data(show.anilist_id)
+    anilist_request = sf.request_show_data(show.anilist_id)
     tags, spoilers = sf.collect_tags(anilist_request["tags"])
     availability = sf.check_stream_locations(anilist_request["externalLinks"])
     if show.status not in ("FINISHED", "CANCELLED"):
@@ -227,6 +234,7 @@ def show(show_id):
         "fantasy": user_rating.fantasy if user_rating else 0,
         "abstraction": user_rating.abstraction if user_rating else 0,
         "propriety": user_rating.propriety if user_rating else 0,
+        "spoiler_display": spoiler_display,
         "url": f"/shows/{show_id}"
     }
 

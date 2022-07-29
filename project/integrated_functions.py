@@ -1,8 +1,7 @@
 from project.models import Show, Series, User, Feedback, Rating, List
 from flask_login import current_user
 from . import db
-from project.standalone_functions import request_show_data, sort_series_relations, \
-    intify_dict_values, process_tags, check_stream_locations, get_average
+import project.standalone_functions as sf
 
 
 # Admin Functions
@@ -129,10 +128,10 @@ def seasonal_anilist_data(series_id: int) -> dict:
     for show in series.shows:
         if show.priority in (1, 2):
             # Requests to the AniList API should be kept to a minimum, so this should stay as one function.
-            gql_request = request_show_data(show.anilist_id)
+            gql_request = sf.request_show_data(show.anilist_id)
 
             # Availability
-            show_availability = check_stream_locations(gql_request["externalLinks"])
+            show_availability = sf.check_stream_locations(gql_request["externalLinks"])
             for service in show_availability.items():
                 seasonal_data["mainAvailability" if show.priority == 1 else "sideAvailability"][service[0]] += service[1]
 
@@ -140,10 +139,10 @@ def seasonal_anilist_data(series_id: int) -> dict:
             if show.priority == 1:
                 seasonal_data["mainGenres"] = seasonal_data["mainGenres"].union(gql_request["genres"])
             # Tags
-                seasonal_data["mainTags"] = process_tags(gql_request["tags"], collected_tags=seasonal_data["mainTags"])
+                seasonal_data["mainTags"] = sf.process_tags(gql_request["tags"], collected_tags=seasonal_data["mainTags"])
 
     for tag in seasonal_data["mainTags"].items():
-        tag[1]["rank"] = get_average(tag[1]["ranksList"], length=len(sorted_shows["main_shows"]))
+        tag[1]["rank"] = sf.get_average(tag[1]["ranksList"], length=len(sorted_shows["main_shows"]))
         tags_list.append(tag[1])
 
     seasonal_data["mainTags"] = tags_list
@@ -165,7 +164,7 @@ def update_user_show_rating(show_id: int, old_rating: object, new_rating: dict):
     :param old_rating: A Rating() object from the database
     :param new_rating: Updated values for the rating object
     """
-    new_rating = intify_dict_values(new_rating)
+    new_rating = sf.intify_dict_values(new_rating)
     if not old_rating:
         rating = Rating(show_id=show_id, user_id=current_user.id)
         rating.update(new_rating)
@@ -203,7 +202,7 @@ def update_user_series_rating(new_rating: dict, series_id: int):
     :param series_id: The ID number for the series database entry to be checked
     """
     current_seen_list = List.query.filter_by(owner_id=current_user.id, name="Seen").first()
-    new_rating = intify_dict_values(new_rating)
+    new_rating = sf.intify_dict_values(new_rating)
     series = Series.query.filter_by(id=series_id).first()
 
     for show in series.shows:
@@ -260,6 +259,48 @@ def sort_series_names(sort_style: str):
 
     # TODO: Make it return a list of tuples instead of two lists, to better avoid mix-ups
     return series_names, series_ids
+
+
+def user_has_seen_show(show: object, user_id: int) -> bool:
+    """
+    Determines whether a given user has marked a show as "seen" or not.
+
+    :param show: A Show() object to check
+    :param user_id: The ID of the list owner
+    :return: True if the show is marked as seen, otherwise False
+    """
+    seen_list = List.query.filter_by(owner_id=user_id, name="Seen").first()
+    if show in seen_list.shows:
+        return True
+    else:
+        return False
+
+
+def spoiler_display_status(shows: list[object]) -> str:
+    """
+    Checks whether spoiler tags should be displayed by default.
+
+    Based on the value of spoiler_preference for the current_user, the default display status for spoilers is
+    determined. A string is returned corresponding to the CSS value needed.
+    For multiple shows, if any show it marked unseen, "none" is returned.
+
+    :param shows: A list of Show() objects
+    :return: "none" to hide spoilers or "inline-block" to display them
+    """
+    if not current_user.spoiler_preference or current_user.spoiler_preference == 1:
+        spoiler_display = "none"
+    elif current_user.spoiler_preference == 2:
+        # TODO: Fix shows parameter so I don't have to put single shows into a list
+        for show in shows:
+            if user_has_seen_show(show, current_user.id):
+                spoiler_display = "inline-block"
+            else:
+                spoiler_display = "none"
+                break
+    else:  # current_user.spoiler_preference == 3
+        spoiler_display = "inline-block"
+
+    return spoiler_display
 
 
 # General Functions
@@ -406,18 +447,19 @@ def update_full_series(anilist_id: int, position: int = 1, main: int = 1, series
         checked_shows = []
 
     if anilist_id not in checked_shows:
-        gql_request = request_show_data(anilist_id)
+        gql_request = sf.request_show_data(anilist_id)
         relations = gql_request["relations"]["edges"]
         update_show_entry(anilist_id, gql_request)
         update_show_series_data(anilist_id, position, priority=main, series_id=series_id)
         checked_shows.append(anilist_id)
-        sorted_relations = sort_series_relations(relations)
+        sorted_relations = sf.sort_series_relations(relations)
     else:
         sorted_relations = []
 
     if not series_id:
         series_id = update_series_entry(anilist_id)
 
+    # TODO: These are very similar and can probably be condensed
     for show_id in sorted_relations["sequels"]:
         if show_id not in checked_shows:
             checked_shows = update_full_series(show_id, position=position + 1, main=main, series_id=series_id, checked_shows=checked_shows)
