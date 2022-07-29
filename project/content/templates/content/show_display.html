@@ -36,7 +36,13 @@
             <option value="propriety">Propriety</option>
         </select></form>
     </div></div>
-    <div id="tags"><h3>Genres:</h3> {{ genres }}<br><br> <h3>Tags:</h3> {{ tags }}<br><br> <h3>Content Warnings:</h3> <br><br> <h3><input type="checkbox">Spoiler Tags:</h3> {{ spoilers }}</div>
+    <div id="tags">
+        <h3>Genres:</h3> {{ genres }}<br><br>
+        <h3>Tags:</h3> {{ tags }}<br><br>
+        <h3>Content Warnings:</h3> <br><br>
+        <h3><label for="spoiler-checkbox"><input type="checkbox" id="spoiler-checkbox" oninput="toggleSpoilers()">Spoiler Tags:</label></h3>
+        <div id="spoiler-tags" style="display: none">{{ spoilers }}</div>
+    </div>
     <div id="sliders">
             <form action="" method="POST">
             <div class="range-wrap">
@@ -108,9 +114,14 @@
         {% endif %}
     <br style="clear: left">
 </main>
-    <script type="text/javascript">let url = "{{ url }}";</script>
+    <script type="text/javascript">
+      const url = "{{ url }}";
+      const spoilerCheckbox = document.getElementById("spoiler-checkbox");
+      const spoilerTags = document.getElementById("spoiler-tags");
+    </script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/chart.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/request.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/graph.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='javascript/slider.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='javascript/checkbox.js') }}"></script>
 {% endblock %}
