@@ -96,7 +96,7 @@ def series(series_id):
     # Collecting house database information
     series = Series.query.get(series_id)
     if not series:
-        return redirect(url_for("404"))
+        abort(404)
     entry = Show.query.get(series.entry_point_id)
 
     if len(series.shows) == 1:

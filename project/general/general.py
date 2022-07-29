@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, redirect, Blueprint, url_for,
 from flask_login import login_required, current_user, login_user
 from project.models import Update
 import re
+import random
 
 GENERAL_BLUEPRINT = Blueprint("general", __name__, template_folder="../../project")
 TEMPLATE_PATH = "general/templates/general"
@@ -35,10 +36,19 @@ def update_log():
     return render_template(f"{TEMPLATE_PATH}/updates.html", **variables)
 
 
-@GENERAL_BLUEPRINT.errorhandler(404)
+@GENERAL_BLUEPRINT.app_errorhandler(404)
 def error404(error):
-    return """Sorry, but much like Asta's ability to control his volume, this page does not exist. 
-    <a href="/display">Go back</a>""", 404
+    things_that_dont_exist = [
+        "Asta's ability to control his volume",
+        "No Game No Life Season 2",
+        "the ending for Hunter x Hunter",
+        "your sense of dignity while watching Domestic Girlfriend",
+        "Eren's mom's life",
+        "Endeavor's right to be the #1 hero",
+        "Goku's limits"
+    ]
+    thing_var = random.choices(things_that_dont_exist)[0]
+    return render_template(f"{TEMPLATE_PATH}/404.html", thing_var=thing_var), 404
 
 
 if __name__ == "__main__":
